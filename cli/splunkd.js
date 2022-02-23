@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Splunk Inc. 
+Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -105,6 +105,31 @@ const listDashboards = async (
         }));
 };
 
+const listApps = async (
+    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD } = {}
+) => {
+    const res = await splunkd(
+        'GET',
+        `/services/apps/local?${qs({
+            output_mode: 'json',
+            count: 0,
+            offset: 0,
+            search: `(disabled=0)`,
+        })}`,
+        {
+            url,
+            username,
+            password,
+        }
+    );
+
+    return res.entry
+        .map(entry => ({
+            name: entry.name,
+            label: entry.content.label,
+        }));
+};
+
 async function validateAuth({ url, user, password }) {
     try {
         await splunkd('GET', '/services/server/info', { url, username: user, password });
@@ -117,6 +142,7 @@ async function validateAuth({ url, user, password }) {
 module.exports = {
     splunkd,
     loadDashboard,
+    listApps,
     listDashboards,
     validateAuth,
     qs,

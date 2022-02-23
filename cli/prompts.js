@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Splunk Inc. 
+Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ const noValidateHttpsAgent = new (require('https').Agent)({
 });
 
 inquirer.registerPrompt('checkbox-plus', require('inquirer-checkbox-plus-prompt'));
+inquirer.registerPrompt('search-list', require('inquirer-search-list'));
 
 const string = (prompt, opts) =>
     inquirer
@@ -136,6 +137,26 @@ const selectDashboards = dashboards =>
         })
         .then(({ dashboards }) => dashboards);
 
+const selectApp = apps =>
+    inquirer
+        .prompt({
+            type: 'search-list',
+            name: 'app',
+            message: 'Select which app contains your dashboard(s) to publish',
+            //pageSize: 20,
+            //highlight: true,
+            //searchable: true,
+            choices: apps.map(({ name, label }) => ({ name: `${label} [${name}]`, value: name }))
+//            choices: apps.map(({ name, label }) => ({ name: `${label} [${name}]`, value: name })),
+//            validate: selected => {
+ //               if (selected.length == 1) {
+  //                  return true;
+   //             }
+     //           throw new Error('Please select an app');
+      //      },
+        })
+        .then(({ app }) => app);
+
 module.exports = {
     string,
     confirm,
@@ -143,4 +164,5 @@ module.exports = {
     splunkdUsername,
     splunkdPassword,
     selectDashboards,
+    selectApp,
 };

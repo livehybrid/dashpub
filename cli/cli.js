@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*
-Copyright 2020 Splunk Inc. 
+Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ async function main([cmd]) {
     } else if (cmd === 'update') {
         const project = await loadProject();
         const splunkdInfo = await ensureAuth();
-        await generateDashboards(project.dashboards, splunkdInfo, process.cwd());
+        const app = project.app || "search"
+        await generateDashboards(project.dashboards, app, splunkdInfo, process.cwd());
         if (project.settings.useDataSnapshots) {
             await takeDataSnapshot(process.cwd(), project, splunkdInfo);
         } else {
