@@ -1,0 +1,11 @@
+{"dashpub": {
+        "projectName": "app",
+        "splunkd": {
+            "url": "https://localhost:8089",
+        },
+        "app": "search",
+        "dashboards": [
+            "sample_dashboard",
+        ]
+    }
+}
