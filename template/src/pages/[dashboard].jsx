@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import Loading from '../components/loading';
 import NoSSR from '../components/nossr';
 import Page from '../components/page';
+import { format } from "util";
 
 const Dashboard = lazy(() => import('../components/dashboard'));
 
