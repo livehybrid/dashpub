@@ -6,11 +6,12 @@ import Page from '../components/page';
 const Dashboard = lazy(() => import('../components/dashboard'));
 
 export default function DashboardPage({ definition, dashboardId, baseUrl }) {
+    const imageUrl = format("/%s/%s.%s", process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || "screens" , dashboardId, process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || "png");
     return (
         <Page
             title={definition.title || 'Dashboard'}
             description={definition.description}
-            imageUrl={`/screens/${dashboardId}.png`}
+            imageUrl={imageUrl}
             path={`/${dashboardId}`}
             backgroundColor={definition.layout.options.backgroundColor}
             theme={definition.theme}
