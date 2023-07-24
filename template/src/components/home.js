@@ -178,7 +178,7 @@ class Home extends Component {
         }
         return (
             <PageWrapper>
-                <Title>Dashboards</Title>
+                <Title>{ process.env.NEXT_PUBLIC_DASHPUBTITLE || Dashboards}</Title>
                 <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags}/>
                 <DashWrapper>
                     <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">

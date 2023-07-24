@@ -1,17 +1,26 @@
 #!/bin/sh
+export NEXT_PUBLIC_DASHPUBTITLE=$DASHPUB_TITLE
 set -e
-
-if [ -z "${DASHPUB_CONFIGFILE}" ];
+if [ ! -f /tmp/hasBuilt ];
 then
-  echo "Not using config file"
-else
-  echo "Configuring dashpub"
-  dashpub init
-  cd /app
-  yarn build
-  touch /tmp/hasBuilt
+  if [ "${DASHPUB_APP}" ];
+  then
+    echo "Configuring dashpub with Env variables"
+    dashpub init
+    cd /app
+    yarn build
+    touch /tmp/hasBuilt
+  elif [ -z "${DASHPUB_CONFIGFILE}" ];
+  then
+    echo "Not using config file"
+  else
+    echo "Configuring dashpub"
+    dashpub init
+    cd /app
+    yarn build
+    touch /tmp/hasBuilt
+  fi
 fi
-
 while [ ! -f /tmp/hasBuilt ]
 do
   echo "Waiting for app to be built - Please configure and build to continue..."
