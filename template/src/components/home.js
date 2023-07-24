@@ -145,7 +145,7 @@ class Home extends Component {
 
     render() {
 
-        const INSERT_SCREENSHOTS = process.env.DASHPUB_SCREENSHOTS || false;
+        const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;
 	const renderScreenshot = (k) => {
 	    if (INSERT_SCREENSHOTS) {
     	    	return (<Card.Body><Screenshot style={{width: 330}} src={`/screenshots/${k}.jpg`} alt={dashboardManifest[k]['title']}/></Card.Body>)
