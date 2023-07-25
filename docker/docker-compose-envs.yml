@@ -1,6 +1,6 @@
 services:
   dash:
-    image: .
+    build: .
     ports:
       - "3009:3000"
     environment:
