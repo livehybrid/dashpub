@@ -17,7 +17,7 @@ Note: that this image is maintained by @livehybrid and not maintained by Splunk.
 This method may not auto-recover on container failure, but should withstand restarts.
 
 * `docker run -d --restart=always --name dashpub -p 3000:3000 livehybrid/splunk-dashpub:beta`
-* `docker run dashpub config`
+* `docker exec dashpub config`
   * Follow the CLI instructions to configure Dashpub
   * Dashpub will create a production build of the application and begin serving traffic on port 3000, this could take 2-3 minutes.
 * See logs with `docker logs -f dashpub`
