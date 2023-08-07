@@ -18,8 +18,12 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
+<<<<<<< HEAD
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
+=======
+import Chip from '@splunk/react-ui/Chip';
+>>>>>>> splunk/updates-from-conf23
 
 import dynamic from "next/dynamic";
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
@@ -76,6 +80,27 @@ const DashWrapper = styled.div`
 
 const Screenshot = styled.img`
     width: 330px;
+
+const DashLink = styled.a`
+    display: flex;
+    color: ${variables.textColor};
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 500px;
+
+    height: 80px;
+    border: 1px solid #eee;
+    margin: 10px 10px 0 0;
+    box-sizing: border-box;
+    padding: 0 15px;
+    line-height: 120%;
+
+    &:hover {
+        background: rgb(0, 0, 0, 0.2);
+    }
 `;
 
 const Title = styled.h1`
@@ -118,8 +143,15 @@ class AllTags extends Component {
                 })
             }</div>);
     }
+
 }
 
+/*
+                <DashLink key={k} href={`/${k.includes('timelapse') ? 'timelapse?dashboard=' + k : k}`}>
+                    {dashboardManifest[k].replace(' - Demo', '')}&nbsp;
+                    {dashboardManifest[k].includes('Demo') ? <Chip>Demo</Chip> : <></>}
+                </DashLink>
+*/
 
 
 class Home extends Component {
