@@ -212,7 +212,7 @@ class Home extends Component {
                     <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">
                     {
                         Object.keys(dashboardManifest).filter(k=> !dashboardManifest[k].tags.includes('hidden') && (dashboardManifest[k].tags.includes(this.state.selectedTag) || !this.state.selectedTag) ).map((k) => (
-                            <Card minWidth="350px" key={k} to={`/${k}`}>
+                            <Card minWidth="350px" key={k} to={`/${k.includes('timelapse') ? 'timelapse?dashboard=' + k : k}`}>
                                 {renderCardTitle(k)}
                                 {renderScreenshot(k)}
 				{renderTags(k)}
