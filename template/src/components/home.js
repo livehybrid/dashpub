@@ -18,12 +18,8 @@ import React, {Component} from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
-<<<<<<< HEAD
-//import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
-=======
 import Chip from '@splunk/react-ui/Chip';
->>>>>>> splunk/updates-from-conf23
 
 import dynamic from "next/dynamic";
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
