@@ -40,6 +40,7 @@
         "querystring": "^0.2.0",
         "react": "16.14.0",
         "react-bootstrap-icons": "^1.9.1",
+        "react-component-rotator": "^0.1.1",
         "react-dom": "16.14.0",
         "react-full-screen": "^0.2.4",
         "styled-components": "5.1.1"
