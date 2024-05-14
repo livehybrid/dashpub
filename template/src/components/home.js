@@ -80,6 +80,7 @@ class AllTags extends Component {
         }
         const TagTitle = styled.span`
             font-weight: bold;
+            color: ${variables.textColor};
         `;
         return (
             <div>
@@ -89,7 +90,7 @@ class AllTags extends Component {
                     icon={<Tag className={`ba bi-tag mr-2 tag-all`} />}
                     key={'all'}
                     onClick={() => tagClick('')}
-                    className={'badge badge-pill text-dark m-2'}
+                    className={'badge badge-pill m-2'}
                 >
                     All
                 </Button>
@@ -104,7 +105,7 @@ class AllTags extends Component {
                                 key={tag}
                                 onClick={() => tagClick(tag)}
                                 variant={colorClass}
-                                className={'badge badge-pill text-dark'}
+                                className={'badge badge-pill'}
                             >
                                 {tag}
                             </Button>
