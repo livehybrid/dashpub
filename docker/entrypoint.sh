@@ -8,7 +8,7 @@ export NEXT_PUBLIC_DASHPUBHOSTEDBY=$DASHPUB_HOSTEDBY_NAME
 export NEXT_PUBLIC_DASHPUBHOSTEDURL=$DASHPUB_HOSTEDBY_URL
 export NEXT_PUBLIC_DASHPUBFOOTER=$DASHPUB_FOOTER
 export NEXT_PUBLIC_DASHPUBREPO=$DASHPUB_REPO
-
+ENV_MODE="${ENV_MODE:-production}"
 
 if [ "${DASHPUB_BRANCH}" ];
   then
@@ -46,4 +46,9 @@ do
   echo "Waiting for app to be built - Please configure and build to continue..."
   sleep 5
 done
-cd /app && yarn start
+cd /app
+if [ "$ENV_MODE" = "dev" ]; then
+  yarn dev
+else
+  yarn start
+fi
