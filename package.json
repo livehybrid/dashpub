@@ -27,7 +27,7 @@
   },
   "bundleDependencies": false,
   "dependencies": {
-    "cli-ux": "^5.4.5",
+    "cli-ux": "^6.0.9",
     "debug": "^4.3.4",
     "dotenv": "^16.3.1",
     "execa": "^9.1.0",
