@@ -1216,7 +1216,14 @@
     keycode "^2.1.9"
     lodash "^4.17.21"
 
-"@splunk/visualization-color-palettes@25.11.0", "@splunk/visualization-color-palettes@^25.11.0":
+"@splunk/visualization-color-palettes@26.1.0":
+  version "26.1.0"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-color-palettes/-/visualization-color-palettes-26.1.0.tgz#625f97f8c83e6f6bbabdf2282352901b1369ec7b"
+  integrity sha512-uo5mlL5hj7vYC1GYgHj5OUubiq60CURf121W3o59iNiKJl0jlAV8chpElpOxiVm+CN1v89LfgBWjVUf5AMuNXQ==
+  dependencies:
+    "@babel/runtime" "^7.13.0"
+
+"@splunk/visualization-color-palettes@^25.11.0":
   version "25.11.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-color-palettes/-/visualization-color-palettes-25.11.0.tgz#8a4c746ebfad871d6b8d732b33a8b6e53cffe287"
   integrity sha512-io5jO4wwLWqdtoZuhGZwxRLWyrpLoGWgZF51s2haNukBM+hvvJW6Dbzw7825dRKyBRp1E+7gsYZvqdjoSJMVDA==
