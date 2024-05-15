@@ -929,7 +929,15 @@
     lodash "^4.17.21"
     react-redux "^8.0.5"
 
-"@splunk/dashboard-telemetry@26.3.0", "@splunk/dashboard-telemetry@^26.3.0":
+"@splunk/dashboard-telemetry@27.0.0":
+  version "27.0.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-telemetry/-/dashboard-telemetry-27.0.0.tgz#eea62ad688ac647abafa3f33ee995c837d0f0716"
+  integrity sha512-ja9iE7dyyjc7mXSnb/MImcQfH2NSPq95lJHzJxSkpXeTKTnjPPpgw5lBIibXQDy0Blr8OOlARiwW5gWWwIMsiw==
+  dependencies:
+    "@splunk/dashboard-utils" "^27.0.0"
+    lodash "^4.17.21"
+
+"@splunk/dashboard-telemetry@^26.3.0":
   version "26.3.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-telemetry/-/dashboard-telemetry-26.3.0.tgz#81dc83e0cc397703e5025f8ac40e24670bc5db74"
   integrity sha512-NnVwFAjpPwsWIzSG6d7iInBHzgSeTIETPRGezeVkH5TxAOQa5CbyWeNlzn6d+MIJDQohOyPgHEwF27KAasKB5Q==

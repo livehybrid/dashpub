@@ -15,7 +15,7 @@
         "@splunk/dashboard-inputs": "26.3.0",
         "@splunk/dashboard-layouts": "26.3.0",
         "@splunk/dashboard-presets": "26.3.0",
-        "@splunk/dashboard-telemetry": "26.3.0",
+        "@splunk/dashboard-telemetry": "27.0.0",
         "@splunk/dashboard-ui": "26.3.0",
         "@splunk/dashboard-utils": "26.3.0",
         "@splunk/dashboard-visualizations": "25.11.0",
