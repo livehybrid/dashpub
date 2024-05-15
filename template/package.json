@@ -9,7 +9,7 @@
         "@splunk/charting-bundle": "26.1.0",
         "@splunk/dashboard-context": "26.3.0",
         "@splunk/dashboard-core": "26.3.0",
-        "@splunk/dashboard-definition": "26.3.0",
+        "@splunk/dashboard-definition": "27.0.0",
         "@splunk/dashboard-event-handlers": "26.3.0",
         "@splunk/dashboard-icons": "26.3.0",
         "@splunk/dashboard-inputs": "26.3.0",
