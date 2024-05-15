@@ -811,7 +811,14 @@
     hash-it "^5.0.0"
     lodash "^4.17.21"
 
-"@splunk/dashboard-event-handlers@26.3.0", "@splunk/dashboard-event-handlers@^26.3.0":
+"@splunk/dashboard-event-handlers@27.0.0":
+  version "27.0.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-event-handlers/-/dashboard-event-handlers-27.0.0.tgz#f54b36c9d781a7185803c7da5b207be6b88cd1dc"
+  integrity sha512-Kp4vky3klUwbqjAwBWnrG40V67F4aBpSAw2ohoJtdML0Xe8jdL2eBcJLQZKWLFDO28FbtMQ//h1zzxwQ2sukBw==
+  dependencies:
+    "@splunk/dashboard-utils" "^27.0.0"
+
+"@splunk/dashboard-event-handlers@^26.3.0":
   version "26.3.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-event-handlers/-/dashboard-event-handlers-26.3.0.tgz#6d3b66580b3cd9ca3b2914ec42598d380af26e98"
   integrity sha512-qBZBNkA//9bKI9bVGLMNYvCEiKvnTJH4AXLl18SP8wH6VqHIBeLKdenCyVgujMxMEKR+SkH2atZ0V+P1yM+Ogw==
