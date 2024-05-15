@@ -1070,16 +1070,7 @@
     query-string "^6.13.8"
     rxjs "^5.5.12"
 
-"@splunk/moment@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@splunk/moment/-/moment-0.6.0.tgz#ebf30dcf443083496d2372f1b8213e3fc28eef88"
-  integrity sha512-GK+hAYImn5FQi9Ar1o2Edr1r8bC31UfXKj1c3ChlPGlMfRKI5I7M221kJ7n4onBO4OENuvP1TMA+fWO1x/dMWg==
-  dependencies:
-    "@splunk/splunk-utils" "^2.0.0"
-    "@splunk/ui-utils" "^1.2.1"
-    lodash "^4.17.14"
-
-"@splunk/moment@^0.6.1":
+"@splunk/moment@^0.6.0", "@splunk/moment@^0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@splunk/moment/-/moment-0.6.1.tgz#1ab0d7adc1636ef4183923f32bd42c22edd7279c"
   integrity sha512-BHgvn0/sssYfsfRng8vCTc3k4fkOx37OK7YsBi5kOu1yx6fl5GC9tare+0fSnu09gLQ5YBdEst/cv5J+3BTYhA==
@@ -1449,23 +1440,7 @@
     "@babel/runtime" "^7.13.0"
     "@splunk/themes" "^0.18.0"
 
-"@splunk/visualizations-shared@25.11.0", "@splunk/visualizations-shared@^25.11.0":
-  version "25.11.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualizations-shared/-/visualizations-shared-25.11.0.tgz#9ad9d607341cc81c99ccde6f4433c2a4a9e82710"
-  integrity sha512-K6c7BWtOmQiPKHa30jvDb4fEhSBz/gX+1kB3+1Yb6pUNzmwWI4EqNbf9BbxKCNhOOKGWnfA5j8rGBKpvCNhJ8A==
-  dependencies:
-    "@babel/runtime" "^7.13.0"
-    "@splunk/moment" "^0.6.1"
-    "@splunk/react-icons" "^4.0.1"
-    "@splunk/react-ui" "^4.17.1"
-    "@splunk/themes" "^0.16.1"
-    "@splunk/ui-utils" "^1.2.1"
-    element-resize-detector "^1.1.14"
-    lodash "^4.17.21"
-    numeral "^2.0.6"
-    xmlserializer "^0.6.1"
-
-"@splunk/visualizations-shared@^26.1.0":
+"@splunk/visualizations-shared@26.1.0", "@splunk/visualizations-shared@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualizations-shared/-/visualizations-shared-26.1.0.tgz#617b410be6848a6890a0eb31b174d74b8bbbbc61"
   integrity sha512-TRNEWcf9qQmA3Ew1Gpu1R2hsQjT1p2RPc2jmfjEelcfdsntfg0L03Y94lypc9skc5CJq7mnw2wqbcdNG1SfagA==
@@ -1475,6 +1450,22 @@
     "@splunk/react-icons" "^4.0.1"
     "@splunk/react-ui" "^4.17.1"
     "@splunk/themes" "^0.18.0"
+    "@splunk/ui-utils" "^1.2.1"
+    element-resize-detector "^1.1.14"
+    lodash "^4.17.21"
+    numeral "^2.0.6"
+    xmlserializer "^0.6.1"
+
+"@splunk/visualizations-shared@^25.11.0":
+  version "25.11.0"
+  resolved "https://registry.yarnpkg.com/@splunk/visualizations-shared/-/visualizations-shared-25.11.0.tgz#9ad9d607341cc81c99ccde6f4433c2a4a9e82710"
+  integrity sha512-K6c7BWtOmQiPKHa30jvDb4fEhSBz/gX+1kB3+1Yb6pUNzmwWI4EqNbf9BbxKCNhOOKGWnfA5j8rGBKpvCNhJ8A==
+  dependencies:
+    "@babel/runtime" "^7.13.0"
+    "@splunk/moment" "^0.6.1"
+    "@splunk/react-icons" "^4.0.1"
+    "@splunk/react-ui" "^4.17.1"
+    "@splunk/themes" "^0.16.1"
     "@splunk/ui-utils" "^1.2.1"
     element-resize-detector "^1.1.14"
     lodash "^4.17.21"
