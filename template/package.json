@@ -47,7 +47,7 @@
         "typescript": "^5.3.3"
     },
     "devDependencies": {
-        "eslint": "^8.0.0",
+        "eslint": "^8.57.0",
         "@babel/plugin-proposal-private-property-in-object": "*"
     },
     "resolutions": {
