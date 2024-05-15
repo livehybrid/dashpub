@@ -1158,16 +1158,12 @@
     prop-types "^15.6.0"
     react-is "^16.10.0"
 
-"@splunk/react-icons@4.2.0", "@splunk/react-icons@^3.0.1", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.4.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.2.0.tgz#08028104156b622e7a1e22d2f287f9cbf0374d2a"
-  integrity sha512-d++CeXRFU7tKfxoaSUUnQjahjfc/Ba9rTB2QFzZeFWQ5mWo3ZDvZvFyPh8damJ3FCeZmuFDIDGxmoxdSKSdUqg==
+"@splunk/react-icons@4.4.0", "@splunk/react-icons@^3.0.1", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.4.0.tgz#c9a5980256a2fc41b54f43b898728c1a2eb25325"
+  integrity sha512-eUhkcTAksicTGt2tofcQJVxrbC4UeGg3SY6JjoO2B3Gq9aOwOcLSIicWzv+TGoHVUthUesoNO1xnvygFgBtqkw==
   dependencies:
     "@splunk/ui-utils" "^1.6.0"
-    "@types/lodash" "^4.14.156"
-    "@types/react" "^16.9.38"
-    "@types/react-dom" "^16.9.8"
-    "@types/styled-components" "^5.1.0"
     lodash "^4.17.14"
     prop-types "^15.6.2"
 
@@ -1677,13 +1673,6 @@
   resolved "https://registry.yarnpkg.com/@types/raf/-/raf-3.4.0.tgz#2b72cbd55405e071f1c4d29992638e022b20acc2"
   integrity sha512-taW5/WYqo36N7V39oYyHP9Ipfd5pNFvGTIQsNGj86xV88YQ7GnI30/yMfKDF7Zgin0m3e+ikX88FvImnK4RjGw==
 
-"@types/react-dom@^16.9.8":
-  version "16.9.16"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.9.16.tgz#c591f2ed1c6f32e9759dfa6eb4abfd8041f29e39"
-  integrity sha512-Oqc0RY4fggGA3ltEgyPLc3IV9T73IGoWjkONbsyJ3ZBn+UPPCYpU2ec0i3cEbJuEdZtkqcCF2l1zf2pBdgUGSg==
-  dependencies:
-    "@types/react" "^16"
-
 "@types/react@*":
   version "18.0.21"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.21.tgz#b8209e9626bb00a34c76f55482697edd2b43cc67"
@@ -1693,7 +1682,7 @@
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
-"@types/react@^16", "@types/react@^16.9.38":
+"@types/react@^16.9.38":
   version "16.14.32"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.32.tgz#d4e4fe5ece3c27fcb4608b1f4a614f7dec881392"
   integrity sha512-hvEy4vGVADbtj/U6+CA5SRC5QFIjdxD7JslAie8EuAYZwhYY9bgforpXNyF1VFzhnkEOesDy1278t1wdjN74cw==
