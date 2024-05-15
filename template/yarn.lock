@@ -818,7 +818,17 @@
   dependencies:
     "@splunk/dashboard-utils" "^26.3.0"
 
-"@splunk/dashboard-icons@26.3.0", "@splunk/dashboard-icons@^26.3.0":
+"@splunk/dashboard-icons@27.0.0":
+  version "27.0.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-icons/-/dashboard-icons-27.0.0.tgz#c5aa801ffebb3594bed7b93e23be303303b7a92c"
+  integrity sha512-g1YA8b8idDZ/X567zQYBAIti4ZO+xC6YLZCVHeV6bYouMw7NLX1om4Ys8LGw7fm1Tq6w6smHNICBNvm+YaoGHQ==
+  dependencies:
+    "@splunk/dashboard-utils" "^27.0.0"
+    "@splunk/react-icons" "^4.4.0"
+    "@splunk/ui-utils" "^1.4.0"
+    prop-types "^15.7.2"
+
+"@splunk/dashboard-icons@^26.3.0":
   version "26.3.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-icons/-/dashboard-icons-26.3.0.tgz#fd04cf37e32fe9fe505d0c90eceedc5dc8b22494"
   integrity sha512-MmqW2MeStO59BZjSk9s/FitTm8d3dzC0wDKtPqMq/zqO3OXF/VLRBSgE5xxl9W5SPszC1tU9tPN8esEDm57I+w==
