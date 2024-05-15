@@ -24,7 +24,7 @@
         "@splunk/react-icons": "4.2.0",
         "@splunk/react-ui": "4.23.0",
         "@splunk/visualization-color-palettes": "25.11.0",
-        "@splunk/visualization-context": "25.11.0",
+        "@splunk/visualization-context": "25.13.1",
         "@splunk/visualization-encoding": "25.11.0",
         "@splunk/visualization-encoding-parsers": "25.11.0",
         "@splunk/visualization-icons": "25.11.0",

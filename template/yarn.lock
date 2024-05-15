@@ -1364,15 +1364,7 @@
     "@splunk/ui-utils" "^1.5.0"
     lodash "^4.17.19"
 
-"@splunk/ui-utils@^1.2.1", "@splunk/ui-utils@^1.4.0", "@splunk/ui-utils@^1.5.0", "@splunk/ui-utils@^1.5.1":
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/@splunk/ui-utils/-/ui-utils-1.5.1.tgz#68e9430607a6fd8843a26c5768eee2ebcf304611"
-  integrity sha512-EK+11WafNyiIb0Ormh+ygVTpxQHqPKBk8yE7FcrSpCvlE4i/V1L/RpNYhUcf8VRXXFP165c5lGdtblz8+0A/1g==
-  dependencies:
-    keycode "^2.1.9"
-    lodash "^4.17.21"
-
-"@splunk/ui-utils@^1.5.2", "@splunk/ui-utils@^1.6.0":
+"@splunk/ui-utils@^1.2.1", "@splunk/ui-utils@^1.4.0", "@splunk/ui-utils@^1.5.0", "@splunk/ui-utils@^1.5.1", "@splunk/ui-utils@^1.5.2", "@splunk/ui-utils@^1.6.0":
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/@splunk/ui-utils/-/ui-utils-1.6.0.tgz#66576bdf80830fb0ec8b0f9e48031ce61eb54e7c"
   integrity sha512-6uMStGhXno5LluvKZtO34K1LO50T6m9hgoC2FvQ5KEtFLz1MID8XkW3vLjh4zcxU/7ntgQBAlteBLRqi38AF7A==
@@ -1387,10 +1379,10 @@
   dependencies:
     "@babel/runtime" "^7.13.0"
 
-"@splunk/visualization-context@25.11.0":
-  version "25.11.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-context/-/visualization-context-25.11.0.tgz#6dba7a7794556f79179d88395eb97faa6fac37c6"
-  integrity sha512-vjHI6TPAP2wmf99QWC6DM5KMaZVSgHZHfD0I3X9s499iSU4F9Iue1Xur4HVkhVvg8uauuHwSmKz2H0zcRdtYbQ==
+"@splunk/visualization-context@25.13.1":
+  version "25.13.1"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-context/-/visualization-context-25.13.1.tgz#57128d5d944ab9939a40d38a534ff5a7658acd34"
+  integrity sha512-4FTx7sgJUMsIVXqKOy1UwZfxY40duPbrPZtGI0P67bACRemoYzADLN34lDU90+gnrqH/67NiEjhAJLUGV86koQ==
   dependencies:
     "@babel/runtime" "^7.13.0"
     "@splunk/ui-utils" "^1.2.1"
