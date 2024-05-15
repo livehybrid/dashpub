@@ -977,22 +977,7 @@
     resize-observer-polyfill "^1.5.1"
     tinycolor2 "^1.4.1"
 
-"@splunk/dashboard-utils@26.3.0", "@splunk/dashboard-utils@^26.3.0":
-  version "26.3.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-26.3.0.tgz#11d0e4122c28d4dffba13e32a4457b1b059ae6b7"
-  integrity sha512-BV+2V9NBE4o4uSmWgo7bff78dQcjzboDWvF/RREtxkG3M/ya6NKt55q6RqUHDhzehSHMi1gYooh5LvVlvWMDbw==
-  dependencies:
-    "@splunk/moment" "^0.6.1"
-    "@splunk/splunk-utils" "^2.3.2"
-    "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-migrations" "^25.11.0"
-    ajv "^8.5.0"
-    crypto-js "^4.0.0"
-    jspdf "2.5.1"
-    lodash "^4.17.21"
-    memoize-one "^5.2.1"
-
-"@splunk/dashboard-utils@^27.0.0":
+"@splunk/dashboard-utils@27.0.0", "@splunk/dashboard-utils@^27.0.0":
   version "27.0.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.0.0.tgz#52082feb724f5e7c239aca258698a722b5a1e482"
   integrity sha512-l7Ow/shgDUFou+Sn2LC6BYZ9XMAtguANSTCnOnLmHHcv4KiJU8ZGw6cvmBXaKkBROAurFoGOMK+0g4JRY/Yl+g==
@@ -1001,6 +986,21 @@
     "@splunk/splunk-utils" "^3.0.0"
     "@splunk/ui-utils" "^1.4.0"
     "@splunk/visualization-migrations" "^26.0.0"
+    ajv "^8.5.0"
+    crypto-js "^4.0.0"
+    jspdf "2.5.1"
+    lodash "^4.17.21"
+    memoize-one "^5.2.1"
+
+"@splunk/dashboard-utils@^26.3.0":
+  version "26.3.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-26.3.0.tgz#11d0e4122c28d4dffba13e32a4457b1b059ae6b7"
+  integrity sha512-BV+2V9NBE4o4uSmWgo7bff78dQcjzboDWvF/RREtxkG3M/ya6NKt55q6RqUHDhzehSHMi1gYooh5LvVlvWMDbw==
+  dependencies:
+    "@splunk/moment" "^0.6.1"
+    "@splunk/splunk-utils" "^2.3.2"
+    "@splunk/ui-utils" "^1.4.0"
+    "@splunk/visualization-migrations" "^25.11.0"
     ajv "^8.5.0"
     crypto-js "^4.0.0"
     jspdf "2.5.1"
@@ -2240,12 +2240,7 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.2:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-crypto-js@^4.0.0:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.1.1.tgz#9e485bcf03521041bd85844786b83fb7619736cf"
-  integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
-
-crypto-js@^4.2.0:
+crypto-js@^4.0.0, crypto-js@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.2.0.tgz#4d931639ecdfd12ff80e8186dba6af2c2e856631"
   integrity sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==
