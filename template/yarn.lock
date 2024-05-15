@@ -1401,19 +1401,19 @@
     nearley "^2.19.1"
     numbro "2.5.0"
 
-"@splunk/visualization-icons@25.11.0", "@splunk/visualization-icons@^25.11.0":
-  version "25.11.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-25.11.0.tgz#834c3e0e82026c5aeb29932e0c6eba8a01e646b8"
-  integrity sha512-rVz5lGQn6j80oo/+YsOMCQnqDsGea1sO66aB0bvHkqej0WhEluGp7rsUQPrguB2ot90t9GTck/fyJGvy6Dlvgg==
+"@splunk/visualization-icons@26.1.0", "@splunk/visualization-icons@^26.1.0":
+  version "26.1.0"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-26.1.0.tgz#ffe60daf9f59457a0d48f2d4df34f16b16bcfe70"
+  integrity sha512-42D/22IxKplp2nmSn6PqhJYBy3/XV4pQWH6qgZavvfKEpHuuxP7ditDLbLdRz/1D/x/Cp56BoqgqLx3gLKNYsg==
   dependencies:
     "@babel/runtime" "^7.13.0"
     "@splunk/react-icons" "^4.0.1"
     "@splunk/ui-utils" "^1.2.1"
 
-"@splunk/visualization-icons@^26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-26.1.0.tgz#ffe60daf9f59457a0d48f2d4df34f16b16bcfe70"
-  integrity sha512-42D/22IxKplp2nmSn6PqhJYBy3/XV4pQWH6qgZavvfKEpHuuxP7ditDLbLdRz/1D/x/Cp56BoqgqLx3gLKNYsg==
+"@splunk/visualization-icons@^25.11.0":
+  version "25.11.0"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-25.11.0.tgz#834c3e0e82026c5aeb29932e0c6eba8a01e646b8"
+  integrity sha512-rVz5lGQn6j80oo/+YsOMCQnqDsGea1sO66aB0bvHkqej0WhEluGp7rsUQPrguB2ot90t9GTck/fyJGvy6Dlvgg==
   dependencies:
     "@babel/runtime" "^7.13.0"
     "@splunk/react-icons" "^4.0.1"
