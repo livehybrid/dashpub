@@ -39,7 +39,7 @@
         "query-string": "^9.0.0",
         "querystring": "^0.2.0",
         "react": "16.14.0",
-        "react-bootstrap-icons": "^1.10.3",
+        "react-bootstrap-icons": "^1.11.4",
         "react-dom": "16.14.0",
         "styled-components": "5.3.11",
         "jsonwebtoken": "^9.0.2",
