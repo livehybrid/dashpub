@@ -1049,7 +1049,7 @@
     react-event-listener "^0.6.4"
     xmlserializer "^0.6.1"
 
-"@splunk/datasource-utils@27.0.0", "@splunk/datasource-utils@^12.0.0", "@splunk/datasource-utils@^26.3.0", "@splunk/datasource-utils@^26.5.0", "@splunk/datasource-utils@^27.0.0":
+"@splunk/datasource-utils@27.0.0", "@splunk/datasource-utils@^26.3.0", "@splunk/datasource-utils@^26.5.0", "@splunk/datasource-utils@^27.0.0":
   version "27.0.0"
   resolved "https://registry.yarnpkg.com/@splunk/datasource-utils/-/datasource-utils-27.0.0.tgz#c3b87b3b125806524f870de1d191dffb675d3c3a"
   integrity sha512-wJ7LqFQrqvuSlbC7U1ZpMpdLumOvMXR2rv2DmKhrEH5EbO23jRviFaB3Vgbc83BGa3iFVHyY2V+ZaqhkqVmZHQ==
@@ -1115,22 +1115,7 @@
     "@splunk/ui-utils" "^1.6.0"
     lodash "^4.17.14"
 
-"@splunk/react-events-viewer@^5.1.1":
-  version "5.3.1"
-  resolved "https://registry.yarnpkg.com/@splunk/react-events-viewer/-/react-events-viewer-5.3.1.tgz#3ab1f83ab23241e535d7becea75f6e4fe290620b"
-  integrity sha512-t3nwLKa5PF8Ju5xIDNe826FrfkkThyMf+1aU9iIzsuqZGHaW1G9iUaKHemte7Uypz2rIlvWitundMf6bhXPXvQ==
-  dependencies:
-    "@babel/runtime" "^7.14.0"
-    "@splunk/moment" "^0.6.0"
-    "@splunk/react-icons" "^4.0.1"
-    "@splunk/react-ui" "^4.19.0"
-    "@splunk/react-visualization-utils" "2.0.0"
-    "@splunk/themes" "^0.16.1"
-    "@splunk/ui-utils" "^1.5.0"
-    lodash "^4.17.19"
-    prop-types "^15.6.0"
-
-"@splunk/react-events-viewer@^5.4.4":
+"@splunk/react-events-viewer@^5.1.1", "@splunk/react-events-viewer@^5.4.4":
   version "5.4.4"
   resolved "https://registry.yarnpkg.com/@splunk/react-events-viewer/-/react-events-viewer-5.4.4.tgz#4e7e6524e27c039498f8403c724865d3b28904ac"
   integrity sha512-X4+QYUEGzLjtjBSBzK6UEYzM+1QV5g7ySdhJTWDkFP+V9HCRCTIy8K/RVhfJSNLVLEEJ05atjjIuoD3M3xfX/g==
@@ -1232,15 +1217,6 @@
     react-spring "9.2.4"
     tinycolor2 "^1.4.1"
     use-typed-event-listener "^3.0.0"
-
-"@splunk/react-visualization-utils@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-visualization-utils/-/react-visualization-utils-2.0.0.tgz#8780c1a7cb1e4d1e296014389ccf5e52e9167d9e"
-  integrity sha512-XrwC/i0BHxvQRgC+6/WljeLU+KM9uUjqoD0pdCGbDqNGmDph4f4sziH9/B/GC88emuenardsKWxWdNOUOw7iAA==
-  dependencies:
-    "@babel/runtime" "^7.14.0"
-    "@splunk/datasource-utils" "^12.0.0"
-    lodash "^4.17.19"
 
 "@splunk/react-visualizations@^25.11.0":
   version "25.11.0"
@@ -1489,7 +1465,47 @@
     numeral "^2.0.6"
     xmlserializer "^0.6.1"
 
-"@splunk/visualizations@25.11.0", "@splunk/visualizations@^25.11.0":
+"@splunk/visualizations@26.1.0", "@splunk/visualizations@^26.1.0":
+  version "26.1.0"
+  resolved "https://registry.yarnpkg.com/@splunk/visualizations/-/visualizations-26.1.0.tgz#2f3d984824a9ac6657a46e3b37c357c932710d6c"
+  integrity sha512-kbk/h+vpTY6GhiUwVGCXV5Sl4HohOZLkG3OSZXmvWVyCSrQwHYUb6wrLcGzHaceeO8BJuwEinriPb6tFdWJxWA==
+  dependencies:
+    "@babel/runtime" "^7.13.0"
+    "@mdhnpm/rgb-hex-converter" "^1.0.3"
+    "@splunk/async-dynamic-options-evaluator" "^26.1.0"
+    "@splunk/charting-bundle" "^26.1.0"
+    "@splunk/moment" "^0.6.1"
+    "@splunk/react-events-viewer" "^5.4.4"
+    "@splunk/react-field-summary" "^0.11.0"
+    "@splunk/react-icons" "^4.0.1"
+    "@splunk/react-ui" "^4.17.1"
+    "@splunk/themes" "^0.18.0"
+    "@splunk/time-range-utils" "^3.0.1"
+    "@splunk/ui-utils" "^1.2.1"
+    "@splunk/visualization-color-palettes" "^26.1.0"
+    "@splunk/visualization-encoding" "^26.1.0"
+    "@splunk/visualization-icons" "^26.1.0"
+    "@splunk/visualization-themes" "^26.1.0"
+    "@splunk/visualizations-shared" "^26.1.0"
+    "@xmldom/xmldom" "^0.8.4"
+    cssesc "3.0.0"
+    d3-array "^2.12.1"
+    d3-axis "^2.1.0"
+    d3-brush "^2.1.0"
+    d3-collection "^1.0.7"
+    d3-drag "^2.0.0"
+    d3-format "^3.0.1"
+    d3-interpolate "^3.0.1"
+    d3-scale "^3.3.0"
+    d3-selection "^2.0.0"
+    jexl "^2.2.2"
+    lodash "^4.17.21"
+    maplibre-gl "^3.0.0"
+    prop-types "^15.7.2"
+    react-event-listener "^0.6.6"
+    xpath "^0.0.32"
+
+"@splunk/visualizations@^25.11.0":
   version "25.11.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualizations/-/visualizations-25.11.0.tgz#8e878a4963a8556a64090079533aba629292223d"
   integrity sha512-OxnDUpuPwdhU6Mdwu4QJ/CqmMZp37gInUwuVRGozP2o+WotbJ5yC/hZ/P9AQ/beg+g5xc0PPrVBuYv/PNgKRiA==
@@ -1521,46 +1537,6 @@
     d3-drag "^2.0.0"
     d3-format "^3.0.1"
     d3-interpolate "^2.0.1"
-    d3-scale "^3.3.0"
-    d3-selection "^2.0.0"
-    jexl "^2.2.2"
-    lodash "^4.17.21"
-    maplibre-gl "^3.0.0"
-    prop-types "^15.7.2"
-    react-event-listener "^0.6.6"
-    xpath "^0.0.32"
-
-"@splunk/visualizations@^26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualizations/-/visualizations-26.1.0.tgz#2f3d984824a9ac6657a46e3b37c357c932710d6c"
-  integrity sha512-kbk/h+vpTY6GhiUwVGCXV5Sl4HohOZLkG3OSZXmvWVyCSrQwHYUb6wrLcGzHaceeO8BJuwEinriPb6tFdWJxWA==
-  dependencies:
-    "@babel/runtime" "^7.13.0"
-    "@mdhnpm/rgb-hex-converter" "^1.0.3"
-    "@splunk/async-dynamic-options-evaluator" "^26.1.0"
-    "@splunk/charting-bundle" "^26.1.0"
-    "@splunk/moment" "^0.6.1"
-    "@splunk/react-events-viewer" "^5.4.4"
-    "@splunk/react-field-summary" "^0.11.0"
-    "@splunk/react-icons" "^4.0.1"
-    "@splunk/react-ui" "^4.17.1"
-    "@splunk/themes" "^0.18.0"
-    "@splunk/time-range-utils" "^3.0.1"
-    "@splunk/ui-utils" "^1.2.1"
-    "@splunk/visualization-color-palettes" "^26.1.0"
-    "@splunk/visualization-encoding" "^26.1.0"
-    "@splunk/visualization-icons" "^26.1.0"
-    "@splunk/visualization-themes" "^26.1.0"
-    "@splunk/visualizations-shared" "^26.1.0"
-    "@xmldom/xmldom" "^0.8.4"
-    cssesc "3.0.0"
-    d3-array "^2.12.1"
-    d3-axis "^2.1.0"
-    d3-brush "^2.1.0"
-    d3-collection "^1.0.7"
-    d3-drag "^2.0.0"
-    d3-format "^3.0.1"
-    d3-interpolate "^3.0.1"
     d3-scale "^3.3.0"
     d3-selection "^2.0.0"
     jexl "^2.2.2"
