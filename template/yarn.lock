@@ -716,7 +716,12 @@
   dependencies:
     "@splunk/visualization-encoding" "^25.11.0"
 
-"@splunk/charting-bundle@25.11.0", "@splunk/charting-bundle@^25.11.0":
+"@splunk/charting-bundle@26.1.0":
+  version "26.1.0"
+  resolved "https://registry.yarnpkg.com/@splunk/charting-bundle/-/charting-bundle-26.1.0.tgz#f982fbc34d5119f20cabfbccffe1d632cd482b87"
+  integrity sha512-nxhOFCM0SermFORq+6jOkOFyG8JJzIikkjUIW/U6N5f+UoQ65BSY1dp3jxfKj+qw+sfyJHFy5Gy09oG0SWxTHw==
+
+"@splunk/charting-bundle@^25.11.0":
   version "25.11.0"
   resolved "https://registry.yarnpkg.com/@splunk/charting-bundle/-/charting-bundle-25.11.0.tgz#ed87e1e2b4eb0cff462fb0508f9907075be68b8d"
   integrity sha512-+ea0u8mW42YAhR8OGaZgoItjB2/kLnvoAxVhM0uM0yYnag6Y05nejIFp+VB665/OUrQe5Bw0yje78qzylpdF6Q==
