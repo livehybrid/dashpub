@@ -19,7 +19,7 @@
         "@splunk/dashboard-ui": "26.3.0",
         "@splunk/dashboard-utils": "26.3.0",
         "@splunk/dashboard-visualizations": "25.11.0",
-        "@splunk/datasource-utils": "26.3.0",
+        "@splunk/datasource-utils": "27.0.0",
         "@splunk/datasources": "^26.3.0",
         "@splunk/react-icons": "4.2.0",
         "@splunk/react-ui": "4.30.0",
@@ -51,7 +51,7 @@
         "@babel/plugin-proposal-private-property-in-object": "*"
     },
     "resolutions": {
-        "@splunk/datasource-utils": "26.3.0",
+        "@splunk/datasource-utils": "27.0.0",
         "@splunk/react-icons": "4.2.0",
         "decode-uri-component": "0.4.1",
         "query-string": "8.1.0",
