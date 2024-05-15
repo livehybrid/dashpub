@@ -29,7 +29,7 @@
         "@splunk/visualization-encoding-parsers": "26.1.0",
         "@splunk/visualization-icons": "25.11.0",
         "@splunk/visualization-themes": "25.11.0",
-        "@splunk/visualizations": "25.11.0",
+        "@splunk/visualizations": "26.1.0",
         "@splunk/visualizations-shared": "26.1.0",
         "bootstrap": "^5.3.2",
         "crypto-js": "^4.2.0",
