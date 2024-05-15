@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 const inquirer = require('inquirer');
-const fetch = require('node-fetch');
+const fetch = global.fetch;
 const { validateAuth } = require('./splunkd');
 
 const noValidateHttpsAgent = new (require('https').Agent)({

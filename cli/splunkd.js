@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const fetch = require('node-fetch');
+const fetch = global.fetch;
 const { XmlDocument } = require('xmldoc');
 
 const noValidateHttpsAgent = new (require('https').Agent)({

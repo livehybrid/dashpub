@@ -20,7 +20,7 @@ const { writeFile } = require('fs-extra');
 const sharp = require('sharp');
 const crypto = require('crypto');
 const path = require('path');
-const fetch = require('node-fetch');
+const fetch = global.fetch;
 require('dotenv').config();
 
 function shortHash(buffer) {

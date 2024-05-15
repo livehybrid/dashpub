@@ -17,7 +17,7 @@ limitations under the License.
 const fs = require('fs');
 const path = require('path');
 const qs = require('querystring');
-const fetch = require('node-fetch');
+const fetch = global.fetch;
 const debug = require('debug')('datasnapshot');
 const { cli } = require('cli-ux');
 require('dotenv').config();
