@@ -8,7 +8,7 @@ updates:
       - dependency-name: "next"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     target-branch: "develop"
 
   - package-ecosystem: "github-actions"
