@@ -785,7 +785,7 @@
     react-full-screen "^1.0.2"
     rxjs "^5.5.12"
 
-"@splunk/dashboard-definition@27.0.0":
+"@splunk/dashboard-definition@27.0.0", "@splunk/dashboard-definition@^27.0.0":
   version "27.0.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-definition/-/dashboard-definition-27.0.0.tgz#f98a04f864069d6276db307812bb018c6235706e"
   integrity sha512-wNv4FE6o6w5jK8Qb/UJTodWnT/trTbabCQAcQgfaLIjyrqApRD0KTa5ozAVs4Ad0Lk48M4YrHZNsvqUtJ1uetA==
@@ -1049,7 +1049,7 @@
     react-event-listener "^0.6.4"
     xmlserializer "^0.6.1"
 
-"@splunk/datasource-utils@27.0.0", "@splunk/datasource-utils@^12.0.0", "@splunk/datasource-utils@^26.3.0", "@splunk/datasource-utils@^26.5.0":
+"@splunk/datasource-utils@27.0.0", "@splunk/datasource-utils@^12.0.0", "@splunk/datasource-utils@^26.3.0", "@splunk/datasource-utils@^26.5.0", "@splunk/datasource-utils@^27.0.0":
   version "27.0.0"
   resolved "https://registry.yarnpkg.com/@splunk/datasource-utils/-/datasource-utils-27.0.0.tgz#c3b87b3b125806524f870de1d191dffb675d3c3a"
   integrity sha512-wJ7LqFQrqvuSlbC7U1ZpMpdLumOvMXR2rv2DmKhrEH5EbO23jRviFaB3Vgbc83BGa3iFVHyY2V+ZaqhkqVmZHQ==
@@ -1068,6 +1068,26 @@
     "@splunk/moment" "^0.6.1"
     "@splunk/search-job" "^2.0.1"
     "@splunk/splunk-utils" "^2.3.2"
+    "@splunk/ui-utils" "^1.4.0"
+    "@splunkdev/cloud-sdk" "^15.0.0"
+    hash-it "^5.0.0"
+    lodash "^4.17.21"
+    memoize-one "^5.2.1"
+    moment "^2.29.4"
+    query-string "^6.13.8"
+    rxjs "^5.5.12"
+
+"@splunk/datasources@^27.0.0":
+  version "27.0.0"
+  resolved "https://registry.yarnpkg.com/@splunk/datasources/-/datasources-27.0.0.tgz#02b13dd6b8bae07e8165dfc7f4c67f6311d33d08"
+  integrity sha512-+uvmzzb3Vp7q/wyR2y1A+5XgKLIcpZMGZTcEhBQJSNO/MZUMf53eTDGazwgHw8SmwC2W6WomqNUzsTGnm0VcCA==
+  dependencies:
+    "@splunk/dashboard-definition" "^27.0.0"
+    "@splunk/dashboard-utils" "^27.0.0"
+    "@splunk/datasource-utils" "^27.0.0"
+    "@splunk/moment" "^0.7.0"
+    "@splunk/search-job" "^3.0.0"
+    "@splunk/splunk-utils" "^3.0.0"
     "@splunk/ui-utils" "^1.4.0"
     "@splunkdev/cloud-sdk" "^15.0.0"
     hash-it "^5.0.0"
@@ -1253,16 +1273,16 @@
     lodash "^4.17.14"
     rxjs "^5.4.2"
 
-"@splunk/splunk-utils@^2.0.0":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@splunk/splunk-utils/-/splunk-utils-2.2.3.tgz#903c2dbbfd7856b4e9dd4acf2922c9c8bdf797eb"
-  integrity sha512-WpewKubvtPSkRHgukwQpam5a8nhKn+1no6LuYdcxIXWmx026jc3XgYCTf2saDow1e5vod7FUVVaSLZsoxvAlTg==
+"@splunk/search-job@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@splunk/search-job/-/search-job-3.0.0.tgz#18b7cd6d41662c35eff6d89740497330ca70ef2f"
+  integrity sha512-lyhz/MLtzfKWW4riiqSiOI7Ef9MQuI8rmi2CMCc8uEf5OS0demEQop3kSzLx+QYCaLhjlwknjMuL9NitgTty0g==
   dependencies:
-    "@splunk/ui-utils" "^1.5.0"
+    "@splunk/splunk-utils" "^3.0.0"
     lodash "^4.17.14"
-    scriptjs "^2.5.8"
+    rxjs "^5.4.2"
 
-"@splunk/splunk-utils@^2.2.4", "@splunk/splunk-utils@^2.3.1", "@splunk/splunk-utils@^2.3.2":
+"@splunk/splunk-utils@^2.0.0", "@splunk/splunk-utils@^2.2.4", "@splunk/splunk-utils@^2.3.1", "@splunk/splunk-utils@^2.3.2":
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/@splunk/splunk-utils/-/splunk-utils-2.3.4.tgz#0c86aba8c0c18ce341f04d2d7b38584cfa52befc"
   integrity sha512-Bdty5Xd5HmIWKm87Ym6HiD1pzMJ5dd86+ISseoP9tyRXgXr1hXYStZO5+kEqDNbeqQG3LPynDzsvf0tb/0gsTw==
@@ -1337,7 +1357,7 @@
     "@splunk/ui-utils" "^1.2.1"
     uuid-v4 "^0.1.0"
 
-"@splunk/visualization-encoding-parsers@26.1.0":
+"@splunk/visualization-encoding-parsers@26.1.0", "@splunk/visualization-encoding-parsers@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding-parsers/-/visualization-encoding-parsers-26.1.0.tgz#eecb682aaab2921ff394f794675007861faf6f6a"
   integrity sha512-8TWQuGLtRN3hrkU+805rao491HHb6sNeR6FdS6K7ge74VagMyhf0aSVXgYkpy28MEDtjAINfHHz/A9Y6pa3Cxw==
@@ -1354,16 +1374,6 @@
   dependencies:
     "@babel/runtime" "^7.13.0"
     "@splunk/visualizations-shared" "^25.11.0"
-    chroma-js "^2.0.0"
-    lodash "^4.17.21"
-
-"@splunk/visualization-encoding-parsers@^26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding-parsers/-/visualization-encoding-parsers-26.1.0.tgz#eecb682aaab2921ff394f794675007861faf6f6a"
-  integrity sha512-8TWQuGLtRN3hrkU+805rao491HHb6sNeR6FdS6K7ge74VagMyhf0aSVXgYkpy28MEDtjAINfHHz/A9Y6pa3Cxw==
-  dependencies:
-    "@babel/runtime" "^7.13.0"
-    "@splunk/visualizations-shared" "^26.1.0"
     chroma-js "^2.0.0"
     lodash "^4.17.21"
 
