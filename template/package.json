@@ -5,7 +5,7 @@
     "license": "UNLICENSED",
     "dependencies": {
         "eslint-config-next": "^14.1.0",
-        "@babel/runtime": "^7.23.6",
+        "@babel/runtime": "^7.24.5",
         "@splunk/charting-bundle": "25.11.0",
         "@splunk/dashboard-context": "26.3.0",
         "@splunk/dashboard-core": "26.3.0",
