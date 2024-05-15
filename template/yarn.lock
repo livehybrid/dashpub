@@ -1349,19 +1349,7 @@
     chroma-js "^2.0.0"
     lodash "^4.17.21"
 
-"@splunk/visualization-encoding@25.11.0", "@splunk/visualization-encoding@^25.11.0":
-  version "25.11.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-25.11.0.tgz#18e156ce1e8b9b84875e75cbf9b2ea75af1586c4"
-  integrity sha512-HhfBpoWv0ACQAtq4yjhOIv4PxkKl0r8cmPgpyhORNbIC+bjlm7F27kxipUJI+2ZNajCB6jPCl9C5+T0p8TjH/w==
-  dependencies:
-    "@splunk/moment" "^0.6.1"
-    "@splunk/visualizations-shared" "^25.11.0"
-    chroma-js "^2.0.0"
-    lodash "^4.17.21"
-    nearley "^2.19.1"
-    numbro "2.4.0"
-
-"@splunk/visualization-encoding@^26.1.0":
+"@splunk/visualization-encoding@26.1.0", "@splunk/visualization-encoding@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-26.1.0.tgz#64e977aa940e1728614e941e6bda217f17b1fa5d"
   integrity sha512-qL+FD1Pmej6xdpKsM8N/7YfNXHgACN3TuA8ra1fxdQdaatoxvnEhSfZoBWAFLGHWe4uRRfwaMS6COQiZz5sblQ==
@@ -1372,6 +1360,18 @@
     lodash "^4.17.21"
     nearley "^2.19.1"
     numbro "2.5.0"
+
+"@splunk/visualization-encoding@^25.11.0":
+  version "25.11.0"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-25.11.0.tgz#18e156ce1e8b9b84875e75cbf9b2ea75af1586c4"
+  integrity sha512-HhfBpoWv0ACQAtq4yjhOIv4PxkKl0r8cmPgpyhORNbIC+bjlm7F27kxipUJI+2ZNajCB6jPCl9C5+T0p8TjH/w==
+  dependencies:
+    "@splunk/moment" "^0.6.1"
+    "@splunk/visualizations-shared" "^25.11.0"
+    chroma-js "^2.0.0"
+    lodash "^4.17.21"
+    nearley "^2.19.1"
+    numbro "2.4.0"
 
 "@splunk/visualization-icons@26.1.0", "@splunk/visualization-icons@^26.1.0":
   version "26.1.0"
