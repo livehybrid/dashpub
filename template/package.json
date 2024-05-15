@@ -7,7 +7,7 @@
         "eslint-config-next": "^14.1.0",
         "@babel/runtime": "^7.24.5",
         "@splunk/charting-bundle": "26.1.0",
-        "@splunk/dashboard-context": "26.3.0",
+        "@splunk/dashboard-context": "26.6.3",
         "@splunk/dashboard-core": "26.3.0",
         "@splunk/dashboard-definition": "27.0.0",
         "@splunk/dashboard-event-handlers": "27.0.0",
