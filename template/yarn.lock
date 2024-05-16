@@ -845,26 +845,26 @@
     "@splunk/ui-utils" "^1.4.0"
     prop-types "^15.7.2"
 
-"@splunk/dashboard-inputs@26.3.0":
-  version "26.3.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-inputs/-/dashboard-inputs-26.3.0.tgz#6e995ba123e49da541b17839a9fa44f924d8b9f4"
-  integrity sha512-C1q3qmUh1GcdaJxrmvyTRS+5kU2QpyOh4DATd3IXF2socRyrw1ABYF40HIydKLgTLYTCJSlS+u86ZrBSrFpqkg==
+"@splunk/dashboard-inputs@26.6.3", "@splunk/dashboard-inputs@^26.3.0":
+  version "26.6.3"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-inputs/-/dashboard-inputs-26.6.3.tgz#a4cd53da8b3e352cfbef90fb4febafca6f9104dc"
+  integrity sha512-HqkZlxvVRRgBJC8WMXwGhoURqHeBTUKI/d0iJOgx3YX4E1JHhv0LUXDgzqzVKGF3DOlGF1kFcf5eou+BZnUoag==
   dependencies:
-    "@splunk/dashboard-icons" "^26.3.0"
-    "@splunk/dashboard-telemetry" "^26.3.0"
-    "@splunk/dashboard-ui" "^26.3.0"
-    "@splunk/dashboard-utils" "^26.3.0"
+    "@splunk/dashboard-icons" "^26.6.3"
+    "@splunk/dashboard-telemetry" "^26.6.3"
+    "@splunk/dashboard-ui" "^26.6.3"
+    "@splunk/dashboard-utils" "^26.6.3"
     "@splunk/moment" "^0.6.1"
-    "@splunk/react-icons" "^4.0.1"
+    "@splunk/react-icons" "^4.2.0"
     "@splunk/react-time-range" "^9.2.0"
-    "@splunk/react-ui" "^4.22.0"
+    "@splunk/react-ui" "^4.23.0"
     "@splunk/splunk-utils" "^2.3.2"
-    "@splunk/themes" "^0.16.3"
+    "@splunk/themes" "^0.16.4"
     "@splunk/time-range-utils" "^3.2.0"
     "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-encoding" "^25.11.0"
-    "@splunk/visualization-encoding-parsers" "^25.11.0"
-    "@splunk/visualizations-shared" "^25.11.0"
+    "@splunk/visualization-encoding" "^25.13.1"
+    "@splunk/visualization-encoding-parsers" "^25.13.1"
+    "@splunk/visualizations-shared" "^25.13.1"
     lodash "^4.17.21"
     memoize-one "^5.2.1"
     prop-types "^15.7.2"
@@ -1467,7 +1467,7 @@
     nearley "^2.19.1"
     numbro "2.5.0"
 
-"@splunk/visualization-encoding@^25.11.0", "@splunk/visualization-encoding@^25.13.1":
+"@splunk/visualization-encoding@^25.13.1":
   version "25.13.1"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-25.13.1.tgz#adcbcd7468d4dca2ddbee569e6d7bd0a25df0076"
   integrity sha512-sFg5EDOWuIarSCXxKis/CM64mm/6G067w8lT7FcG0mvNrBo2ocCBXPv7SWcZFwJmb1DNP1V9HUrgYTtjx+/gcg==
