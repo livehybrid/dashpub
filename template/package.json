@@ -4,7 +4,6 @@
     "version": "1.0.0",
     "license": "UNLICENSED",
     "dependencies": {
-        "eslint-config-next": "^14.1.0",
         "@babel/runtime": "^7.24.5",
         "@splunk/charting-bundle": "26.1.0",
         "@splunk/dashboard-context": "26.6.3",
@@ -13,8 +12,8 @@
         "@splunk/dashboard-event-handlers": "27.0.0",
         "@splunk/dashboard-icons": "27.0.0",
         "@splunk/dashboard-inputs": "26.6.3",
-        "@splunk/dashboard-presets": "26.6.3",
         "@splunk/dashboard-layouts": "26.6.3",
+        "@splunk/dashboard-presets": "26.6.3",
         "@splunk/dashboard-telemetry": "27.0.0",
         "@splunk/dashboard-ui": "26.3.0",
         "@splunk/dashboard-utils": "27.0.0",
@@ -32,23 +31,26 @@
         "@splunk/visualizations": "26.1.0",
         "@splunk/visualizations-shared": "26.1.0",
         "bootstrap": "^5.3.3",
+        "cookies-next": "^4.1.1",
         "crypto-js": "^4.2.0",
+        "d3-color": "3.1.0",
         "decode-uri-component": "0.4.1",
+        "eslint-config-next": "^14.1.0",
         "fast-text-encoding": "^1.0.6",
+        "jsonwebtoken": "^9.0.2",
         "next": "^12",
+        "postcss": "8.4.31",
         "query-string": "^9.0.0",
         "querystring": "^0.2.0",
         "react": "16.14.0",
         "react-bootstrap-icons": "^1.11.4",
         "react-dom": "16.14.0",
         "styled-components": "5.3.11",
-        "jsonwebtoken": "^9.0.2",
-        "cookies-next": "^4.1.1",
         "typescript": "^5.3.3"
     },
     "devDependencies": {
-        "eslint": "^8.57.0",
-        "@babel/plugin-proposal-private-property-in-object": "*"
+        "@babel/plugin-proposal-private-property-in-object": "*",
+        "eslint": "^8.57.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "27.0.0",
@@ -76,9 +78,12 @@
         "env": {
             "es6": true
         },
-        "ignorePatterns": ["src/node_modules"],
+        "ignorePatterns": [
+            "src/node_modules"
+        ],
         "extends": [
-            "eslint:recommended", "next"
+            "eslint:recommended",
+            "next"
         ],
         "rules": {
             "react/display-name": "warn",
