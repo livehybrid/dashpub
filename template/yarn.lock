@@ -728,7 +728,7 @@
   resolved "https://registry.yarnpkg.com/@splunk/charting-bundle/-/charting-bundle-26.1.0.tgz#f982fbc34d5119f20cabfbccffe1d632cd482b87"
   integrity sha512-nxhOFCM0SermFORq+6jOkOFyG8JJzIikkjUIW/U6N5f+UoQ65BSY1dp3jxfKj+qw+sfyJHFy5Gy09oG0SWxTHw==
 
-"@splunk/charting-bundle@^25.11.0", "@splunk/charting-bundle@^25.13.1":
+"@splunk/charting-bundle@^25.13.1":
   version "25.13.1"
   resolved "https://registry.yarnpkg.com/@splunk/charting-bundle/-/charting-bundle-25.13.1.tgz#785bd9485d14a6761377b72e2d0cdeafee2491ce"
   integrity sha512-DBXvcGDM5zPYbelhMMn11VVb27L/NybErIkhJmK6wJioYohI3qqqXrE4o2SdPawXrFAnMUAYPdLb0Vi+ASgGxA==
@@ -818,12 +818,12 @@
   dependencies:
     "@splunk/dashboard-utils" "^27.0.0"
 
-"@splunk/dashboard-event-handlers@^26.3.0":
-  version "26.3.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-event-handlers/-/dashboard-event-handlers-26.3.0.tgz#6d3b66580b3cd9ca3b2914ec42598d380af26e98"
-  integrity sha512-qBZBNkA//9bKI9bVGLMNYvCEiKvnTJH4AXLl18SP8wH6VqHIBeLKdenCyVgujMxMEKR+SkH2atZ0V+P1yM+Ogw==
+"@splunk/dashboard-event-handlers@^26.6.3":
+  version "26.6.3"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-event-handlers/-/dashboard-event-handlers-26.6.3.tgz#be0ab5d76e3f2d780064759c02a4d5e95316313a"
+  integrity sha512-n9WlL/7v3iu6jnereIKT9hjydLaGwcFhndx2wualfSmPynymDCZgUZub+2o13LK6nOjETAgNUYb28gNLE3B+Lg==
   dependencies:
-    "@splunk/dashboard-utils" "^26.3.0"
+    "@splunk/dashboard-utils" "^26.6.3"
 
 "@splunk/dashboard-icons@27.0.0":
   version "27.0.0"
@@ -845,7 +845,7 @@
     "@splunk/ui-utils" "^1.4.0"
     prop-types "^15.7.2"
 
-"@splunk/dashboard-inputs@26.3.0", "@splunk/dashboard-inputs@^26.3.0":
+"@splunk/dashboard-inputs@26.3.0":
   version "26.3.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-inputs/-/dashboard-inputs-26.3.0.tgz#6e995ba123e49da541b17839a9fa44f924d8b9f4"
   integrity sha512-C1q3qmUh1GcdaJxrmvyTRS+5kU2QpyOh4DATd3IXF2socRyrw1ABYF40HIydKLgTLYTCJSlS+u86ZrBSrFpqkg==
@@ -865,6 +865,30 @@
     "@splunk/visualization-encoding" "^25.11.0"
     "@splunk/visualization-encoding-parsers" "^25.11.0"
     "@splunk/visualizations-shared" "^25.11.0"
+    lodash "^4.17.21"
+    memoize-one "^5.2.1"
+    prop-types "^15.7.2"
+
+"@splunk/dashboard-inputs@^26.6.3":
+  version "26.6.3"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-inputs/-/dashboard-inputs-26.6.3.tgz#a4cd53da8b3e352cfbef90fb4febafca6f9104dc"
+  integrity sha512-HqkZlxvVRRgBJC8WMXwGhoURqHeBTUKI/d0iJOgx3YX4E1JHhv0LUXDgzqzVKGF3DOlGF1kFcf5eou+BZnUoag==
+  dependencies:
+    "@splunk/dashboard-icons" "^26.6.3"
+    "@splunk/dashboard-telemetry" "^26.6.3"
+    "@splunk/dashboard-ui" "^26.6.3"
+    "@splunk/dashboard-utils" "^26.6.3"
+    "@splunk/moment" "^0.6.1"
+    "@splunk/react-icons" "^4.2.0"
+    "@splunk/react-time-range" "^9.2.0"
+    "@splunk/react-ui" "^4.23.0"
+    "@splunk/splunk-utils" "^2.3.2"
+    "@splunk/themes" "^0.16.4"
+    "@splunk/time-range-utils" "^3.2.0"
+    "@splunk/ui-utils" "^1.4.0"
+    "@splunk/visualization-encoding" "^25.13.1"
+    "@splunk/visualization-encoding-parsers" "^25.13.1"
+    "@splunk/visualizations-shared" "^25.13.1"
     lodash "^4.17.21"
     memoize-one "^5.2.1"
     prop-types "^15.7.2"
@@ -892,23 +916,23 @@
     prop-types "^15.7.2"
     rxjs "^5.5.12"
 
-"@splunk/dashboard-presets@26.3.0":
-  version "26.3.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-presets/-/dashboard-presets-26.3.0.tgz#772f616ea923534b937fef4377452f03ef2b47ac"
-  integrity sha512-DR9qwxZZ+YEG5GDDgjRlhnPco7uzJnqUnORxRyMXJuoOm9/mOqbXCxkKGlJQtu02PPlMNV3Jagi9+k2swsZlMA==
+"@splunk/dashboard-presets@26.6.3":
+  version "26.6.3"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-presets/-/dashboard-presets-26.6.3.tgz#25259138f8f0ecd542f18b730282a44dabc1d9e0"
+  integrity sha512-aS9wmj1HD3FIgVAyPw4xFbBhDhd75OBMKPcI/3zLHGWySc2yaRYNITYs3X0mNV8MSyNF1fjugSpIDPq4lQzlew==
   dependencies:
-    "@splunk/dashboard-event-handlers" "^26.3.0"
-    "@splunk/dashboard-icons" "^26.3.0"
-    "@splunk/dashboard-inputs" "^26.3.0"
-    "@splunk/dashboard-layouts" "^26.3.0"
-    "@splunk/dashboard-ui" "^26.3.0"
-    "@splunk/dashboard-utils" "^26.3.0"
-    "@splunk/dashboard-visualizations" "^25.11.0"
-    "@splunk/datasources" "^26.3.0"
-    "@splunk/react-icons" "^4.0.1"
+    "@splunk/dashboard-event-handlers" "^26.6.3"
+    "@splunk/dashboard-icons" "^26.6.3"
+    "@splunk/dashboard-inputs" "^26.6.3"
+    "@splunk/dashboard-layouts" "^26.6.3"
+    "@splunk/dashboard-ui" "^26.6.3"
+    "@splunk/dashboard-utils" "^26.6.3"
+    "@splunk/dashboard-visualizations" "^25.13.1"
+    "@splunk/datasources" "^26.6.3"
+    "@splunk/react-icons" "^4.2.0"
     "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-icons" "^25.11.0"
-    "@splunk/visualizations" "^25.11.0"
+    "@splunk/visualization-icons" "^25.13.1"
+    "@splunk/visualizations" "^25.13.1"
     lodash "^4.17.21"
 
 "@splunk/dashboard-search@^26.3.0", "@splunk/dashboard-search@^26.6.3":
@@ -1083,26 +1107,26 @@
     react-event-listener "^0.6.4"
     xmlserializer "^0.6.1"
 
-"@splunk/dashboard-visualizations@^25.11.0":
-  version "25.11.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-visualizations/-/dashboard-visualizations-25.11.0.tgz#ef426f7c3aa51475a92ac39ad6911ec94ec03c97"
-  integrity sha512-A2WTAibxJbGMp1ZverhbvR+bR1fNDILPHZ29HqM673VeSnpudcNJb7ESJ7AXmEi5Hi615zAbKPUbUWNxxrZmFQ==
+"@splunk/dashboard-visualizations@^25.13.1":
+  version "25.13.1"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-visualizations/-/dashboard-visualizations-25.13.1.tgz#9297004592feb3d51a8150ee658679d133549153"
+  integrity sha512-/CJWh1Lp4LXqbzEUcCVq7qfJ8PaUXeufauB9N43C9N7QU12uu3UDV3Uz3IbD+JsLWormNnP32Avqu5uKji3+Nw==
   dependencies:
     "@babel/runtime" "^7.13.0"
-    "@splunk/charting-bundle" "^25.11.0"
+    "@splunk/charting-bundle" "^25.13.1"
     "@splunk/moment" "^0.6.0"
     "@splunk/react-icons" "^4.0.1"
     "@splunk/react-sparkline" "^0.6.2"
     "@splunk/react-ui" "^4.17.1"
-    "@splunk/react-visualizations" "^25.11.0"
+    "@splunk/react-visualizations" "^25.13.1"
     "@splunk/themes" "^0.16.3"
     "@splunk/ui-utils" "^1.2.1"
-    "@splunk/visualization-color-palettes" "^25.11.0"
-    "@splunk/visualization-encoding-parsers" "^25.11.0"
-    "@splunk/visualization-icons" "^25.11.0"
-    "@splunk/visualization-themes" "^25.11.0"
-    "@splunk/visualizations" "^25.11.0"
-    "@splunk/visualizations-shared" "^25.11.0"
+    "@splunk/visualization-color-palettes" "^25.13.1"
+    "@splunk/visualization-encoding-parsers" "^25.13.1"
+    "@splunk/visualization-icons" "^25.13.1"
+    "@splunk/visualization-themes" "^25.13.1"
+    "@splunk/visualizations" "^25.13.1"
+    "@splunk/visualizations-shared" "^25.13.1"
     chroma-js "^2.0.0"
     lodash "^4.17.21"
     numeral "^2.0.6"
@@ -1274,19 +1298,19 @@
     tinycolor2 "^1.4.1"
     use-typed-event-listener "^3.0.0"
 
-"@splunk/react-visualizations@^25.11.0":
-  version "25.11.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-visualizations/-/react-visualizations-25.11.0.tgz#8fa09d113f38053ae4e9ec4cd66c7d961a22d574"
-  integrity sha512-fa96NoqIx6A6d4Ag+sxy5rMuIO3f+rMhv8K4RfhSyG3DvrKTNa14bSNO48ehCsRGV6ZEP8nl66mCdigBlZ3Kog==
+"@splunk/react-visualizations@^25.13.1":
+  version "25.13.1"
+  resolved "https://registry.yarnpkg.com/@splunk/react-visualizations/-/react-visualizations-25.13.1.tgz#d61265566db64cbd90743b68fbd9e3fbb0afa1b7"
+  integrity sha512-p2Ox6+8MPy/Sudw/AQfAti7tCgbAOGyQKF34xQSiqnDERhMUUTv5zH2nuLAMsMFpZIKJbBW332fM8AeUIynCKg==
   dependencies:
     "@babel/runtime" "^7.13.0"
-    "@splunk/charting-bundle" "^25.11.0"
+    "@splunk/charting-bundle" "^25.13.1"
     "@splunk/moment" "^0.6.0"
     "@splunk/ui-utils" "^1.2.1"
-    "@splunk/visualization-color-palettes" "^25.11.0"
-    "@splunk/visualization-themes" "^25.11.0"
-    "@splunk/visualizations" "^25.11.0"
-    "@splunk/visualizations-shared" "^25.11.0"
+    "@splunk/visualization-color-palettes" "^25.13.1"
+    "@splunk/visualization-themes" "^25.13.1"
+    "@splunk/visualizations" "^25.13.1"
+    "@splunk/visualizations-shared" "^25.13.1"
     "@turf/bbox-clip" "^6.0.3"
     "@turf/helpers" "^6.1.4"
     chroma-js "^2.0.0"
@@ -1503,7 +1527,7 @@
     "@babel/runtime" "^7.13.0"
     "@splunk/themes" "^0.18.0"
 
-"@splunk/visualization-themes@^25.11.0", "@splunk/visualization-themes@^25.13.1":
+"@splunk/visualization-themes@^25.13.1":
   version "25.13.1"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-themes/-/visualization-themes-25.13.1.tgz#e1d7d18f0969b8943267e5874e5d48b8112bfcd4"
   integrity sha512-d2nRDvgDgn30GkQf+/kNqstfFpjquJfUtUsArxMH12TPdzJzEaU6rgnl+WkojykIQJ78c8lnTQx5OPLiFBOeUA==
