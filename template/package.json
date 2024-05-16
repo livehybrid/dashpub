@@ -39,7 +39,7 @@
         "fast-text-encoding": "^1.0.6",
         "jsonwebtoken": "^9.0.2",
         "next": "^12",
-        "postcss": "8.4.31",
+        "postcss": "8.4.38",
         "query-string": "^9.0.0",
         "querystring": "^0.2.0",
         "react": "16.14.0",
