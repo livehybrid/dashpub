@@ -16,7 +16,6 @@ limitations under the License.
 
 const { cli } = require('cli-ux');
 const chalk = require('chalk');
-const execa = require('execa');
 
 class ExecError extends Error {
     constructor(message, code, stdout, stderr) {
@@ -35,6 +34,9 @@ class Secret {
 
 const exec = async (cmd, args, options) => {
     try {
+        // Dynamic import of execa
+        const { execa } = await import('execa');
+        
         const rawArgs = args.map(a => (a instanceof Secret ? a.value : a));
         const displayArgs = args.map(a => (a instanceof Secret ? '*******' : a));
         cli.action.start(`${chalk.yellow('$')} ${cmd} ${displayArgs.join(' ')}`);
