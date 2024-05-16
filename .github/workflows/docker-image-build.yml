@@ -12,6 +12,7 @@ jobs:
       packages: write
       contents: read
       attestations: write
+      id-token: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -48,6 +49,7 @@ jobs:
   scan:
     name: Trivy Scan
     runs-on: ubuntu-20.04
+    needs: push_to_registry
     steps:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
