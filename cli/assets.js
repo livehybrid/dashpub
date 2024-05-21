@@ -92,12 +92,37 @@ async function storeImage(data, filename, {name = 'img', projectDir}) {
     return filename;
 }
 
+async function streamToBuffer(readableStream) {
+    const reader = readableStream.getReader();
+    const chunks = [];
+  
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+  
+    return Buffer.concat(chunks);
+  }
+  
+
 async function downloadImage(src, assetType, splunkdInfo, projectDir) {
     if (!src) {
         return src;
     }
     if (src in seenImages) {
         return seenImages[src];
+    }
+    if (src.startsWith("<svg")) {
+        const filename = await nameAndStoreImage(src, "image/svg+xml" , { projectDir });
+        // If the DASHPUB_FQDN env is set and its an SVG then return the link with FQDN prepended
+        if (process.env.DASHPUB_FQDN) {
+            var newUri = `${process.env.DASHPUB_FQDN}/assets/${filename}`;
+        } else {
+            var newUri = `/assets/${filename}`;
+        }
+        seenImages[src] = newUri;
+        return newUri;
     }
     const [type, id] = src.split('://');
 
@@ -143,8 +168,10 @@ async function downloadImage(src, assetType, splunkdInfo, projectDir) {
             splunkdInfo,
             returnJson=false
         );
+        const data = await streamToBuffer(imgData.body);
+
         const orig_filename = type.split("/").pop()
-        const filename = await storeImage(await imgData.buffer(), orig_filename, { name: id, projectDir });
+        const filename = await storeImage(data, orig_filename, { name: id, projectDir });
         // If the DASHPUB_FQDN env is set and its an SVG then return the link with FQDN prepended
         if (process.env.DASHPUB_FQDN) {
             var newUri = `${process.env.DASHPUB_FQDN}/assets/${filename}`;
