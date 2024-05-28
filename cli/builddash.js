@@ -83,12 +83,18 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
     }
 
     if (newDash.layout.options.backgroundImage) {
-        newDash.layout.options.backgroundImage.src = await downloadImage(
-            newDash.layout.options.backgroundImage.src,
-            'images',
-            splunkdInfo,
-            projectFolder
-        );
+        if (viz.options.src.match(/\$.*\$/g) )
+             console.log(`Skipping image download due to token ${viz.options.src}`)
+        else if (viz.options.src.startsWith("data:image")) {
+            console.log("Skipping because image is embedded as string")
+        } else {
+            newDash.layout.options.backgroundImage.src = await downloadImage(
+                newDash.layout.options.backgroundImage.src,
+                'images',
+                splunkdInfo,
+                projectFolder
+            );
+       }
     }
 
     const dir = path.join(projectFolder, 'src/dashboards', targetName);
