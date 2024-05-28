@@ -50,6 +50,10 @@ Next steps:
 
 async function findCustomVizJsFilesInDirectory() {
     const dirPath = process.env.DASHPUB_CUSTOM_VIZ_PATH;
+    if (!dirPath) {
+        console.debug("Environment variable DASHPUB_CUSTOM_VIZ_PATH is not set.");
+        return [];
+    }
     try {
         const files = await fs.readdir(dirPath);
         return files.filter(file => file.endsWith('.jsx'));
