@@ -106,7 +106,6 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
 }
 
 async function generate(app, dashboards, splunkdInfo, projectFolder) {
-    console.log(`Generating ${dashboards.length} dashboards...`);
     // cleanup
     await remove(path.join(projectFolder, 'public/assets'));
     await remove(path.join(projectFolder, 'src/pages/api/data/_datasources.json'));
@@ -121,6 +120,7 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
 
     // If older-style array then convert to object
     dashboards = Array.isArray(dashboards) ? dashboards.reduce((a, v) => ({ ...a, [v]: {}}), {}) : dashboards
+    console.log(`Generating ${dashboards.length} dashboards...`);
 
     for (const dashboard in dashboards) {
         const targetName = dashboard;
