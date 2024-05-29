@@ -846,22 +846,7 @@
     resize-observer-polyfill "^1.5.1"
     tinycolor2 "^1.4.1"
 
-"@splunk/dashboard-utils@27.0.0":
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.0.0.tgz#52082feb724f5e7c239aca258698a722b5a1e482"
-  integrity sha512-l7Ow/shgDUFou+Sn2LC6BYZ9XMAtguANSTCnOnLmHHcv4KiJU8ZGw6cvmBXaKkBROAurFoGOMK+0g4JRY/Yl+g==
-  dependencies:
-    "@splunk/moment" "^0.7.0"
-    "@splunk/splunk-utils" "^3.0.0"
-    "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-migrations" "^26.0.0"
-    ajv "^8.5.0"
-    crypto-js "^4.0.0"
-    jspdf "2.5.1"
-    lodash "^4.17.21"
-    memoize-one "^5.2.1"
-
-"@splunk/dashboard-utils@^27.0.0", "@splunk/dashboard-utils@^27.1.0":
+"@splunk/dashboard-utils@27.1.0", "@splunk/dashboard-utils@^27.0.0", "@splunk/dashboard-utils@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.1.0.tgz#0ed6f2c66fcdb55176bae28a2b6d16ae02eaa0f3"
   integrity sha512-KA4w62arybEYVz0XXW5iI4CTAEAHi6xclRi9Qi6gQ7CfYxryyUqF87mu3ZFSN5hU/5Ra+btzVhbLRD6dAGo2MA==
@@ -1203,7 +1188,7 @@
     "@splunk/react-icons" "^4.0.1"
     "@splunk/ui-utils" "^1.2.1"
 
-"@splunk/visualization-migrations@^26.0.0", "@splunk/visualization-migrations@^26.1.0":
+"@splunk/visualization-migrations@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-migrations/-/visualization-migrations-26.1.0.tgz#776c5d8030813a5761c432124d4a40235e1ab1b6"
   integrity sha512-iiejioyT3bPt3GIbPYpaFvRLNMwtABlTsqgqBQUnZM/ftjrcUfsIFGOwC+Ufnp6FWqxE8Xu6Kqlz2nSviAFE2w==
