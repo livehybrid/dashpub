@@ -851,33 +851,7 @@
     "@splunk/dashboard-utils" "^27.1.0"
     lodash "^4.17.21"
 
-"@splunk/dashboard-ui@27.0.0":
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-ui/-/dashboard-ui-27.0.0.tgz#5a5fdf5164732604c858123feb15cfde91d00ade"
-  integrity sha512-6F7FUrVvJ+TVpmjk87iXfWMAPJd9MwDlY1KudrvXa9HA5rrhPMQXtWmv2uAuvGLEDYBcREsWmuU3hL52OSzFxg==
-  dependencies:
-    "@splunk/dashboard-definition" "^27.0.0"
-    "@splunk/dashboard-icons" "^27.0.0"
-    "@splunk/dashboard-telemetry" "^27.0.0"
-    "@splunk/dashboard-utils" "^27.0.0"
-    "@splunk/datasource-utils" "^27.0.0"
-    "@splunk/moment" "^0.7.0"
-    "@splunk/react-icons" "^4.4.0"
-    "@splunk/react-search" "^5.0.0"
-    "@splunk/react-ui" "^4.28.2"
-    "@splunk/splunk-utils" "^3.0.0"
-    "@splunk/themes" "^0.17.0"
-    "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-icons" "^26.0.0"
-    "@splunk/visualizations-shared" "^26.0.0"
-    hoist-non-react-statics "^3.3.2"
-    lodash "^4.17.21"
-    memoize-one "^5.2.1"
-    prop-types "^15.7.2"
-    resize-observer-polyfill "^1.5.1"
-    tinycolor2 "^1.4.1"
-
-"@splunk/dashboard-ui@^27.0.0", "@splunk/dashboard-ui@^27.1.0":
+"@splunk/dashboard-ui@27.1.0", "@splunk/dashboard-ui@^27.0.0", "@splunk/dashboard-ui@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-ui/-/dashboard-ui-27.1.0.tgz#803cfecb93e862d76459b1fce2b879a5880a3e40"
   integrity sha512-naeRHO0giW7zL67XYl64SGZr06LzD5H31JOGRWbPwfdblEmt9UQUeaixZAV9ZpU/zpWkKTATFwYdl26G1RH8aw==
