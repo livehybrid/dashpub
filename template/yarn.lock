@@ -690,20 +690,7 @@
     react-full-screen "^1.0.2"
     rxjs "^5.5.12"
 
-"@splunk/dashboard-definition@27.0.0":
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-definition/-/dashboard-definition-27.0.0.tgz#f98a04f864069d6276db307812bb018c6235706e"
-  integrity sha512-wNv4FE6o6w5jK8Qb/UJTodWnT/trTbabCQAcQgfaLIjyrqApRD0KTa5ozAVs4Ad0Lk48M4YrHZNsvqUtJ1uetA==
-  dependencies:
-    "@splunk/dashboard-utils" "^27.0.0"
-    "@splunk/dashboard-validation" "^27.0.0"
-    "@splunk/ui-utils" "^1.4.0"
-    ajv "^8.5.0"
-    fast-json-patch "^3.1.1"
-    hash-it "^5.0.0"
-    lodash "^4.17.21"
-
-"@splunk/dashboard-definition@^27.0.0", "@splunk/dashboard-definition@^27.1.0":
+"@splunk/dashboard-definition@27.1.0", "@splunk/dashboard-definition@^27.0.0", "@splunk/dashboard-definition@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-definition/-/dashboard-definition-27.1.0.tgz#9e12b93b5da57b601f5bb7fcec39ef87e043f63b"
   integrity sha512-D3jk5q8zjq1ypXP+rvoyMRZvA1Ge8FweJGh20zz91Yvj7cKEwvAxWS6Xlo72c0uq7YfWtWQKadijJ/M9PUHfYg==
@@ -874,15 +861,7 @@
     lodash "^4.17.21"
     memoize-one "^5.2.1"
 
-"@splunk/dashboard-validation@^27.0.0":
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-validation/-/dashboard-validation-27.0.0.tgz#7d4864c39b919a6b4dea4f685d00922494cf35f6"
-  integrity sha512-4JU+KCm9zkauVeb+UkSXEIPkT/fhLgkdB9J7XtHrgFehGsJcStGSUpgXvCjJhNwLyMXjW+ke+YTxzec6tFL4OA==
-  dependencies:
-    "@splunk/ui-utils" "^1.4.0"
-    ajv "^8.5.0"
-
-"@splunk/dashboard-validation@^27.1.0":
+"@splunk/dashboard-validation@^27.0.0", "@splunk/dashboard-validation@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-validation/-/dashboard-validation-27.1.0.tgz#31b9f05a7d4eb0143be9ae2be80e82e78fdbb239"
   integrity sha512-TP6WH3+zMt0+19H1wzA7CVT53ftOZOHZbqJBjYrceAKg39BtahNCA9kwWcu0m8JDdJ1jsk2xqxbwYZeG8PufhQ==
