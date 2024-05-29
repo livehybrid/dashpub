@@ -7,7 +7,7 @@
         "@babel/runtime": "^7.24.6",
         "@splunk/charting-bundle": "26.1.0",
         "@splunk/dashboard-context": "27.1.0",
-        "@splunk/dashboard-core": "27.0.0",
+        "@splunk/dashboard-core": "27.1.0",
         "@splunk/dashboard-definition": "27.1.0",
         "@splunk/dashboard-event-handlers": "27.0.0",
         "@splunk/dashboard-icons": "27.1.0",
