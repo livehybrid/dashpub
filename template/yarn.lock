@@ -727,31 +727,7 @@
     "@splunk/ui-utils" "^1.4.0"
     prop-types "^15.7.2"
 
-"@splunk/dashboard-inputs@27.0.0":
-  version "27.0.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-inputs/-/dashboard-inputs-27.0.0.tgz#35773b6f47e823e0884e6926bbbcd0234b8f74b5"
-  integrity sha512-HvxOozHO8JyFx+o7Qvsbk2DDPTSM4edcAH0KmlwDi+Kw3qBMRqkQ6tWwPa1mmrDmoTJ5ScDDIzs7YasGweKEDQ==
-  dependencies:
-    "@splunk/dashboard-icons" "^27.0.0"
-    "@splunk/dashboard-telemetry" "^27.0.0"
-    "@splunk/dashboard-ui" "^27.0.0"
-    "@splunk/dashboard-utils" "^27.0.0"
-    "@splunk/moment" "^0.7.0"
-    "@splunk/react-icons" "^4.4.0"
-    "@splunk/react-time-range" "^9.2.0"
-    "@splunk/react-ui" "^4.28.2"
-    "@splunk/splunk-utils" "^3.0.0"
-    "@splunk/themes" "^0.17.0"
-    "@splunk/time-range-utils" "^3.2.0"
-    "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-encoding" "^26.0.0"
-    "@splunk/visualization-encoding-parsers" "^26.0.0"
-    "@splunk/visualizations-shared" "^26.0.0"
-    lodash "^4.17.21"
-    memoize-one "^5.2.1"
-    prop-types "^15.7.2"
-
-"@splunk/dashboard-inputs@^27.1.0":
+"@splunk/dashboard-inputs@27.1.0", "@splunk/dashboard-inputs@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-inputs/-/dashboard-inputs-27.1.0.tgz#88f5491ec4df3813285dac2c750a977c6a07acb1"
   integrity sha512-h2bFSwnjPXBnSA+h/iISV/7hMB6QWUtLGNc5+38hwDQwBxbXBTM28HLAY3qzVfs5Be53WQbY/MEy5F1q2yt3yA==
@@ -1214,7 +1190,7 @@
     "@splunk/ui-utils" "^1.2.1"
     uuid-v4 "^0.1.0"
 
-"@splunk/visualization-encoding-parsers@26.1.0", "@splunk/visualization-encoding-parsers@^26.0.0", "@splunk/visualization-encoding-parsers@^26.1.0":
+"@splunk/visualization-encoding-parsers@26.1.0", "@splunk/visualization-encoding-parsers@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding-parsers/-/visualization-encoding-parsers-26.1.0.tgz#eecb682aaab2921ff394f794675007861faf6f6a"
   integrity sha512-8TWQuGLtRN3hrkU+805rao491HHb6sNeR6FdS6K7ge74VagMyhf0aSVXgYkpy28MEDtjAINfHHz/A9Y6pa3Cxw==
@@ -1224,7 +1200,7 @@
     chroma-js "^2.0.0"
     lodash "^4.17.21"
 
-"@splunk/visualization-encoding@26.1.0", "@splunk/visualization-encoding@^26.0.0", "@splunk/visualization-encoding@^26.1.0":
+"@splunk/visualization-encoding@26.1.0", "@splunk/visualization-encoding@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-26.1.0.tgz#64e977aa940e1728614e941e6bda217f17b1fa5d"
   integrity sha512-qL+FD1Pmej6xdpKsM8N/7YfNXHgACN3TuA8ra1fxdQdaatoxvnEhSfZoBWAFLGHWe4uRRfwaMS6COQiZz5sblQ==
