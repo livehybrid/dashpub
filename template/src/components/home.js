@@ -21,6 +21,11 @@ import dashboardManifest from '../_dashboards.json';
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
+import Message from '@splunk/react-ui/Message';
+import Paragraph from '@splunk/react-ui/Paragraph';
+import Divider from '@splunk/react-ui/Divider';
+import Link from '@splunk/react-ui/Link';
+
 import dynamic from 'next/dynamic';
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -181,6 +186,14 @@ class Home extends Component {
         return (
             <PageWrapper>
                 <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
+                <Message appearance="fill" type="info">
+                <div>
+                    Hey! Want to learn how you can publish your own dashboards online? Head over to DEV1757 at 13:40 on Thursday 13th June in Murano 3301A to find out more!
+                    <br />
+    
+                    <Link to="https://conf.splunk.com/sessions/catalog.html?search=dev1757#/">DEV1757C - Can You Embed Splunk® Dashboard Studio Dashboards Outside of Splunk? Yes, You Can!</Link>
+                </div>
+            </Message>
                 <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags} />
                 <DashWrapper>
                     <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">
