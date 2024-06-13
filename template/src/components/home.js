@@ -187,12 +187,18 @@ class Home extends Component {
             <PageWrapper>
                 <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
                 <Message appearance="fill" type="info">
-                <div>
-                    Hey! Want to learn how you can publish your own dashboards online? Head over to DEV1757 at 13:40 on Thursday 13th June in Murano 3301A to find out more!
+                <Paragraph>
+                    Want to publish your own dashboards? Its easy! Check out the Dashpub-plus repo for more information at <Link to="https://github.com/livehybrid/dashpub-plus">https://github.com/livehybrid/dashpub-plus</Link>
+                </Paragraph>
+                <Paragraph>
+                    Check out some of the other dashpub deployments out in the wild: <br />
+                    <ul>
+                    <li><Link to="https://monitoring.splunk.digital.nhs.uk/public/bov_overview">NHS Digital - Public Overview</Link></li>
+                    <li><Link to="https://home.splunk.engineer">Splunked Home - Find them in the source=*Pavilion</Link></li>
+                    </ul>
                     <br />
-    
-                    <Link to="https://conf.splunk.com/sessions/catalog.html?search=dev1757#/">DEV1757C - Can You Embed Splunk® Dashboard Studio Dashboards Outside of Splunk? Yes, You Can!</Link>
-                </div>
+                    Need help? Get in touch via email at <Link to="mailto:dashpub@livehybrid.com">dashpub@livehybrid.com</Link>
+                </Paragraph>
             </Message>
                 <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags} />
                 <DashWrapper>
