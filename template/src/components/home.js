@@ -189,8 +189,8 @@ class Home extends Component {
                 <Message appearance="fill" type="info">
                 <Paragraph>
                     Want to publish your own dashboards? Its easy! Check out the Dashpub-plus repo for more information at <Link to="https://github.com/livehybrid/dashpub-plus">https://github.com/livehybrid/dashpub-plus</Link>
-                </Paragraph>
-                <Paragraph>
+                <br />
+                <br />
                     Check out some of the other dashpub deployments out in the wild: <br />
                     <ul>
                     <li><Link to="https://monitoring.splunk.digital.nhs.uk/public/bov_overview">NHS Digital - Public Overview</Link></li>
