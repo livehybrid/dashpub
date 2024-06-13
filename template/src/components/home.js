@@ -195,6 +195,7 @@ class Home extends Component {
                     <ul>
                     <li><Link to="https://monitoring.splunk.digital.nhs.uk/public/bov_overview">NHS Digital - Public Overview</Link></li>
                     <li><Link to="https://home.splunk.engineer">Splunked Home - Find them in the source=*Pavilion</Link></li>
+                    <li><Link to="https://santa.splunk.engineer">Santa Tracker</Link></li>
                     </ul>
                     <br />
                     Need help? Get in touch via email at <Link to="mailto:dashpub@livehybrid.com">dashpub@livehybrid.com</Link>
