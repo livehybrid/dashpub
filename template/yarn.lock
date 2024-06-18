@@ -969,7 +969,7 @@
     prop-types "^15.6.0"
     react-is "^16.10.0"
 
-"@splunk/react-icons@4.4.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.4.0":
+"@splunk/react-icons@4.4.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.4.0", "@splunk/react-icons@^4.5.0":
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.4.0.tgz#c9a5980256a2fc41b54f43b898728c1a2eb25325"
   integrity sha512-eUhkcTAksicTGt2tofcQJVxrbC4UeGg3SY6JjoO2B3Gq9aOwOcLSIicWzv+TGoHVUthUesoNO1xnvygFgBtqkw==
@@ -1017,17 +1017,17 @@
     lodash "^4.17.19"
     prop-types "^15.6.0"
 
-"@splunk/react-ui@4.31.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.28.2":
-  version "4.31.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.31.0.tgz#0c419d733529a5d3ec109f76cb7a137d33c44aad"
-  integrity sha512-k2UH+r3/DfpucJYY8cfelbU4MwoUZoBOSd1WSqJWC/75c/UHDAMYMSWMDwVrItIpkif8oyUDN/wCMFY7Yw5MTA==
+"@splunk/react-ui@4.32.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.28.2":
+  version "4.32.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.32.0.tgz#8ad95f79ca1be9d2497875db993330426281add8"
+  integrity sha512-NANDdIvG96a0VWf1Aws6//w+B3ALkMq6su49wQ+SyzNykpho/dwXc4UFWlgKgIX4pdaIBs6o8dU60x/NtCdklw==
   dependencies:
     "@dnd-kit/core" "^6.1.0"
     "@dnd-kit/modifiers" "^7.0.0"
     "@dnd-kit/sortable" "^8.0.0"
     "@dnd-kit/utilities" "^3.2.2"
-    "@splunk/react-icons" "^4.4.0"
-    "@splunk/themes" "^0.18.0"
+    "@splunk/react-icons" "^4.5.0"
+    "@splunk/themes" "^0.19.0"
     "@splunk/ui-utils" "^1.6.0"
     commonmark "^0.30.0"
     commonmark-react-renderer "^4.3.2"
@@ -1108,6 +1108,15 @@
   version "0.18.0"
   resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.18.0.tgz#896d1d7b2f62140598b2c8d8d73f43a8a6c52d84"
   integrity sha512-NzVc3pVU/oKxmTtxb9YKRTBsn1JEh76yWkPf390lRsLlVwS4eUKh/WCUD4xkzx6aUEA/e6XhhQ7oj/Ye6Pz6VA==
+  dependencies:
+    color-blend "^2.0.9"
+    lodash "^4.17.14"
+    tinycolor2 "^1.4.1"
+
+"@splunk/themes@^0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.19.0.tgz#92fd42c2e7f2b76817a49f687918b3aa99b0fc45"
+  integrity sha512-iAId2Vc2YHphuYXDadi+Ynm+mG4NVVCP1pkYpvaXrEOtLXiOsrWOq0IXdY3dqlpAlTpPPPKz8DoZuCUdcHgVRA==
   dependencies:
     color-blend "^2.0.9"
     lodash "^4.17.14"
