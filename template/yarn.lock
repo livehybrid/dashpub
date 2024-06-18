@@ -427,10 +427,10 @@
   resolved "https://registry.yarnpkg.com/@next/env/-/env-12.3.4.tgz#c787837d36fcad75d72ff8df6b57482027d64a47"
   integrity sha512-H/69Lc5Q02dq3o+dxxy5O/oNxFsZpdL6WREtOOtOM1B/weonIwDXkekr1KV5DPVPr12IHFPrMrcJQ6bgPMfn7A==
 
-"@next/eslint-plugin-next@14.2.3":
-  version "14.2.3"
-  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-14.2.3.tgz#287ad8620e7061ba01e8d3313d464db6d217b6df"
-  integrity sha512-L3oDricIIjgj1AVnRdRor21gI7mShlSwU/1ZGHmqM3LzHhXXhdkrfeNY5zif25Bi5Dd7fiJHsbhoZCHfXYvlAw==
+"@next/eslint-plugin-next@14.2.4":
+  version "14.2.4"
+  resolved "https://registry.yarnpkg.com/@next/eslint-plugin-next/-/eslint-plugin-next-14.2.4.tgz#c7f965cb76f0b454e726ef0f69157c4fb4e28f53"
+  integrity sha512-svSFxW9f3xDaZA3idQmlFw7SusOuWTpDTAeBlO3AEPDltrraV+lqs7mAc6A27YdnpQVVIA3sODqUAAHdWhVWsA==
   dependencies:
     glob "10.3.10"
 
@@ -690,7 +690,7 @@
     react-full-screen "^1.0.2"
     rxjs "^5.5.12"
 
-"@splunk/dashboard-definition@27.1.0", "@splunk/dashboard-definition@^27.0.0", "@splunk/dashboard-definition@^27.1.0":
+"@splunk/dashboard-definition@27.1.0", "@splunk/dashboard-definition@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-definition/-/dashboard-definition-27.1.0.tgz#9e12b93b5da57b601f5bb7fcec39ef87e043f63b"
   integrity sha512-D3jk5q8zjq1ypXP+rvoyMRZvA1Ge8FweJGh20zz91Yvj7cKEwvAxWS6Xlo72c0uq7YfWtWQKadijJ/M9PUHfYg==
@@ -710,7 +710,7 @@
   dependencies:
     "@splunk/dashboard-utils" "^27.1.0"
 
-"@splunk/dashboard-icons@27.1.0", "@splunk/dashboard-icons@^27.0.0", "@splunk/dashboard-icons@^27.1.0":
+"@splunk/dashboard-icons@27.1.0", "@splunk/dashboard-icons@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-icons/-/dashboard-icons-27.1.0.tgz#6dd8722bd8d90da52a05d8c1c9f5ac52b59fc4c4"
   integrity sha512-u7S0eunGuLarsMZiN1SoGOIY5l8IdIOEkqg+3gco3dBXLFLLq/RN9sm3H+lyzg6rz3NQPfBSk8r3TfOqsb78OQ==
@@ -812,7 +812,7 @@
     lodash "^4.17.21"
     react-redux "^8.0.5"
 
-"@splunk/dashboard-telemetry@27.1.0", "@splunk/dashboard-telemetry@^27.0.0", "@splunk/dashboard-telemetry@^27.1.0":
+"@splunk/dashboard-telemetry@27.1.0", "@splunk/dashboard-telemetry@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-telemetry/-/dashboard-telemetry-27.1.0.tgz#f478a0fa8624a7affd2200188ac9816bc818d9e4"
   integrity sha512-T2GznkFfLdG7722Q+gSnshWQKfuunBZQNoVT12vIYoGw/CHPTBl2NeTOAr9/kOYBzdt3eavcSL7glwkc+/C/IQ==
@@ -820,7 +820,7 @@
     "@splunk/dashboard-utils" "^27.1.0"
     lodash "^4.17.21"
 
-"@splunk/dashboard-ui@27.1.0", "@splunk/dashboard-ui@^27.0.0", "@splunk/dashboard-ui@^27.1.0":
+"@splunk/dashboard-ui@27.1.0", "@splunk/dashboard-ui@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-ui/-/dashboard-ui-27.1.0.tgz#803cfecb93e862d76459b1fce2b879a5880a3e40"
   integrity sha512-naeRHO0giW7zL67XYl64SGZr06LzD5H31JOGRWbPwfdblEmt9UQUeaixZAV9ZpU/zpWkKTATFwYdl26G1RH8aw==
@@ -846,7 +846,7 @@
     resize-observer-polyfill "^1.5.1"
     tinycolor2 "^1.4.1"
 
-"@splunk/dashboard-utils@27.1.0", "@splunk/dashboard-utils@^27.0.0", "@splunk/dashboard-utils@^27.1.0":
+"@splunk/dashboard-utils@27.1.0", "@splunk/dashboard-utils@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.1.0.tgz#0ed6f2c66fcdb55176bae28a2b6d16ae02eaa0f3"
   integrity sha512-KA4w62arybEYVz0XXW5iI4CTAEAHi6xclRi9Qi6gQ7CfYxryyUqF87mu3ZFSN5hU/5Ra+btzVhbLRD6dAGo2MA==
@@ -895,7 +895,7 @@
     react-event-listener "^0.6.4"
     xmlserializer "^0.6.1"
 
-"@splunk/datasource-utils@27.1.0", "@splunk/datasource-utils@^26.5.0", "@splunk/datasource-utils@^27.0.0", "@splunk/datasource-utils@^27.1.0":
+"@splunk/datasource-utils@27.1.0", "@splunk/datasource-utils@^26.5.0", "@splunk/datasource-utils@^27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/datasource-utils/-/datasource-utils-27.1.0.tgz#afa57e85cffbc51347212e996412bbf1930d4eb3"
   integrity sha512-UAwpqssnARqYNs5S3QmXNUa35/ZzsVQuSTWEKBSyeadtsU555t/BXH30I4xgSgbb05R7ono0Fa35IYYlEgHI/w==
@@ -1104,15 +1104,6 @@
     lodash "^4.17.14"
     tinycolor2 "^1.4.1"
 
-"@splunk/themes@^0.17.0":
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.17.0.tgz#7cda4208df961344010e591f993ea57d401d3ca3"
-  integrity sha512-Z6xaePhdotLw2pqDaO3YAkgLRhJniDATW8Ncmct7P6nwrRm1ar6cIryM1LZHb8Tob/W4Owj6d40Zn4xmolKKPQ==
-  dependencies:
-    color-blend "^2.0.9"
-    lodash "^4.17.14"
-    tinycolor2 "^1.4.1"
-
 "@splunk/themes@^0.18.0":
   version "0.18.0"
   resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.18.0.tgz#896d1d7b2f62140598b2c8d8d73f43a8a6c52d84"
@@ -1179,7 +1170,7 @@
     nearley "^2.19.1"
     numbro "2.5.0"
 
-"@splunk/visualization-icons@26.1.0", "@splunk/visualization-icons@^26.0.0", "@splunk/visualization-icons@^26.1.0":
+"@splunk/visualization-icons@26.1.0", "@splunk/visualization-icons@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-26.1.0.tgz#ffe60daf9f59457a0d48f2d4df34f16b16bcfe70"
   integrity sha512-42D/22IxKplp2nmSn6PqhJYBy3/XV4pQWH6qgZavvfKEpHuuxP7ditDLbLdRz/1D/x/Cp56BoqgqLx3gLKNYsg==
@@ -1207,7 +1198,7 @@
     "@babel/runtime" "^7.13.0"
     "@splunk/themes" "^0.18.0"
 
-"@splunk/visualizations-shared@26.1.0", "@splunk/visualizations-shared@^26.0.0", "@splunk/visualizations-shared@^26.1.0":
+"@splunk/visualizations-shared@26.1.0", "@splunk/visualizations-shared@^26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualizations-shared/-/visualizations-shared-26.1.0.tgz#617b410be6848a6890a0eb31b174d74b8bbbbc61"
   integrity sha512-TRNEWcf9qQmA3Ew1Gpu1R2hsQjT1p2RPc2jmfjEelcfdsntfg0L03Y94lypc9skc5CJq7mnw2wqbcdNG1SfagA==
@@ -2346,12 +2337,12 @@ escape-string-regexp@^4.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
   integrity sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==
 
-eslint-config-next@^14.1.0:
-  version "14.2.3"
-  resolved "https://registry.yarnpkg.com/eslint-config-next/-/eslint-config-next-14.2.3.tgz#2fb0f7c4eccda530a4b5054438162b2303786d4f"
-  integrity sha512-ZkNztm3Q7hjqvB1rRlOX8P9E/cXRL9ajRcs8jufEtwMfTVYRqnmtnaSu57QqHyBlovMuiB8LEzfLBkh5RYV6Fg==
+eslint-config-next@^14.2.4:
+  version "14.2.4"
+  resolved "https://registry.yarnpkg.com/eslint-config-next/-/eslint-config-next-14.2.4.tgz#eb0bedfe4a894bc2aea918214bb5243ee4fa7d4b"
+  integrity sha512-Qr0wMgG9m6m4uYy2jrYJmyuNlYZzPRQq5Kvb9IDlYwn+7yq6W6sfMNFgb+9guM1KYwuIo6TIaiFhZJ6SnQ/Efw==
   dependencies:
-    "@next/eslint-plugin-next" "14.2.3"
+    "@next/eslint-plugin-next" "14.2.4"
     "@rushstack/eslint-patch" "^1.3.3"
     "@typescript-eslint/parser" "^5.4.2 || ^6.0.0 || 7.0.0 - 7.2.0"
     eslint-import-resolver-node "^0.3.6"
