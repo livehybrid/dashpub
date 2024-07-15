@@ -29,7 +29,7 @@
         "@splunk/visualization-icons": "26.1.0",
         "@splunk/visualization-themes": "26.1.2",
         "@splunk/visualizations": "26.1.2",
-        "@splunk/visualizations-shared": "26.1.0",
+        "@splunk/visualizations-shared": "26.1.2",
         "bootstrap": "^5.3.3",
         "cookies-next": "^4.2.1",
         "crypto-js": "^4.2.0",

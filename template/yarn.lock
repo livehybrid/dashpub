@@ -1232,23 +1232,7 @@
     "@babel/runtime" "^7.13.0"
     "@splunk/themes" "^0.19.0"
 
-"@splunk/visualizations-shared@26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualizations-shared/-/visualizations-shared-26.1.0.tgz#617b410be6848a6890a0eb31b174d74b8bbbbc61"
-  integrity sha512-TRNEWcf9qQmA3Ew1Gpu1R2hsQjT1p2RPc2jmfjEelcfdsntfg0L03Y94lypc9skc5CJq7mnw2wqbcdNG1SfagA==
-  dependencies:
-    "@babel/runtime" "^7.13.0"
-    "@splunk/moment" "^0.6.1"
-    "@splunk/react-icons" "^4.0.1"
-    "@splunk/react-ui" "^4.17.1"
-    "@splunk/themes" "^0.18.0"
-    "@splunk/ui-utils" "^1.2.1"
-    element-resize-detector "^1.1.14"
-    lodash "^4.17.21"
-    numeral "^2.0.6"
-    xmlserializer "^0.6.1"
-
-"@splunk/visualizations-shared@^26.1.0", "@splunk/visualizations-shared@^26.1.2":
+"@splunk/visualizations-shared@26.1.2", "@splunk/visualizations-shared@^26.1.0", "@splunk/visualizations-shared@^26.1.2":
   version "26.1.2"
   resolved "https://registry.yarnpkg.com/@splunk/visualizations-shared/-/visualizations-shared-26.1.2.tgz#430c7cad563787976e0645815a7ae429149c00fe"
   integrity sha512-x0sNT2bb1AuQ0QIqcg92zmx9BJtv2XZJ8h5wa1KPtarTb9LtYEioXUPMaBxzLbHR7Tf5wHxyOUT2h2ttc5fO7g==
