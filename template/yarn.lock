@@ -1195,16 +1195,7 @@
     nearley "^2.19.1"
     numbro "2.5.0"
 
-"@splunk/visualization-icons@26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-26.1.0.tgz#ffe60daf9f59457a0d48f2d4df34f16b16bcfe70"
-  integrity sha512-42D/22IxKplp2nmSn6PqhJYBy3/XV4pQWH6qgZavvfKEpHuuxP7ditDLbLdRz/1D/x/Cp56BoqgqLx3gLKNYsg==
-  dependencies:
-    "@babel/runtime" "^7.13.0"
-    "@splunk/react-icons" "^4.0.1"
-    "@splunk/ui-utils" "^1.2.1"
-
-"@splunk/visualization-icons@^26.1.0", "@splunk/visualization-icons@^26.1.2":
+"@splunk/visualization-icons@26.1.2", "@splunk/visualization-icons@^26.1.0", "@splunk/visualization-icons@^26.1.2":
   version "26.1.2"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-icons/-/visualization-icons-26.1.2.tgz#1ac12bb58ae7ef7616d14536474694b301aed9e0"
   integrity sha512-7oE1OH62k7cHpmnPjVmkxjlRocBtm+crKKPjL8O3/Z/OKqPZpEIQiGUnlazERqWiHTkxsViTXfr4/b4L3tZyNg==

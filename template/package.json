@@ -26,7 +26,7 @@
         "@splunk/visualization-context": "26.1.2",
         "@splunk/visualization-encoding": "26.1.0",
         "@splunk/visualization-encoding-parsers": "26.1.0",
-        "@splunk/visualization-icons": "26.1.0",
+        "@splunk/visualization-icons": "26.1.2",
         "@splunk/visualization-themes": "26.1.2",
         "@splunk/visualizations": "26.1.2",
         "@splunk/visualizations-shared": "26.1.0",
