@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "license": "UNLICENSED",
     "dependencies": {
-        "@babel/runtime": "^7.24.6",
+        "@babel/runtime": "^7.24.8",
         "@splunk/charting-bundle": "26.1.0",
         "@splunk/dashboard-context": "27.1.0",
         "@splunk/dashboard-core": "27.1.0",
