@@ -851,15 +851,15 @@
     resize-observer-polyfill "^1.5.1"
     tinycolor2 "^1.4.1"
 
-"@splunk/dashboard-utils@27.1.0", "@splunk/dashboard-utils@^27.1.0":
-  version "27.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.1.0.tgz#0ed6f2c66fcdb55176bae28a2b6d16ae02eaa0f3"
-  integrity sha512-KA4w62arybEYVz0XXW5iI4CTAEAHi6xclRi9Qi6gQ7CfYxryyUqF87mu3ZFSN5hU/5Ra+btzVhbLRD6dAGo2MA==
+"@splunk/dashboard-utils@27.2.0", "@splunk/dashboard-utils@^27.1.0":
+  version "27.2.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.2.0.tgz#698f1f288cf0889350008b207decf4dd4e3ca391"
+  integrity sha512-TX0BsFc8Yi2x5VNqNcEChRBNtZPy0Hp49e3XlzIZNRYiLoBKrppam2F7N+AAmNIxWNrsxz2nnwJmfjWqYxUYNA==
   dependencies:
     "@splunk/moment" "^0.7.0"
-    "@splunk/splunk-utils" "^3.0.0"
+    "@splunk/splunk-utils" "^3.1.0"
     "@splunk/ui-utils" "^1.4.0"
-    "@splunk/visualization-migrations" "^26.1.0"
+    "@splunk/visualization-migrations" "^26.1.2"
     ajv "^8.5.0"
     crypto-js "^4.0.0"
     jspdf "2.5.1"
@@ -1085,10 +1085,10 @@
     scriptjs "^2.5.8"
     semver "^7.3.8"
 
-"@splunk/splunk-utils@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@splunk/splunk-utils/-/splunk-utils-3.0.1.tgz#76626d4b5e8b9dd75e543be2d3a79250fbae4e0c"
-  integrity sha512-3r8thOAboBieMpjHM95jfAVF/f1Rud26wZuUs1VOToVb520l0vcyRH3cl5EE4zORJZKNhwD7BcIkSi9SkOeYlA==
+"@splunk/splunk-utils@^3.0.0", "@splunk/splunk-utils@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@splunk/splunk-utils/-/splunk-utils-3.1.0.tgz#f35ec60fab7d2b232a691f216d2d301f0355b15b"
+  integrity sha512-x4OSnnr5VG23uMtg8HNVU0SYKVQXEdQskLbnBgDchLNkcc5NuuWIKWd6C11BVQiOqtY8r5i6/qjU/VG/U98Atg==
   dependencies:
     "@splunk/ui-utils" "^1.6.0"
     lodash "^4.17.14"
@@ -1171,6 +1171,16 @@
     chroma-js "^2.0.0"
     lodash "^4.17.21"
 
+"@splunk/visualization-encoding-parsers@^26.1.2":
+  version "26.1.2"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding-parsers/-/visualization-encoding-parsers-26.1.2.tgz#9b752e11edb84965ab02c9f93693ac94a7551883"
+  integrity sha512-s9+/ugQKay45prTbiTlNhz6x8rbFstOjpYnIJwOFwNmp0RZ2yxFOiFiUh90NBBmaiUYgyZ1GTJ5tFm+t3xLIjg==
+  dependencies:
+    "@babel/runtime" "^7.13.0"
+    "@splunk/visualizations-shared" "^26.1.2"
+    chroma-js "^2.0.0"
+    lodash "^4.17.21"
+
 "@splunk/visualization-encoding@26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-26.1.0.tgz#64e977aa940e1728614e941e6bda217f17b1fa5d"
@@ -1213,15 +1223,15 @@
     "@splunk/react-icons" "^4.0.1"
     "@splunk/ui-utils" "^1.2.1"
 
-"@splunk/visualization-migrations@^26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-migrations/-/visualization-migrations-26.1.0.tgz#776c5d8030813a5761c432124d4a40235e1ab1b6"
-  integrity sha512-iiejioyT3bPt3GIbPYpaFvRLNMwtABlTsqgqBQUnZM/ftjrcUfsIFGOwC+Ufnp6FWqxE8Xu6Kqlz2nSviAFE2w==
+"@splunk/visualization-migrations@^26.1.2":
+  version "26.1.2"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-migrations/-/visualization-migrations-26.1.2.tgz#b1f620678114f6a420984ed782789ff005a71fa6"
+  integrity sha512-nZ4FWIMngAzSfTkQO3o/uXCsQMqFPlVddiAmWjRAoXvJ4uXQbiu3mug5NRbCE4K7CFJ/Vo9A7A1mUnarcKnHMA==
   dependencies:
     "@babel/runtime" "^7.13.0"
-    "@splunk/visualization-encoding" "^26.1.0"
-    "@splunk/visualization-encoding-parsers" "^26.1.0"
-    "@splunk/visualizations" "^26.1.0"
+    "@splunk/visualization-encoding" "^26.1.2"
+    "@splunk/visualization-encoding-parsers" "^26.1.2"
+    "@splunk/visualizations" "^26.1.2"
     lodash "^4.17.21"
 
 "@splunk/visualization-themes@26.1.2", "@splunk/visualization-themes@^26.1.0", "@splunk/visualization-themes@^26.1.2":
@@ -1264,7 +1274,7 @@
     numeral "^2.0.6"
     xmlserializer "^0.6.1"
 
-"@splunk/visualizations@26.1.2", "@splunk/visualizations@^26.1.0":
+"@splunk/visualizations@26.1.2", "@splunk/visualizations@^26.1.0", "@splunk/visualizations@^26.1.2":
   version "26.1.2"
   resolved "https://registry.yarnpkg.com/@splunk/visualizations/-/visualizations-26.1.2.tgz#5f586f98b97a4e7086ade080b93308a7abda1c64"
   integrity sha512-+xv2YsH70oXWChaKLte3ujZjp1xT9MOJatoUoZMOSOg8hZQlMBq2OF6N4JUdR561DIcuyHOp6BVNZmUmTjuZPQ==
