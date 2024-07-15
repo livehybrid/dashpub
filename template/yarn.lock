@@ -695,13 +695,13 @@
     react-full-screen "^1.0.2"
     rxjs "^5.5.12"
 
-"@splunk/dashboard-definition@27.1.0", "@splunk/dashboard-definition@^27.1.0":
-  version "27.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-definition/-/dashboard-definition-27.1.0.tgz#9e12b93b5da57b601f5bb7fcec39ef87e043f63b"
-  integrity sha512-D3jk5q8zjq1ypXP+rvoyMRZvA1Ge8FweJGh20zz91Yvj7cKEwvAxWS6Xlo72c0uq7YfWtWQKadijJ/M9PUHfYg==
+"@splunk/dashboard-definition@27.2.0", "@splunk/dashboard-definition@^27.1.0":
+  version "27.2.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-definition/-/dashboard-definition-27.2.0.tgz#391b7807e6f7ceb154f1b4a307511b2227b62564"
+  integrity sha512-yJaqVbmzcgUPx34+ODi4ARDpmcyQrsPVvVnAsB3jGDysWSuGEA3AeCqfuje3HOD5UKRjb9K0l2rCW61oAXEGAg==
   dependencies:
-    "@splunk/dashboard-utils" "^27.1.0"
-    "@splunk/dashboard-validation" "^27.1.0"
+    "@splunk/dashboard-utils" "^27.2.0"
+    "@splunk/dashboard-validation" "^27.2.0"
     "@splunk/ui-utils" "^1.4.0"
     ajv "^8.5.0"
     fast-json-patch "^3.1.1"
@@ -851,7 +851,7 @@
     resize-observer-polyfill "^1.5.1"
     tinycolor2 "^1.4.1"
 
-"@splunk/dashboard-utils@27.1.0", "@splunk/dashboard-utils@^27.1.0":
+"@splunk/dashboard-utils@27.1.0":
   version "27.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.1.0.tgz#0ed6f2c66fcdb55176bae28a2b6d16ae02eaa0f3"
   integrity sha512-KA4w62arybEYVz0XXW5iI4CTAEAHi6xclRi9Qi6gQ7CfYxryyUqF87mu3ZFSN5hU/5Ra+btzVhbLRD6dAGo2MA==
@@ -866,13 +866,29 @@
     lodash "^4.17.21"
     memoize-one "^5.2.1"
 
-"@splunk/dashboard-validation@^27.1.0":
-  version "27.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/dashboard-validation/-/dashboard-validation-27.1.0.tgz#31b9f05a7d4eb0143be9ae2be80e82e78fdbb239"
-  integrity sha512-TP6WH3+zMt0+19H1wzA7CVT53ftOZOHZbqJBjYrceAKg39BtahNCA9kwWcu0m8JDdJ1jsk2xqxbwYZeG8PufhQ==
+"@splunk/dashboard-utils@^27.1.0", "@splunk/dashboard-utils@^27.2.0":
+  version "27.2.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-utils/-/dashboard-utils-27.2.0.tgz#698f1f288cf0889350008b207decf4dd4e3ca391"
+  integrity sha512-TX0BsFc8Yi2x5VNqNcEChRBNtZPy0Hp49e3XlzIZNRYiLoBKrppam2F7N+AAmNIxWNrsxz2nnwJmfjWqYxUYNA==
+  dependencies:
+    "@splunk/moment" "^0.7.0"
+    "@splunk/splunk-utils" "^3.1.0"
+    "@splunk/ui-utils" "^1.4.0"
+    "@splunk/visualization-migrations" "^26.1.2"
+    ajv "^8.5.0"
+    crypto-js "^4.0.0"
+    jspdf "2.5.1"
+    lodash "^4.17.21"
+    memoize-one "^5.2.1"
+
+"@splunk/dashboard-validation@^27.1.0", "@splunk/dashboard-validation@^27.2.0":
+  version "27.2.0"
+  resolved "https://registry.yarnpkg.com/@splunk/dashboard-validation/-/dashboard-validation-27.2.0.tgz#b1bbbdedd545820e65ec704cfb7a4893c1f04eaa"
+  integrity sha512-tmSgyd7ijZ0Y0W2gyYyQCbrifvLFDmNR3SMD1vJby6ptUXOl05AjW1K+hVXXAASU9CHaGQTNgRzJ/yzmkN4reg==
   dependencies:
     "@splunk/ui-utils" "^1.4.0"
     ajv "^8.5.0"
+    ajv-errors "^3.0.0"
 
 "@splunk/dashboard-visualizations@26.1.0", "@splunk/dashboard-visualizations@^26.1.0":
   version "26.1.0"
@@ -1095,6 +1111,16 @@
     querystring "^0.2.1"
     scriptjs "^2.5.8"
 
+"@splunk/splunk-utils@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@splunk/splunk-utils/-/splunk-utils-3.1.0.tgz#f35ec60fab7d2b232a691f216d2d301f0355b15b"
+  integrity sha512-x4OSnnr5VG23uMtg8HNVU0SYKVQXEdQskLbnBgDchLNkcc5NuuWIKWd6C11BVQiOqtY8r5i6/qjU/VG/U98Atg==
+  dependencies:
+    "@splunk/ui-utils" "^1.6.0"
+    lodash "^4.17.14"
+    querystring "^0.2.1"
+    scriptjs "^2.5.8"
+
 "@splunk/themes@^0.16.1":
   version "0.16.4"
   resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.16.4.tgz#883ad2ebb2527e8a62d5ed97036906553b44144b"
@@ -1171,6 +1197,16 @@
     chroma-js "^2.0.0"
     lodash "^4.17.21"
 
+"@splunk/visualization-encoding-parsers@^26.1.2":
+  version "26.1.2"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding-parsers/-/visualization-encoding-parsers-26.1.2.tgz#9b752e11edb84965ab02c9f93693ac94a7551883"
+  integrity sha512-s9+/ugQKay45prTbiTlNhz6x8rbFstOjpYnIJwOFwNmp0RZ2yxFOiFiUh90NBBmaiUYgyZ1GTJ5tFm+t3xLIjg==
+  dependencies:
+    "@babel/runtime" "^7.13.0"
+    "@splunk/visualizations-shared" "^26.1.2"
+    chroma-js "^2.0.0"
+    lodash "^4.17.21"
+
 "@splunk/visualization-encoding@26.1.0":
   version "26.1.0"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-encoding/-/visualization-encoding-26.1.0.tgz#64e977aa940e1728614e941e6bda217f17b1fa5d"
@@ -1224,6 +1260,17 @@
     "@splunk/visualizations" "^26.1.0"
     lodash "^4.17.21"
 
+"@splunk/visualization-migrations@^26.1.2":
+  version "26.1.2"
+  resolved "https://registry.yarnpkg.com/@splunk/visualization-migrations/-/visualization-migrations-26.1.2.tgz#b1f620678114f6a420984ed782789ff005a71fa6"
+  integrity sha512-nZ4FWIMngAzSfTkQO3o/uXCsQMqFPlVddiAmWjRAoXvJ4uXQbiu3mug5NRbCE4K7CFJ/Vo9A7A1mUnarcKnHMA==
+  dependencies:
+    "@babel/runtime" "^7.13.0"
+    "@splunk/visualization-encoding" "^26.1.2"
+    "@splunk/visualization-encoding-parsers" "^26.1.2"
+    "@splunk/visualizations" "^26.1.2"
+    lodash "^4.17.21"
+
 "@splunk/visualization-themes@26.1.2", "@splunk/visualization-themes@^26.1.0", "@splunk/visualization-themes@^26.1.2":
   version "26.1.2"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-themes/-/visualization-themes-26.1.2.tgz#eac76d0f661e717278b7345357cee14cdd406b82"
@@ -1264,7 +1311,7 @@
     numeral "^2.0.6"
     xmlserializer "^0.6.1"
 
-"@splunk/visualizations@26.1.2", "@splunk/visualizations@^26.1.0":
+"@splunk/visualizations@26.1.2", "@splunk/visualizations@^26.1.0", "@splunk/visualizations@^26.1.2":
   version "26.1.2"
   resolved "https://registry.yarnpkg.com/@splunk/visualizations/-/visualizations-26.1.2.tgz#5f586f98b97a4e7086ade080b93308a7abda1c64"
   integrity sha512-+xv2YsH70oXWChaKLte3ujZjp1xT9MOJatoUoZMOSOg8hZQlMBq2OF6N4JUdR561DIcuyHOp6BVNZmUmTjuZPQ==
@@ -1516,6 +1563,11 @@ acorn@^8.9.0:
   version "8.11.3"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.11.3.tgz#71e0b14e13a4ec160724b38fb7b0f233b1b81d7a"
   integrity sha512-Y9rRfJG5jcKOE0CLisYbojUjIrIEE7AGMzA/Sm4BslANhbS+cDMpgBdcPT91oJ7OuJ9hYJBx59RjbhxVnrF8Xg==
+
+ajv-errors@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ajv-errors/-/ajv-errors-3.0.0.tgz#e54f299f3a3d30fe144161e5f0d8d51196c527bc"
+  integrity sha512-V3wD15YHfHz6y0KdhYFjyy9vWtEVALT9UrxfN3zqlI6dMioHnJrqOYfyPKol3oqrnCM9uwkcdCwkJ0WUcbLMTQ==
 
 ajv@^6.12.4:
   version "6.12.6"
