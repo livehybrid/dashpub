@@ -83,12 +83,18 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
     }
 
     if (newDash.layout.options.backgroundImage) {
-        newDash.layout.options.backgroundImage.src = await downloadImage(
-            newDash.layout.options.backgroundImage.src,
-            'images',
-            splunkdInfo,
-            projectFolder
-        );
+        if (newDash.layout.options.backgroundImage.src.match(/\$.*\$/g) )
+             console.log(`Skipping image download due to token ${viz.options.src}`)
+        else if (newDash.layout.options.backgroundImage.src.startsWith("data:image")) {
+            console.log("Skipping because image is embedded as string")
+        } else {
+            newDash.layout.options.backgroundImage.src = await downloadImage(
+                newDash.layout.options.backgroundImage.src,
+                'images',
+                splunkdInfo,
+                projectFolder
+            );
+       }
     }
 
     const dir = path.join(projectFolder, 'src/dashboards', targetName);
@@ -100,7 +106,6 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
 }
 
 async function generate(app, dashboards, splunkdInfo, projectFolder) {
-    console.log(`Generating ${dashboards.length} dashboards...`);
     // cleanup
     await remove(path.join(projectFolder, 'public/assets'));
     await remove(path.join(projectFolder, 'src/pages/api/data/_datasources.json'));
@@ -115,6 +120,7 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
 
     // If older-style array then convert to object
     dashboards = Array.isArray(dashboards) ? dashboards.reduce((a, v) => ({ ...a, [v]: {}}), {}) : dashboards
+    console.log(`Generating ${dashboards.length} dashboards...`);
 
     for (const dashboard in dashboards) {
         const targetName = dashboard;

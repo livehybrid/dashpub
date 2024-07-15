@@ -17,10 +17,6 @@ limitations under the License.
 const fetch = global.fetch;
 const { XmlDocument } = require('xmldoc');
 
-const noValidateHttpsAgent = new (require('https').Agent)({
-    rejectUnauthorized: false,
-});
-
 const qs = obj =>
     Object.entries(obj)
         .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
@@ -39,7 +35,6 @@ const splunkd = (
             Authorization: AUTH_HEADER
         },
         body,
-        agent: url.startsWith('https:') ? noValidateHttpsAgent : undefined,
     }).then(async res => {
         if (res.status > 299) {
             const msg = await extractErrorMessage(res, `Splunkd responded with HTTP status ${res.status} requesting ${path}`);
