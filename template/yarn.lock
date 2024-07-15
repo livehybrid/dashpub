@@ -973,7 +973,7 @@
     prop-types "^15.6.0"
     react-is "^16.10.0"
 
-"@splunk/react-icons@4.6.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.4.0":
+"@splunk/react-icons@4.6.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.4.0", "@splunk/react-icons@^4.6.0":
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.6.0.tgz#102613beb23099ac39d095923b2464a314d1d751"
   integrity sha512-BE09UwENIHC9yH7t2ixEnW5TBkhFU/y9816f4+SQoLBLSVm4gns2ga98mK50k00kiwyvmz4IS+ah1peZn3aEaw==
@@ -1021,17 +1021,17 @@
     lodash "^4.17.19"
     prop-types "^15.6.0"
 
-"@splunk/react-ui@4.31.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.28.2":
-  version "4.31.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.31.0.tgz#0c419d733529a5d3ec109f76cb7a137d33c44aad"
-  integrity sha512-k2UH+r3/DfpucJYY8cfelbU4MwoUZoBOSd1WSqJWC/75c/UHDAMYMSWMDwVrItIpkif8oyUDN/wCMFY7Yw5MTA==
+"@splunk/react-ui@4.33.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.28.2":
+  version "4.33.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.33.0.tgz#23a66871e98bccb3d14b8d6766ed8cefeacc0321"
+  integrity sha512-fXGCNdoMuj1ce/O5aNrvSc3XlSQQpbZUr5OmHBg7vAZIPbXlryoFq3+IqIKdtF5N9XqgiDfG0W8yLiXJSPgiPQ==
   dependencies:
     "@dnd-kit/core" "^6.1.0"
     "@dnd-kit/modifiers" "^7.0.0"
     "@dnd-kit/sortable" "^8.0.0"
     "@dnd-kit/utilities" "^3.2.2"
-    "@splunk/react-icons" "^4.4.0"
-    "@splunk/themes" "^0.18.0"
+    "@splunk/react-icons" "^4.6.0"
+    "@splunk/themes" "^0.19.0"
     "@splunk/ui-utils" "^1.6.0"
     commonmark "^0.30.0"
     commonmark-react-renderer "^4.3.2"
