@@ -1231,15 +1231,7 @@
     "@splunk/visualizations" "^26.1.0"
     lodash "^4.17.21"
 
-"@splunk/visualization-themes@26.1.0":
-  version "26.1.0"
-  resolved "https://registry.yarnpkg.com/@splunk/visualization-themes/-/visualization-themes-26.1.0.tgz#9d487af7de7249237b24d5fd2605d0e144b267a2"
-  integrity sha512-zORudIIkbkgoz/gfnq760FAcdGyavpKjI7C7G29qF5GmTCS1Sd+Q6ovCWl34Gi6juVBoAp94slFUJxeVzAkePA==
-  dependencies:
-    "@babel/runtime" "^7.13.0"
-    "@splunk/themes" "^0.18.0"
-
-"@splunk/visualization-themes@^26.1.0", "@splunk/visualization-themes@^26.1.2":
+"@splunk/visualization-themes@26.1.2", "@splunk/visualization-themes@^26.1.0", "@splunk/visualization-themes@^26.1.2":
   version "26.1.2"
   resolved "https://registry.yarnpkg.com/@splunk/visualization-themes/-/visualization-themes-26.1.2.tgz#eac76d0f661e717278b7345357cee14cdd406b82"
   integrity sha512-nXzxOPRAUz6AsSXvcNOi61xDk8sPMjaiRfoIbyRZj+mIi0dyTs4viAnAM/ljoyZYRffCSDI4JSXy5ssS7JJWHg==
