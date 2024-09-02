@@ -21,6 +21,11 @@ import dashboardManifest from '../_dashboards.json';
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
+import Message from '@splunk/react-ui/Message';
+import Paragraph from '@splunk/react-ui/Paragraph';
+import Divider from '@splunk/react-ui/Divider';
+import Link from '@splunk/react-ui/Link';
+
 import dynamic from 'next/dynamic';
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -181,6 +186,21 @@ class Home extends Component {
         return (
             <PageWrapper>
                 <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
+                <Message appearance="fill" type="info">
+                <Paragraph>
+                    Want to publish your own dashboards? Its easy! Check out the Dashpub-plus repo for more information at <Link to="https://github.com/livehybrid/dashpub-plus">https://github.com/livehybrid/dashpub-plus</Link>
+                <br />
+                <br />
+                    Check out some of the other dashpub deployments out in the wild: <br />
+                    <ul>
+                    <li><Link to="https://monitoring.splunk.digital.nhs.uk/public/bov_overview">NHS Digital - Public Overview</Link></li>
+                    <li><Link to="https://home.splunk.engineer">Splunked Home - Find them in the source=*Pavilion</Link></li>
+                    <li><Link to="https://santa.splunk.engineer">Santa Tracker</Link></li>
+                    </ul>
+                    <br />
+                    Need help? Get in touch via email at <Link to="mailto:dashpub@livehybrid.com">dashpub@livehybrid.com</Link>
+                </Paragraph>
+            </Message>
                 <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags} />
                 <DashWrapper>
                     <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">
