@@ -193,8 +193,8 @@ class Home extends Component {
                 <br />
                     Check out some of the other dashpub deployments out in the wild: <br />
                     <ul>
+                    <li><Link to="https://dashboards.splunk.engineer/?src=london2paris">LiveHybrid - Demo Dashboards</Link></li>
                     <li><Link to="https://monitoring.splunk.digital.nhs.uk/public/bov_overview">NHS Digital - Public Overview</Link></li>
-                    <li><Link to="https://home.splunk.engineer">Splunked Home - Find them in the source=*Pavilion</Link></li>
                     <li><Link to="https://santa.splunk.engineer">Santa Tracker</Link></li>
                     </ul>
                     <br />
