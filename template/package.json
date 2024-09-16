@@ -21,7 +21,7 @@
         "@splunk/datasource-utils": "27.3.1",
         "@splunk/datasources": "^27.1.0",
         "@splunk/react-icons": "4.7.0",
-        "@splunk/react-ui": "4.35.0",
+        "@splunk/react-ui": "4.37.0",
         "@splunk/visualization-color-palettes": "26.2.1",
         "@splunk/visualization-context": "26.2.1",
         "@splunk/visualization-encoding": "26.2.1",

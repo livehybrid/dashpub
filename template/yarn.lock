@@ -666,7 +666,6 @@
   version "27.3.1"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-core/-/dashboard-core-27.3.1.tgz#eb81b77e12ebaf468b29031d63fae66dfe14bf14"
   integrity sha512-oLSpo8Pt4lUuQxzpNn7OdHkmXYWwA9lIF8d5gabx633vsRdZSLOoxsFrw1omUSqkxgUyM9ZqDZkHGZK5qMny8g==
-
   dependencies:
     "@dnd-kit/core" "^6.0.5"
     "@dnd-kit/sortable" "^7.0.1"
@@ -1018,10 +1017,10 @@
     lodash "^4.17.19"
     prop-types "^15.6.0"
 
-"@splunk/react-ui@4.35.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.32.0", "@splunk/react-ui@^4.33.0":
-  version "4.35.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.35.0.tgz#f134d9ae78555dbf9eb8d6a74a88779d305d6dd5"
-  integrity sha512-EOXhdB1zM0SbEroS4mXS2Gw2UOTtU0Lt29irSdFSraY68r173N/YRnuVBhD0ND+c8CdNKDfXSOmUpuKHwgirjA==
+"@splunk/react-ui@4.37.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.32.0", "@splunk/react-ui@^4.33.0":
+  version "4.37.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.37.0.tgz#5fe8c500ace5cfcb31cee96905ea579060664e0f"
+  integrity sha512-lEvxXsKxndPCTlJrUMDlEqcfa49qf8NTo0+1ZmD5kk7e1xn72H03hRczPZnDyuM3LkIdzplGJc9pN05tWPgTGg==
   dependencies:
     "@dnd-kit/core" "^6.1.0"
     "@dnd-kit/modifiers" "^7.0.0"
