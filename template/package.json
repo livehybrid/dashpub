@@ -36,7 +36,7 @@
         "d3-color": "^3.1.0",
         "d3-interpolate": "3.0.1",
         "decode-uri-component": "0.4.1",
-        "eslint-config-next": "^14.2.7",
+        "eslint-config-next": "^14.2.13",
         "fast-text-encoding": "^1.0.6",
         "jsonwebtoken": "^9.0.2",
         "next": "^12",
