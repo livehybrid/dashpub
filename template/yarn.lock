@@ -666,7 +666,6 @@
   version "27.3.1"
   resolved "https://registry.yarnpkg.com/@splunk/dashboard-core/-/dashboard-core-27.3.1.tgz#eb81b77e12ebaf468b29031d63fae66dfe14bf14"
   integrity sha512-oLSpo8Pt4lUuQxzpNn7OdHkmXYWwA9lIF8d5gabx633vsRdZSLOoxsFrw1omUSqkxgUyM9ZqDZkHGZK5qMny8g==
-
   dependencies:
     "@dnd-kit/core" "^6.0.5"
     "@dnd-kit/sortable" "^7.0.1"
@@ -1894,18 +1893,18 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
 
-cookie@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.6.0.tgz#2798b04b071b0ecbff0dbb62a505a8efa4e19051"
-  integrity sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==
+cookie@^0.7.0:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.7.2.tgz#556369c472a2ba910f2979891b526b3436237ed7"
+  integrity sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==
 
-cookies-next@^4.2.1:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/cookies-next/-/cookies-next-4.2.1.tgz#a0c2942afee16f1ffc2bc05a003c7c0cf32deda5"
-  integrity sha512-qsjtZ8TLlxCSX2JphMQNhkm3V3zIMQ05WrLkBKBwu50npBbBfiZWIdmSMzBGcdGKfMK19E0PIitTfRFAdMGHXg==
+cookies-next@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/cookies-next/-/cookies-next-4.3.0.tgz#66c489d1c7be126b844097c94b00cd66690a3791"
+  integrity sha512-XxeCwLR30cWwRd94sa9X5lRCDLVujtx73tv+N0doQCFIDl83fuuYdxbu/WQUt9aSV7EJx7bkMvJldjvzuFqr4w==
   dependencies:
     "@types/cookie" "^0.6.0"
-    cookie "^0.6.0"
+    cookie "^0.7.0"
 
 core-js@3.25.5, core-js@^3.6.0, core-js@^3.8.3:
   version "3.25.5"
