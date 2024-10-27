@@ -17,6 +17,7 @@ updates:
         - "@splunk*"
         
   - package-ecosystem: "github-actions"
+    target-branch: "develop"
     directory: "/"
     schedule:
       interval: "weekly"
