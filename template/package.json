@@ -40,7 +40,7 @@
         "fast-text-encoding": "^1.0.6",
         "jsonwebtoken": "^9.0.2",
         "next": "^12",
-        "postcss": "8.4.47",
+        "postcss": "8.4.49",
         "query-string": "^9.1.1",
         "querystring": "^0.2.0",
         "react": "16.14.0",
