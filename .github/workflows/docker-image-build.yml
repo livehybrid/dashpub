@@ -25,7 +25,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@d31acd50653ded455ab8972a1eb9a656b0aef94a
+        uses: docker/metadata-action@b53be03109c4ef6f6cc7aa545b84b17a7fe51c1e
         with:
           images: livehybrid/splunk-dashpub
 
