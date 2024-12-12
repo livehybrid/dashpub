@@ -95,7 +95,9 @@ const dataResp = async (req, res) => {
             throw new Error(`Failed to dispatch job, splunkd returned HTTP status ${r.status}`);
         }
         const { sid } = await r.json();
-        log(`Received search job sid=${sid} - waiting for job to complete`);
+        const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
+        log(`Received search job sid=${sid}, using checkDelay=${checkDelay} - waiting for job to complete`);
+
 
         let complete = false;
         while (!complete) {
@@ -115,9 +117,10 @@ const dataResp = async (req, res) => {
             }
             complete = jobStatus.isDone;
             if (!complete) {
-                await sleep(250);
+                await sleep(checkDelay);
             }
         }
+
 
         log('Search job sid=%s for data fn id=%s is complete', sid, id);
 

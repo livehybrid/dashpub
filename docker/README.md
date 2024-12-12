@@ -24,6 +24,7 @@ Note: that this image is maintained by @livehybrid and not maintained by Splunk.
 | DASHPUB_THEME | "light" | Which theme to use on the home page (light/dark) Default: light |
 | DASHPUB_TITLE | "Dashboards" | Set the page `<title>` and the header title on the front page. |
 | DASHPUB_VERCEL | *None* | Whether to deploy to Vercel, Set to `n` to prevent deploying to Vercel and continue with the local running of the app. This is used to remove the need for interactive configuration/setup. *Future enhancement in progress to remove the need to set this when within Docker Container* |
+| SEARCH_JOB_DELAY_MS | 250 | Sets the number of milliseconds to wait between checking if the search job has completed, defaults to 250ms if not set |
 | NODE_TLS_REJECT_UNAUTHORIZED | 1 | Check for validity of SSL certificate if connecting to Splunk with https:// - Set to 0 to disable SSL validation |
 | VERCEL_URL | *None* | Used in conjunction with `DASHPUB_SCREENSHOTS` to set HTML Metadata to display Dashboard screenshot when URL is *unfurled* (e.g., posting in Slack/LinkedIn etc) |
 
