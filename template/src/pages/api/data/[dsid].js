@@ -117,7 +117,7 @@ const dataResp = async (req, res) => {
             }
             complete = jobStatus.isDone;
             if (!complete) {
-                await sleep(delay);
+                await sleep(checkDelay);
             }
         }
 
