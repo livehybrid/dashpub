@@ -979,10 +979,10 @@
     prop-types "^15.6.0"
     react-is "^16.10.0"
 
-"@splunk/react-icons@4.8.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.6.0", "@splunk/react-icons@^4.8.0":
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.8.0.tgz#822de88fb83328852ff4d648a654760cc2522c0f"
-  integrity sha512-61P3SG9UP4+5DrVN0OhBhwal+mSbLSGL4QF7RcT54vLy9TEcVf36A6YC+NbrsReoHp1LRQ9Pf71IAUENUgCC1Q==
+"@splunk/react-icons@4.9.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.6.0", "@splunk/react-icons@^4.8.0", "@splunk/react-icons@^4.9.0":
+  version "4.9.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.9.0.tgz#732dc798cb7a71f43462b260d0820326790bcec1"
+  integrity sha512-TWpNSTtkT2d3mlXrOHalLsxCXq1+z52w4JmG/ZnvxzVyr/qkPK9wdVOnoL3gO4dk5DsxXO7w9Vfd9OCHA9dTfw==
   dependencies:
     "@splunk/ui-utils" "^1.7.1"
     lodash "^4.17.14"
@@ -1027,16 +1027,16 @@
     lodash "^4.17.19"
     prop-types "^15.6.0"
 
-"@splunk/react-ui@4.39.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.32.0", "@splunk/react-ui@^4.33.0", "@splunk/react-ui@^4.38.0":
-  version "4.39.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.39.0.tgz#0a2ad95371c54ed9889413eb4109b722af6dba55"
-  integrity sha512-dUoa4Se/OKNtTiNO+RaWhSqd/3nufkpRaIh4x/ucft+LOhdJu5QV4Oa++gFNz9bqS1tE2pYbvpDbNWpoB4W9Dg==
+"@splunk/react-ui@4.40.0", "@splunk/react-ui@^4.17.1", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.32.0", "@splunk/react-ui@^4.33.0", "@splunk/react-ui@^4.38.0":
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.40.0.tgz#ee31e53f20eb2ebe33bfd2bf1e3b044ab74f49c5"
+  integrity sha512-nao3a1XrskyA/WAiVOcVgjcTLLGsD9aSEFepVbGYqOge1U03g/5FnORAj9tzLdHM+mBp3ViRhYHzA5RHD9kEwA==
   dependencies:
     "@dnd-kit/core" "^6.1.0"
     "@dnd-kit/modifiers" "^7.0.0"
     "@dnd-kit/sortable" "^8.0.0"
     "@dnd-kit/utilities" "^3.2.2"
-    "@splunk/react-icons" "^4.8.0"
+    "@splunk/react-icons" "^4.9.0"
     "@splunk/themes" "^0.22.0"
     "@splunk/ui-utils" "^1.7.1"
     commonmark "^0.30.0"
@@ -3894,10 +3894,10 @@ randexp@0.4.6:
     discontinuous-range "1.0.0"
     ret "~0.1.10"
 
-react-bootstrap-icons@^1.11.4:
-  version "1.11.4"
-  resolved "https://registry.yarnpkg.com/react-bootstrap-icons/-/react-bootstrap-icons-1.11.4.tgz#f4d5a852af58b5e0523df7162758b77f6fef2eec"
-  integrity sha512-lnkOpNEZ/Zr7mNxvjA9efuarCPSgtOuGA55XiRj7ASJnBjb1wEAdtJOd2Aiv9t07r7FLI1IgyZPg9P6jqWD/IA==
+react-bootstrap-icons@^1.11.5:
+  version "1.11.5"
+  resolved "https://registry.yarnpkg.com/react-bootstrap-icons/-/react-bootstrap-icons-1.11.5.tgz#9b91a0bf0d5505d92c3574f1f990bb52f36a3ec0"
+  integrity sha512-eOhtFJMUqw98IJcfKJsSMZkFHCeNPTTwXZAe9V9d4mT22ARmbrISxPO9GmtWWuf72zQctLeZMGodX/q6wrbYYg==
   dependencies:
     prop-types "^15.7.2"
 
@@ -4547,10 +4547,10 @@ typed-array-length@^1.0.6:
     is-typed-array "^1.1.13"
     possible-typed-array-names "^1.0.0"
 
-typescript@^5.6.3:
-  version "5.6.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.6.3.tgz#5f3449e31c9d94febb17de03cc081dd56d81db5b"
-  integrity sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==
+typescript@^5.7.2:
+  version "5.7.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.7.2.tgz#3169cf8c4c8a828cde53ba9ecb3d2b1d5dd67be6"
+  integrity sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==
 
 typewise-core@^1.2, typewise-core@^1.2.0:
   version "1.2.0"
