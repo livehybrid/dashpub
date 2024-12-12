@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Splunk Inc. 
+Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,10 +16,15 @@ limitations under the License.
 
 import React, { lazy } from 'react';
 import CdnDataSource from './datasource';
+import TestDataSource from '@splunk/datasources/TestDataSource';
 import DrilldownHandler from './drilldown';
 import { polyfillTextDecoder } from './polyfills';
-import { DropdownInput, TimeRangeInput, MultiselectInput, TextInput, NumberInput } from '@splunk/dashboard-inputs';
-//import { Preset } from '@splunk/dashboard-context';
+
+import EnterprisePreset from "@splunk/dashboard-presets/EnterprisePreset";
+import LayoutPresets from "@splunk/dashboard-presets/LayoutPresets";
+import InputPresets from "@splunk/dashboard-presets/InputPresets";
+import EventHandlerPresets from "@splunk/dashboard-presets/EventHandlerPresets";
+
 const fixRequestParams = (LazyComponent) => (props) => {
     if (props.dataSources.primary && !props.dataSources.primary.requestParams) {
         props.dataSources.primary.requestParams = { count: 100 };
@@ -31,6 +36,7 @@ const fixRequestParams = (LazyComponent) => (props) => {
 const commonFlags = (LazyComponent) => {
     LazyComponent.showProgressBar = true;
     LazyComponent.showTitleAndDescription = true;
+    LazyComponent.canBeHidden = true;
     LazyComponent.showLastUpdated = true;
     // LazyComponent.backgroundColor = "#171d21";
     return LazyComponent;
@@ -57,15 +63,12 @@ const deepMerge = (obj1, obj2) => {
 };
 
 const PRESET = {
-    layouts: {
-        absolute: lazyViz(() => import('@splunk/dashboard-layouts/AbsoluteLayoutViewer')),
-        grid: lazyViz(() => import('@splunk/dashboard-layouts/GridLayoutViewer')),
-    },
+    ...LayoutPresets,
+    ...EventHandlerPresets,
+    ...InputPresets,
     dataSources: {
         'ds.cdn': CdnDataSource,
-    },
-    eventHandlers: {
-        'drilldown.customUrl': DrilldownHandler,
+        'ds.test': TestDataSource
     },
     visualizations: {
         // legacy
@@ -120,22 +123,16 @@ const PRESET = {
         'splunk.singlevalueradial': commonFlags(lazyViz(() => import('@splunk/visualizations/SingleValueRadial'))),
         'splunk.map': commonFlags(lazyViz(() => import('@splunk/visualizations/Map'))),
         'splunk.table': commonFlags(lazyViz(() => import('@splunk/visualizations/Table'))),
-    },
-    inputs: {
-        'input.dropdown': DropdownInput,
-        'input.timerange': TimeRangeInput,
-        'input.text': TextInput,
-        'input.number': NumberInput,
-        'input.multiselect': MultiselectInput,
-    },
+    }
 };
 
 const CUSTOM_VIZ = {};
 
 const CUSTOM_PRESET = {
     visualizations: CUSTOM_VIZ,
+    eventHandlers: {
+        'drilldown.customUrl': DrilldownHandler,
+    },
 };
-
 const MERGED_PRESET = deepMerge(PRESET, CUSTOM_PRESET);
-
 export default MERGED_PRESET;
