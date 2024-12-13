@@ -32,14 +32,15 @@ import EventHandlerPresets from "@splunk/dashboard-presets/EventHandlerPresets";
 //     return <LazyComponent {...props} />;
 // };
 
-// const commonFlags = (LazyComponent) => {
-//     LazyComponent.showProgressBar = true;
-//     LazyComponent.showTitleAndDescription = true;
-//     LazyComponent.canBeHidden = true;
-//     LazyComponent.showLastUpdated = true;
-//     // LazyComponent.backgroundColor = "#171d21";
-//     return LazyComponent;
-// };
+// Used when importing custom libs
+const commonFlags = (LazyComponent) => {
+    LazyComponent.showProgressBar = true;
+    LazyComponent.showTitleAndDescription = true;
+    LazyComponent.canBeHidden = true;
+    LazyComponent.showLastUpdated = true;
+    // LazyComponent.backgroundColor = "#171d21";
+    return LazyComponent;
+};
 
 // const lazyViz = (fn) => {
 //     return lazy(fn);
