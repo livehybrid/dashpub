@@ -83,7 +83,7 @@ function createNextPayload({ data, vizOptions }) {
 }
 
 export default class PublicDataSource extends DataSource {
-    constructor(options = {}, context = {}, ...rest) {
+    constructor(options = {}, context = {}) {
         super(options, context);
         this.uri = options.uri;
         this.vizOptions = options.vizOptions;

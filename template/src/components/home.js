@@ -21,11 +21,6 @@ import dashboardManifest from '../_dashboards.json';
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
-import Message from '@splunk/react-ui/Message';
-import Paragraph from '@splunk/react-ui/Paragraph';
-import Divider from '@splunk/react-ui/Divider';
-import Link from '@splunk/react-ui/Link';
-
 import dynamic from 'next/dynamic';
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
 import 'bootstrap/dist/css/bootstrap.css';
