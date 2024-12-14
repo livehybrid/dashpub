@@ -1,5 +1,5 @@
 {
-  "_from": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master",
+  "_from": "https://github.com/livehybrid/dashpub/tarball/master",
   "_id": "@splunk/dashpub@0.0.1-alpha5",
   "_inBundle": false,
   "_integrity": "sha512-pYwpzldu80uiIaWZkPO4T1fdceY5zFBc9ACfmHrJbSbNEAHBi8j/Bgzvu/d+9kaEvoBiyoy83gaumzUGDjX92g==",
@@ -7,30 +7,30 @@
   "_phantomChildren": {},
   "_requested": {
     "type": "remote",
-    "raw": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master",
-    "rawSpec": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master",
-    "saveSpec": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master",
-    "fetchSpec": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master"
+    "raw": "https://github.com/livehybrid/dashpub/tarball/master",
+    "rawSpec": "https://github.com/livehybrid/dashpub/tarball/master",
+    "saveSpec": "https://github.com/livehybrid/dashpub/tarball/master",
+    "fetchSpec": "https://github.com/livehybrid/dashpub/tarball/master"
   },
   "_requiredBy": [
     "#USER"
   ],
-  "_resolved": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master",
+  "_resolved": "https://github.com/livehybrid/dashpub/tarball/master",
   "_shasum": "d3df339f38d5f2763cd644b81ccdcf4330254d73",
-  "_spec": "https://github.com/livehybrid/dashpub/tarball/ws-rebase-splunk-master",
+  "_spec": "https://github.com/livehybrid/dashpub/tarball/master",
   "_where": "/var/lib/cloud/instances/i-063756d8ebead1cff/scripts",
   "bin": {
     "dashpub": "cli/cli.js"
   },
   "bugs": {
-    "url": "https://github.com/splunk/dashpub/issues"
+    "url": "https://github.com/livehybrid/dashpub/issues"
   },
   "bundleDependencies": false,
   "dependencies": {
     "@oclif/core": "^4.0.37",
     "debug": "^4.3.4",
     "dotenv": "^16.3.1",
-    "execa": "^9.1.0",
+    "execa": "^9.5.2",
     "fs-extra": "^11.2.0",
     "inquirer": "^8.0.0",
     "inquirer-checkbox-plus-prompt": "^1.4.2",
@@ -41,14 +41,17 @@
     "sharp": "^0.33.5",
     "xmldoc": "^1.3.0"
   },
+  "resolutions": {
+    "cross-spawn": "^7.0.5"
+  },
   "deprecated": false,
   "description": "Generate next.js apps to publish Splunk dashboards",
-  "homepage": "https://github.com/splunk/dashpub",
+  "homepage": "https://github.com/livehybrid/dashpub",
   "license": "Apache-2.0",
   "name": "@splunk/dashpub",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/splunk/dashpub.git"
+    "url": "git+https://github.com/livehybrid/dashpub.git"
   },
   "scripts": {
     "update:license-report": "yarn licenses list > license_report.txt"

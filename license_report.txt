@@ -280,7 +280,7 @@
    │  ├─ URL: git://github.com/substack/node-concat-map.git
    │  ├─ VendorName: James Halliday
    │  └─ VendorUrl: http://substack.net
-   ├─ cross-spawn@7.0.3
+   ├─ cross-spawn@7.0.6
    │  ├─ URL: git@github.com:moxystudio/node-cross-spawn.git
    │  ├─ VendorName: André Cruz
    │  └─ VendorUrl: https://github.com/moxystudio/node-cross-spawn
