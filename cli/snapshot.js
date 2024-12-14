@@ -19,7 +19,7 @@ const path = require('path');
 const qs = require('querystring');
 const fetch = global.fetch;
 const debug = require('debug')('datasnapshot');
-const { cli } = require('cli-ux');
+const { CliUx } = require('@oclif/core');
 require('dotenv').config();
 
 const qualifiedSearchString = query => (query.trim().startsWith('|') ? query : `search ${query}`);
@@ -118,7 +118,7 @@ function* findUsedDataSources(dashboardManifest, readJSON) {
 }
 
 async function takeDataSnapshot(projectRoot, project, splunkdInfo) {
-    cli.action.start('Analyzing datasources from all dashboards');
+    CliUx.ux.action.start('Analyzing datasources from all dashboards');
     const projectFile = filePath => path.join(projectRoot, filePath);
     const readJSON = filePath => JSON.parse(fs.readFileSync(projectFile(filePath), { encoding: 'utf-8' }));
     const dataSources = readJSON('src/pages/api/data/_datasources.json');
@@ -135,8 +135,8 @@ async function takeDataSnapshot(projectRoot, project, splunkdInfo) {
     const allData = {};
 
     const usedDatasources = [...findUsedDataSources(readJSON('src/_dashboards.json'), readJSON)];
-    cli.action.stop(`found ${usedDatasources.length} unique data sources`);
-    const progress = cli.progress({
+    CliUx.ux.action.stop(`found ${usedDatasources.length} unique data sources`);
+    const progress = CliUx.ux.progress({
         format: 'Fetching search results | {bar} | {value}/{total} searches',
     });
     let complete = 0;
@@ -162,9 +162,9 @@ async function takeDataSnapshot(projectRoot, project, splunkdInfo) {
     }
     progress.stop();
 
-    cli.action.start('Writing snapshot file');
+    CliUx.ux.action.start('Writing snapshot file');
     fs.writeFileSync(projectFile('src/pages/api/data/_snapshot.json'), JSON.stringify(allData, null, 2), { encoding: 'utf-8' });
-    cli.action.stop();
+    CliUx.ux.action.stop();
 }
 
 async function clearSnapshot(projectRoot) {
