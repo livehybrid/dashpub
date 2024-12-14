@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:23-alpine
 COPY . /build
 RUN npm i -g /build --unsafe-perm
 RUN apk add git vips-dev
