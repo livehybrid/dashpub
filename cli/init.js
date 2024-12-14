@@ -18,7 +18,7 @@ limitations under the License.
 
 const prompts = require('./prompts');
 const splunkd = require('./splunkd');
-const { cli } = require('cli-ux');
+const { ux } = require('@oclif/core');
 const fs = require('fs-extra');
 const path = require('path');
 const { exec, Secret } = require('./exec');
@@ -170,17 +170,17 @@ async function initNewProject() {
             splunkdUser = await splunkd.getUsername(splunkdInfo);
             splunkdPassword = '';
         }
-        cli.action.start(`Loading apps`);
+        ux.action.start(`Loading apps`);
         const apps = await splunkd.listApps(splunkdInfo);
-        cli.action.stop(`found ${apps.length} apps`);
+        ux.action.stop(`found ${apps.length} apps`);
         appNames = Object.entries(apps).map(([key, app]) => app['name']);
 
         selectedApp =
             process.env.DASHPUB_APP && appNames.includes(process.env.DASHPUB_APP) ? process.env.DASHPUB_APP : await prompts.selectApp(apps);
 
-        cli.action.start(`Loading dashboards from ${selectedApp} app`);
+        ux.action.start(`Loading dashboards from ${selectedApp} app`);
         const dashboards = await splunkd.listDashboards(selectedApp, splunkdInfo);
-        cli.action.stop(`found ${dashboards.length} dashboards`);
+        ux.action.stop(`found ${dashboards.length} dashboards`);
 
         selectedDashboards = await parseDashboardsAndTags(dashboards);
         console.log('Selected Dashboards:', selectedDashboards);
