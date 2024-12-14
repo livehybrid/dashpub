@@ -19,7 +19,7 @@ const { exec, Secret } = require('./exec');
 const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
-const { cli } = require('cli-ux');
+const { CliUx } = require('@oclif/core');
 
 const postInitInstructions = ({ folderName }) => chalk`
 
@@ -53,7 +53,7 @@ const postInitInstructions = ({ folderName }) => chalk`
 async function initVercelProject({ folderName, destFolder, splunkdUrl, splunkdUser, splunkdPassword = process.env.SPLUNKD_PASSWORD }) {
     const nowSplunkdPasswordSecret = `dashpub-${folderName}-splunkd-password`;
     const nowSplunkdTokenSecret = `dashpub-${folderName}-splunkd-token`;
-    cli.action.start('Creating vercel.json');
+    CliUx.ux.action.start('Creating vercel.json');
     await fs.writeFile(
         path.join(destFolder, 'vercel.json'),
         JSON.stringify(
@@ -70,7 +70,7 @@ async function initVercelProject({ folderName, destFolder, splunkdUrl, splunkdUs
             2
         )
     );
-    cli.action.stop();
+    CliUx.ux.action.stop();
 
     await exec('vercel', ['secret', 'add', nowSplunkdPasswordSecret, new Secret(splunkdPassword)]);
     await exec('vercel', ['secret', 'add', nowSplunkdTokenSecret, new Secret(splunkdToken)]);

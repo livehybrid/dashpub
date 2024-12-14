@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const { cli } = require('cli-ux');
+const { CliUx } = require('@oclif/core');
 const chalk = require('chalk');
 
 class ExecError extends Error {
@@ -39,12 +39,12 @@ const exec = async (cmd, args, options) => {
         
         const rawArgs = args.map(a => (a instanceof Secret ? a.value : a));
         const displayArgs = args.map(a => (a instanceof Secret ? '*******' : a));
-        cli.action.start(`${chalk.yellow('$')} ${cmd} ${displayArgs.join(' ')}`);
+        CliUx.ux.action.start(`${chalk.yellow('$')} ${cmd} ${displayArgs.join(' ')}`);
         const res = await execa(cmd, rawArgs, options);
-        cli.action.stop(chalk.green('OK'));
+        CliUx.ux.action.stop(chalk.green('OK'));
         return res;
     } catch (e) {
-        cli.action.stop(chalk.red('FAILED'));
+        CliUx.ux.action.stop(chalk.red('FAILED'));
         console.error(chalk.red(e.stderr));
         const code = e.code;
         throw new ExecError(`${cmd} exited with code ${code}`, code, e.stdout, e.stderr);
