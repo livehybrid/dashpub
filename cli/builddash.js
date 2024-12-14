@@ -18,7 +18,7 @@ const { loadDashboard } = require('./splunkd');
 const { downloadImage } = require('./assets');
 const { generateCdnDataSources } = require('./datafns');
 const { writeFile, mkdirp, remove } = require('fs-extra');
-const { CliUx } = require('@oclif/core');
+const { ux } = require('@oclif/core');
 const path = require('path');
 
 const COMPONENT_CODE = `\
@@ -124,7 +124,7 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
 
     for (const dashboard in dashboards) {
         const targetName = dashboard;
-        CliUx.ux.action.start(`Generating dashboard ${dashboard}`);
+        ux.action.start(`Generating dashboard ${dashboard}`);
         let dashboardTags=[];
         if (Object.keys(dashboards[dashboard]).includes("tags")) {
             console.log("Found tags: " + dashboards[dashboard]['tags'].join(", "));
@@ -144,17 +144,17 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
 
         datasourcesManifest = Object.assign(datasourcesManifest, dsManifest);
         Object.assign(dashboardsManifest, dashboardInfo);
-        CliUx.ux.action.stop();
+        ux.action.stop();
     }
 
-    CliUx.ux.action.start('Writing manifest files...');
+    ux.action.start('Writing manifest files...');
     await writeFile(path.join(projectFolder, 'src/pages/api/data/_datasources.json'), JSON.stringify(datasourcesManifest, null, 4), {
         encoding: 'utf-8',
     });
     await writeFile(path.join(projectFolder, 'src/_dashboards.json'), JSON.stringify(dashboardsManifest, null, 4), {
         encoding: 'utf-8',
     });
-    CliUx.ux.action.stop();
+    ux.action.stop();
 }
 
 module.exports = {
