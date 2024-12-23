@@ -31,7 +31,7 @@ jobs:
         uses: docker/metadata-action@906ecf0fc0a80f9110f79d9e6c04b1080f4a2621
         with:
           images: livehybrid/splunk-dashpub
-          tags: ${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || 'develop' }}
+          tags: ${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || github.ref_name }}
 
       - name: Build and push Docker image
         id: push
@@ -57,7 +57,7 @@ jobs:
     steps:
       - name: Set Trivy Image Tag
         id: set-tag
-        run: echo "image_tag=${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || 'develop' }}" >> $GITHUB_ENV
+        run: echo "image_tag=${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || github.ref_name }}" >> $GITHUB_ENV
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master

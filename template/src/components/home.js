@@ -18,30 +18,27 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
+
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
 import dynamic from 'next/dynamic';
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
 import 'bootstrap/dist/css/bootstrap.css';
+import HomeHeader from "./home_header";
 
 export const CardLayout = dynamic(() => import('@splunk/react-ui/CardLayout'), { ssr: false });
-
 export const CardDefault = dynamic(() => import('@splunk/react-ui/Card'), { ssr: false });
-
 export const CardHeader = dynamic(() => import('@splunk/react-ui/Card').then((lib) => lib.Header), { ssr: false });
-
 export const CardBody = dynamic(() => import('@splunk/react-ui/Card').then((lib) => lib.Body), { ssr: false });
-
 export const CardFooter = dynamic(() => import('@splunk/react-ui/Card').then((lib) => lib.Footer), { ssr: false });
 
 CardDefault.Header = CardHeader;
 CardDefault.Body = CardBody;
 CardDefault.Footer = CardFooter;
+
 export const Card = CardDefault;
-
 export const Chip = dynamic(() => import('@splunk/react-ui/Chip'), { ssr: false });
-
 export const Button = dynamic(() => import('@splunk/react-ui/Button'), { ssr: false });
 
 
@@ -181,6 +178,7 @@ class Home extends Component {
         return (
             <PageWrapper>
                 <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
+                <HomeHeader />
                 <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags} />
                 <DashWrapper>
                     <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">
