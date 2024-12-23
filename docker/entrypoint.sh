@@ -26,7 +26,7 @@ then
     cd /app
     if [ "${DASHPUB_CUSTOM_HOME_PATH}" ];
       then
-      cp $DASHPUB_CUSTOM_HOME_PATH components/home_header.js
+      cp $DASHPUB_CUSTOM_HOME_PATH src/components/home_header.js
     fi
     yarn add typescript
     yarn add --dev typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin @next/eslint-plugin-next

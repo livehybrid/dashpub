@@ -2,7 +2,7 @@ import React from "react";
 // import Message from "@splunk/react-ui/Message";
 
 export default () => {
-    return ();
+    return (<></>);
     // return (
     //     <Message appearance="fill" type="info">
     //         <p>
