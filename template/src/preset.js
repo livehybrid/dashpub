@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 /* eslint-disable react/display-name */
-import React, { lazy } from 'react';
 import CdnDataSource from './datasource';
 import TestDataSource from '@splunk/datasources/TestDataSource';
 import DrilldownHandler from './drilldown';
