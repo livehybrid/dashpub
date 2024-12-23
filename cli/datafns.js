@@ -30,7 +30,7 @@ const makeId = ds => {
         }
     }
     if (ds.refresh) {
-        h.write(ds.refresh);
+        h.write(toString(ds.refresh));
     }
     if (ds.postprocess) {
         h.write(ds.postprocess);
