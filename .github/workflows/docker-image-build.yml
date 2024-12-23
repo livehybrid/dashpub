@@ -59,7 +59,8 @@ jobs:
       - name: Set Trivy Image Tag
         id: set-tag
         run: echo "image_tag=${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || github.ref_name }}" >> $GITHUB_ENV
-
+      - name: Check out the repo
+        uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
