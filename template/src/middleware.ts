@@ -90,6 +90,7 @@ export async function middleware(req) {
             return redirectToLogin(req, 'jwtInvalid');
         }
     } catch (error) {
+        console.log(error);
         return redirectToLogin(req, 'jwtError');
     }
 }

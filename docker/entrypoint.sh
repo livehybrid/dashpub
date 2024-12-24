@@ -9,6 +9,7 @@ export NEXT_PUBLIC_DASHPUBHOSTEDURL=$DASHPUB_HOSTEDBY_URL
 export NEXT_PUBLIC_DASHPUBFOOTER=$DASHPUB_FOOTER
 export NEXT_PUBLIC_DASHPUBREPO=$DASHPUB_REPO
 ENV_MODE="${ENV_MODE:-production}"
+NODE_ENV="${NODE_ENV:-production}"
 
 if [ "${DASHPUB_BRANCH}" ];
   then
@@ -24,6 +25,10 @@ then
     echo "Configuring dashpub with Env variables"
     dashpub init
     cd /app
+    if [ "${DASHPUB_CUSTOM_HOME_PATH}" ];
+      then
+      cp $DASHPUB_CUSTOM_HOME_PATH src/components/home_header.js
+    fi
     yarn add typescript
     yarn add --dev typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin @next/eslint-plugin-next
     yarn build

@@ -1,7 +1,8 @@
-FROM node:20-alpine
+FROM node:23-alpine
 COPY . /build
 RUN npm i -g /build --unsafe-perm
 RUN apk add git vips-dev
+RUN npm i -g npm@latest
 #RUN apt-get update && apt-get install -y  git libvips libvips-dev
 RUN cd /build && yarn add sharp --ignore-engines && yarn install && cd /
 
