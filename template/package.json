@@ -14,7 +14,7 @@
         "@splunk/react-ui": "4.40.0",
         "@splunk/visualization-context": "27.0.0",
         "bootstrap": "5.3.3",
-        "cookies-next": "4.3.0",
+        "cookies-next": "5.0.2",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
         "eslint-config-next": "15.1.2",
