@@ -153,7 +153,6 @@ async function downloadImage(src, assetType, splunkdInfo, projectDir) {
         if (process.env.DASHPUB_FQDN && mimeType=="image/svg+xml") {
             var newUri = `${process.env.DASHPUB_FQDN}/assets/${filename}`;
         } else if (mimeType=="image/svg+xml") {
-            console.log("Embed");
             const base64SVG = data.toString('base64');
             var newUri = `data:image/svg+xml;base64,${base64SVG}`;
             console.log(newUri);
