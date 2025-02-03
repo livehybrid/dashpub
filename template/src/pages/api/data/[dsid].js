@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Splunk Inc. 
+Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -131,13 +131,12 @@ const dataResp = async (req, res) => {
             search: search.postprocess,
         });
         const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results?${resultsQs}`, {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 Authorization: AUTH_HEADER,
             },
             agent,
         }).then((r) => r.json());
-
         log('Retrieved count=%d results from job sid=%s for data fn id=%s', data.columns.length, sid, id);
         res.setHeader('cache-control', `s-maxage=${refresh}, stale-while-revalidate`);
         const { columns, fields } = data;
