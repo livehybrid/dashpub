@@ -18,8 +18,8 @@ import DataSource from '@splunk/datasources/DataSource';
 import DataSet from '@splunk/datasource-utils/DataSet';
 import { registerScreenshotReadinessDep } from './ready';
 
-const DEFAULT_REFRESH_TIME = 60000;
-const BACKGROUND_REFESH_TIME = 600 * 1000;
+const DEFAULT_REFRESH_TIME = 5000;
+const BACKGROUND_REFESH_TIME = 100 * 1000;
 const LAST_RESULTS = {};
 
 async function waitForRefresh(regularInterval, backgroundInterval) {
