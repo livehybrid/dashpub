@@ -25,7 +25,7 @@ let SNAPSHOTS = USE_SNAPSHOT ? require('./_snapshot.json') : null;
 const qualifiedSearchString = (query) => (query.trim().startsWith('|') ? query : `search ${query}`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const MIN_REFRESH_TIME = 60;
+const MIN_REFRESH_TIME = parseInt(process.env.MIN_REFRESH_TIME, 10) || 60;
 const agent = process.env.SPLUNKD_URL.startsWith('https')
     ? new (require('https').Agent)({
           rejectUnauthorized: false,
