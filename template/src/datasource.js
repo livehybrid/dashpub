@@ -86,6 +86,7 @@ export default class PublicDataSource extends DataSource {
     constructor(options = {}, context = {}) {
         super(options, context);
         this.uri = options.uri;
+        this.refresh = options.refresh || DEFAULT_REFRESH_TIME;
         this.vizOptions = options.vizOptions;
         this.meta = options.meta;
     }
@@ -107,7 +108,7 @@ export default class PublicDataSource extends DataSource {
                             vizOptions: this.vizOptions,
                         })
                     );
-                    const wait = DEFAULT_REFRESH_TIME - (Date.now() - ts);
+                    const wait = this.refresh - (Date.now() - ts);
                     if (wait > 0) {
                         await waitForRefresh(wait, wait);
                     }
