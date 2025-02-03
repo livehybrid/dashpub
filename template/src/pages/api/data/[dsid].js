@@ -102,7 +102,7 @@ const dataResp = async (req, res) => {
         let complete = false;
         while (!complete) {
             const statusData = await fetch(
-                `${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs/${encodeURIComponent(sid)}?output_mode=json`,
+                `${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${encodeURIComponent(sid)}?output_mode=json`,
                 {
                     headers: {
                         Authorization: AUTH_HEADER,
@@ -130,7 +130,7 @@ const dataResp = async (req, res) => {
             offset: 0,
             search: search.postprocess,
         });
-        const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs/${sid}/results?${resultsQs}`, {
+        const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results?${resultsQs}`, {
             method: 'GET',
             headers: {
                 Authorization: AUTH_HEADER,
