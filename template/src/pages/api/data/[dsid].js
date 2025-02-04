@@ -130,11 +130,12 @@ const dataResp = async (req, res) => {
             offset: 0,
             search: search.postprocess,
         });
-        const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results?${resultsQs}`, {
+        const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
             method: 'POST',
             headers: {
                 Authorization: AUTH_HEADER,
             },
+            body: resultsQs,
             agent,
         }).then((r) => r.json());
         log('Retrieved count=%d results from job sid=%s for data fn id=%s', data.columns.length, sid, id);
