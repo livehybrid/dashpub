@@ -103,10 +103,11 @@ async function generateCdnDataSource([key, ds], app, allDataSources, defaults) {
     }
 
     const id = makeId(settings);
+    const refreshVal = parseRefreshTime(ds.options.refresh, defaults['ds.search']);
     const dataSourceManifest = [
         id,
         {
-            search: { ...settings, refresh: parseRefreshTime(ds.options.refresh, defaults['ds.search']) },
+            search: { ...settings, refresh: refreshVal },
             app: app,
             id,
         },
@@ -119,7 +120,8 @@ async function generateCdnDataSource([key, ds], app, allDataSources, defaults) {
             name: ds.name,
             options: {
                 uri: `/api/data/${id}`,
-                "enableSmartSources": true
+                enableSmartSources: true,
+                refresh: refreshVal
             },
         },
     ];
