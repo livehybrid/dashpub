@@ -157,7 +157,7 @@ export default class PublicDataSource extends DataSource {
                         );
                     }
                     initial = false;
-                    await waitForRefresh(DEFAULT_REFRESH_TIME, BACKGROUND_REFESH_TIME);
+                    await waitForRefresh(this.refresh, BACKGROUND_REFESH_TIME);
                 }
             })();
 
