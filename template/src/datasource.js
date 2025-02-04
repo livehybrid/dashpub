@@ -86,7 +86,7 @@ export default class PublicDataSource extends DataSource {
     constructor(options = {}, context = {}) {
         super(options, context);
         this.uri = options.uri;
-        this.refresh = options.refresh || DEFAULT_REFRESH_TIME;
+        this.refresh = options.refresh * 1000 || DEFAULT_REFRESH_TIME;
         this.vizOptions = options.vizOptions;
         this.meta = options.meta;
     }
