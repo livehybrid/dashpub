@@ -1,18 +1,12 @@
-import React, { lazy, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import React, { Suspense } from 'react';
 import Loading from '../components/loading';
 import NoSSR from '../components/nossr';
 import Page from '../components/page';
 
-//import {CloudViewOnlyPreset} from "@splunk/dashboard-presets";
-//import dynamic from "next/dynamic";
-
-//export const CloudViewOnlyPreset = dynamic(
-//  () => import("@splunk/dashboard-presets").then((lib) => lib.CloudViewOnlyPreset),
-//  { ssr: false, }
-//);
-
-const Dashboard = lazy(() => import('../components/dashboard'));
-
+const Dashboard = dynamic(() => import('../components/dashboard'), {
+  ssr: false,
+});
 //import CdnDataSource from '../datasource';
 
 //const presets = {...CloudViewOnlyPreset, ...{dataSources:{"ds.cdn":"CdnDataSource"}}}
