@@ -120,7 +120,6 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
 
     // If older-style array then convert to object
     dashboards = Array.isArray(dashboards) ? dashboards.reduce((a, v) => ({ ...a, [v]: {}}), {}) : dashboards
-    console.log(`Generating ${dashboards.length} dashboards...`);
 
     for (const dashboard in dashboards) {
         const targetName = dashboard;

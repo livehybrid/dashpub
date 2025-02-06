@@ -95,16 +95,16 @@ async function storeImage(data, filename, {name = 'img', projectDir}) {
 async function streamToBuffer(readableStream) {
     const reader = readableStream.getReader();
     const chunks = [];
-  
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       chunks.push(value);
     }
-  
+
     return Buffer.concat(chunks);
   }
-  
+
 
 async function downloadImage(src, assetType, splunkdInfo, projectDir) {
     if (!src) {
@@ -153,8 +153,10 @@ async function downloadImage(src, assetType, splunkdInfo, projectDir) {
         if (process.env.DASHPUB_FQDN && mimeType=="image/svg+xml") {
             var newUri = `${process.env.DASHPUB_FQDN}/assets/${filename}`;
         } else if (mimeType=="image/svg+xml") {
+            const base64SVG = data.toString('base64');
+            var newUri = `data:image/svg+xml;base64,${base64SVG}`;
         // Else return the SVG XML content and embed into dash definition
-            var newUri = data.toString();
+//          var newUri = data.toString();
         } else {
             var newUri = `/assets/${filename}`;
         }

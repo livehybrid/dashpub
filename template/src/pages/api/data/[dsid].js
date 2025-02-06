@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Splunk Inc. 
+Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ let SNAPSHOTS = USE_SNAPSHOT ? require('./_snapshot.json') : null;
 const qualifiedSearchString = (query) => (query.trim().startsWith('|') ? query : `search ${query}`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const MIN_REFRESH_TIME = 60;
+const MIN_REFRESH_TIME = parseInt(process.env.MIN_REFRESH_TIME, 10) || 60;
 const agent = process.env.SPLUNKD_URL.startsWith('https')
     ? new (require('https').Agent)({
           rejectUnauthorized: false,
@@ -102,7 +102,7 @@ const dataResp = async (req, res) => {
         let complete = false;
         while (!complete) {
             const statusData = await fetch(
-                `${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs/${encodeURIComponent(sid)}?output_mode=json`,
+                `${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${encodeURIComponent(sid)}?output_mode=json`,
                 {
                     headers: {
                         Authorization: AUTH_HEADER,
@@ -130,14 +130,14 @@ const dataResp = async (req, res) => {
             offset: 0,
             search: search.postprocess,
         });
-        const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs/${sid}/results?${resultsQs}`, {
-            method: 'GET',
+        const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
+            method: 'POST',
             headers: {
                 Authorization: AUTH_HEADER,
             },
+            body: resultsQs,
             agent,
         }).then((r) => r.json());
-
         log('Retrieved count=%d results from job sid=%s for data fn id=%s', data.columns.length, sid, id);
         res.setHeader('cache-control', `s-maxage=${refresh}, stale-while-revalidate`);
         const { columns, fields } = data;
