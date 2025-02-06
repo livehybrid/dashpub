@@ -155,7 +155,6 @@ async function downloadImage(src, assetType, splunkdInfo, projectDir) {
         } else if (mimeType=="image/svg+xml") {
             const base64SVG = data.toString('base64');
             var newUri = `data:image/svg+xml;base64,${base64SVG}`;
-            console.log(newUri);
         // Else return the SVG XML content and embed into dash definition
 //          var newUri = data.toString();
         } else {
