@@ -20,7 +20,6 @@ const settings = Object.assign({}, require('./package.json').dashpub.settings);
 
 const withTM = require('next-transpile-modules')([
   '@splunk/visualizations',
-  '@splunk/visualizations/Map',
   '@splunk/dashboard-presets',
   'maplibre-gl',
   'd3-array',
