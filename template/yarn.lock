@@ -1058,10 +1058,10 @@
     prop-types "^15.6.0"
     react-is "^16.10.0"
 
-"@splunk/react-icons@4.10.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.10.0", "@splunk/react-icons@^4.6.0", "@splunk/react-icons@^4.8.0":
-  version "4.10.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.10.0.tgz#870e440e55b30550bf1090a9cfef72b79d362ed3"
-  integrity sha512-DJm1/t5zrSQqlyIiU8tQ5edP0CW1NsOBNw+nsmGQzrjlsMkmbTP5/EJsxkbxfP11c3UHc2SSQKbf3OXG13Gbcw==
+"@splunk/react-icons@4.11.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.11.0", "@splunk/react-icons@^4.6.0", "@splunk/react-icons@^4.8.0":
+  version "4.11.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.11.0.tgz#968794955ec2dae497746d6ec921e69c3ee60b80"
+  integrity sha512-jtw7V2paERUhj9e1nAMTqe5QYOErJN7kuVCOPEv0hkQUG+KT44ix//bGRV9pmUXSAg9NZ9gAOvq4Ba6iCxNvwQ==
   dependencies:
     "@splunk/ui-utils" "^1.7.1"
     lodash "^4.17.14"
@@ -1111,17 +1111,17 @@
     lodash "^4.17.19"
     prop-types "^15.6.0"
 
-"@splunk/react-ui@4.41.0", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.39.0", "@splunk/react-ui@^4.41.0":
-  version "4.41.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.41.0.tgz#c02199a059e0e8330d4ae43d13f13a2a1684fa9b"
-  integrity sha512-nhc2LIxbhD2pF06EupbjrOp7gfJS4n4b2hwR150pKw0QAIywrAOUNsIDoJ9mJ9NePoiJPNvOaXpSKtL7yT7mKA==
+"@splunk/react-ui@4.42.0", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.39.0", "@splunk/react-ui@^4.41.0":
+  version "4.42.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.42.0.tgz#9f430468fa026988e89d10a64743a0603fca5430"
+  integrity sha512-Mjz8kABT8GQBAQfOVfMZkhMMAmJ45PGiE469mlm5CkTkefMt3K9y415HSCzChnASYR8FeeSj44U9r/o/J8FENQ==
   dependencies:
     "@dnd-kit/core" "^6.1.0"
     "@dnd-kit/modifiers" "^7.0.0"
     "@dnd-kit/sortable" "^8.0.0"
     "@dnd-kit/utilities" "^3.2.2"
-    "@splunk/react-icons" "^4.10.0"
-    "@splunk/themes" "^0.22.0"
+    "@splunk/react-icons" "^4.11.0"
+    "@splunk/themes" "^0.23.0"
     "@splunk/ui-utils" "^1.7.1"
     commonmark "^0.30.0"
     commonmark-react-renderer "^4.3.2"
@@ -1180,6 +1180,15 @@
   version "0.22.0"
   resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.22.0.tgz#405697459748a222ac43b414c1028f79de5aea50"
   integrity sha512-U4/PO3KzJLv18TGq8omO8alUTWrABU5Ruxu4ywBV1IfYPHVET+SSqAAl8iapboZR+IoFnrSpxxsjQhgPMNhtLA==
+  dependencies:
+    color-blend "^2.0.9"
+    lodash "^4.17.14"
+    tinycolor2 "^1.4.1"
+
+"@splunk/themes@^0.23.0":
+  version "0.23.0"
+  resolved "https://registry.yarnpkg.com/@splunk/themes/-/themes-0.23.0.tgz#dba6448ed8e22038d32dc29365025529ab2e197c"
+  integrity sha512-FUVcKO9osYIL3wRWtydYHwHs8HOBE5mM+DGONc1zsSACyYCUZg7RDh9HZNABtpZY8Qjc4KobsK0PJKXpiObrLg==
   dependencies:
     color-blend "^2.0.9"
     lodash "^4.17.14"
