@@ -18,26 +18,51 @@ const fs = require('fs');
 const path = require('path');
 const settings = Object.assign({}, require('./package.json').dashpub.settings);
 
-module.exports = {
-    webpack(config, { buildId, webpack }) {
-        const snapshotPath = path.join(__dirname, 'src/pages/api/data/_snapshot.json');
-        if (!fs.existsSync(snapshotPath)) {
-            fs.writeFileSync(snapshotPath, '{}', { encoding: 'utf-8' });
-        }
-        if (settings.useDataSnapshots) {
-            const contents = fs.readFileSync(snapshotPath, { encoding: 'utf-8' });
-            if (contents === '{}') {
-                throw new Error('Data snapshots are enabled, but snapshot is empty');
-            }
-        }
+const withTM = require('next-transpile-modules')([
+  '@splunk/visualizations',
+  '@splunk/dashboard-presets',
+  'maplibre-gl',
+  'd3-array',
+  'd3-interpolate',
+]);
 
-        config.plugins.push(
-            new webpack.DefinePlugin({
-                'process.env.USE_DATA_SNAPSHOTS': JSON.stringify(settings.useDataSnapshots),
-                'process.env.DASHPUB_BUILD_ID': JSON.stringify(buildId),
-            })
-        );
+module.exports = withTM({
+  experimental: {
+    esmExternals: 'loose',
+  },
+  webpack(config, { isServer, buildId, webpack }) {
+    // (Your snapshot file and plugin definitions remain the same)
+    const snapshotPath = path.join(__dirname, 'src/pages/api/data/_snapshot.json');
+    if (!fs.existsSync(snapshotPath)) {
+      fs.writeFileSync(snapshotPath, '{}', { encoding: 'utf-8' });
+    }
+    if (settings.useDataSnapshots) {
+      const contents = fs.readFileSync(snapshotPath, { encoding: 'utf-8' });
+      if (contents === '{}') {
+        throw new Error('Data snapshots are enabled, but snapshot is empty');
+      }
+    }
 
-        return config;
-    },
-};
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env.USE_DATA_SNAPSHOTS': JSON.stringify(settings.useDataSnapshots),
+        'process.env.DASHPUB_BUILD_ID': JSON.stringify(buildId),
+      })
+    );
+
+    // Optionally, keep our externals override for d3-array and d3-interpolate
+    if (!isServer && config.externals) {
+      config.externals = config.externals.map((external) => {
+        if (typeof external !== 'function') return external;
+        return (context, request, callback) => {
+          if (request === 'd3-array' || request === 'd3-interpolate') {
+            return callback(); // force bundling these packages
+          }
+          return external(context, request, callback);
+        };
+      });
+    }
+
+    return config;
+  },
+});
