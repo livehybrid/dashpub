@@ -138,8 +138,7 @@ class Home extends Component {
     render() {
         const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;
         const BASE_SCREENSHOT_URL = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || null;
-        const BASE_DASHBOARD_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost"; 
-        console.log(BASE_DASHBOARD_URL);
+        const BASE_DASHBOARD_URL = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : "http://localhost"; 
         const generateHash = (url) => {
             return crypto.createHash("sha256").update(url).digest("hex").substring(0, 10);
         };
