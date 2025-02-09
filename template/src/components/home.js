@@ -139,7 +139,7 @@ class Home extends Component {
         const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;
         const BASE_SCREENSHOT_URL = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || null;
         const BASE_DASHBOARD_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost"; 
-        
+        console.log(BASE_DASHBOARD_URL);
         const generateHash = (url) => {
             return crypto.createHash("sha256").update(url).digest("hex").substring(0, 10);
         };
@@ -152,7 +152,7 @@ class Home extends Component {
                     // Generate the hash and construct the screenshot URL
                     const dashboardURL = `${BASE_DASHBOARD_URL}/${k}`;
                     const hash = generateHash(dashboardURL);
-                    screenshotSrc = `${BASE_SCREENSHOT_URL}/${hash}.jpg`;
+                    screenshotSrc = `${BASE_SCREENSHOT_URL}/screenshots/${hash}.jpg`;
                 } else {
                     // Use the original logic when BASE_SCREENSHOT_URL is not set
                     screenshotSrc = `/screenshots/${k}.jpg`;
