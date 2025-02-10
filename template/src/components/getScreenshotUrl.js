@@ -5,7 +5,7 @@ const BASE_SCREENSHOT_URL = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || null;
 const BASE_DASHBOARD_URL = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : "http://localhost";
 
 const generateHash = (url) => {
-    return crypto.createHash("sha256").update(url).digest("hex").substring(0, 10);
+    return crypto.createHash("sha256").update(url).digest("hex").substring(0, 32);
 };
 
 /**
