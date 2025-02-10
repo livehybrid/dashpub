@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { format } from "util";
 
 const BASE_SCREENSHOT_URL = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || null;
 const BASE_DASHBOARD_URL = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : "http://localhost";
