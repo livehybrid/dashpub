@@ -1,5 +1,3 @@
-<img width="1795" alt="image" src="https://github.com/user-attachments/assets/b1641369-0fdb-49aa-bb46-d381c6393ee6" /># Docker Instructions
-
 Use one of the options below to deploy your Dashboard Publisher App. This is aimed to be a starting point to enable you to publish your dashboards. Depending on your use-cases, you may wish to consider additional configuration, such as caching/screenshotting/authentication/logging, and high-availability.  
 Due to the nature of how the production site is built, it is not recommended to run two containers and load-balance between them, as certain cached files may not exist in a secondary container. HA is possible using this approach but requires further configuration.
 
