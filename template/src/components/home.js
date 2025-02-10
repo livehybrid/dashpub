@@ -18,8 +18,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
-const crypto = require('crypto');
-
+import getScreenshotUrl from 'getScreenshotUrl';
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
@@ -136,32 +135,16 @@ class Home extends Component {
     }
 
     render() {
-        const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;
-        const BASE_SCREENSHOT_URL = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || null;
-        const BASE_DASHBOARD_URL = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : "http://localhost"; 
-        const generateHash = (url) => {
-            return crypto.createHash("sha256").update(url).digest("hex").substring(0, 10);
-        };
-                
+        const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;                
         const renderScreenshot = (k) => {
             if (INSERT_SCREENSHOTS) {
-                let screenshotSrc;
-        
-                if (BASE_SCREENSHOT_URL) {
-                    // Generate the hash and construct the screenshot URL
-                    const dashboardURL = `${BASE_DASHBOARD_URL}/${k}`;
-                    const hash = generateHash(dashboardURL);
-                    screenshotSrc = `${BASE_SCREENSHOT_URL}/screenshots/${hash}.jpg`;
-                } else {
-                    // Use the original logic when BASE_SCREENSHOT_URL is not set
-                    screenshotSrc = `/screenshots/${k}.jpg`;
-                }
+                const screenshotUrl = getScreenshotUrl(dashboardKey);
         
                 return (
                     <Card.Body>
                         <Screenshot 
                             style={{ width: 330 }} 
-                            src={screenshotSrc} 
+                            src={screenshotUrl} 
                             alt={dashboardManifest[k]?.title || "Screenshot"} 
                         />
                     </Card.Body>

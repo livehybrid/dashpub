@@ -3,20 +3,20 @@ import React, { Suspense } from 'react';
 import Loading from '../components/loading';
 import NoSSR from '../components/nossr';
 import Page from '../components/page';
+import getScreenshotUrl from '../components/getScreenshotUrl';
 
 const Dashboard = dynamic(() => import('../components/dashboard'), {
   ssr: false,
 });
-//import CdnDataSource from '../datasource';
-
-//const presets = {...CloudViewOnlyPreset, ...{dataSources:{"ds.cdn":"CdnDataSource"}}}
 
 export default function DashboardPage({ definition, dashboardId, baseUrl }) {
+    const screenshotUrl = getScreenshotUrl(dashboardId);
+
     return (
         <Page
             title={definition.title || 'Dashboard'}
             description={definition.description}
-            imageUrl={`/screenshot/${dashboardId}.jpg`}
+            imageUrl={screenshotUrl}
             path={`/${dashboardId}`}
             //  backgroundColor={"#171d21"}
             theme={definition.theme || 'light'}
