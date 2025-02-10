@@ -18,7 +18,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
-import getScreenshotUrl from 'getScreenshotUrl';
+import getScreenshotUrl from './getScreenshotUrl';
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
