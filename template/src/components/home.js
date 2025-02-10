@@ -138,7 +138,7 @@ class Home extends Component {
         const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;                
         const renderScreenshot = (k) => {
             if (INSERT_SCREENSHOTS) {
-                const screenshotUrl = getScreenshotUrl(dashboardKey);
+                const screenshotUrl = getScreenshotUrl(k);
         
                 return (
                     <Card.Body>
