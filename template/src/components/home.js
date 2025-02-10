@@ -18,7 +18,7 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
-
+import getScreenshotUrl from './getScreenshotUrl';
 //import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
 
@@ -135,15 +135,22 @@ class Home extends Component {
     }
 
     render() {
-        const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;
+        const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;                
         const renderScreenshot = (k) => {
             if (INSERT_SCREENSHOTS) {
+                const screenshotUrl = getScreenshotUrl(k);
+        
                 return (
                     <Card.Body>
-                        <Screenshot style={{ width: 330 }} src={`/screenshots/${k}.jpg`} alt={dashboardManifest[k]['title']} />
+                        <Screenshot 
+                            style={{ width: 330 }} 
+                            src={screenshotUrl} 
+                            alt={dashboardManifest[k]?.title || "Screenshot"} 
+                        />
                     </Card.Body>
                 );
             }
+            return null;
         };
 
         const renderTags = (k) => {
