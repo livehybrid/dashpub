@@ -1,5 +1,3 @@
-# Docker Instructions
-
 Use one of the options below to deploy your Dashboard Publisher App. This is aimed to be a starting point to enable you to publish your dashboards. Depending on your use-cases, you may wish to consider additional configuration, such as caching/screenshotting/authentication/logging, and high-availability.  
 Due to the nature of how the production site is built, it is not recommended to run two containers and load-balance between them, as certain cached files may not exist in a secondary container. HA is possible using this approach but requires further configuration.
 
@@ -25,6 +23,7 @@ Note: that this image is maintained by @livehybrid and not maintained by Splunk.
 | DASHPUB_TITLE | "Dashboards" | Set the page `<title>` and the header title on the front page. |
 | DASHPUB_VERCEL | *None* | Whether to deploy to Vercel, Set to `n` to prevent deploying to Vercel and continue with the local running of the app. This is used to remove the need for interactive configuration/setup. *Future enhancement in progress to remove the need to set this when within Docker Container* |
 | SEARCH_JOB_DELAY_MS | 250 | Sets the number of milliseconds to wait between checking if the search job has completed, defaults to 250ms if not set |
+| NEXT_PUBLIC_BASE_SCREENSHOT_URL | *None* | Use remote endpoint for Screenshots - *Experimental* - Designed for use with https://beta.dashpub.online
 | NODE_TLS_REJECT_UNAUTHORIZED | 1 | Check for validity of SSL certificate if connecting to Splunk with https:// - Set to 0 to disable SSL validation |
 | VERCEL_URL | *None* | Used in conjunction with `DASHPUB_SCREENSHOTS` to set HTML Metadata to display Dashboard screenshot when URL is *unfurled* (e.g., posting in Slack/LinkedIn etc) |
 

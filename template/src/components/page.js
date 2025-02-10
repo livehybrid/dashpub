@@ -29,12 +29,19 @@ const GlobalBackgroundStyle = createGlobalStyle`
 `;
 
 const fullUrl = (baseUrl, path) => {
-    if (!baseUrl) {
-        return path;
+    try {
+        // Check if the path is already an absolute URL
+        const url = new URL(path);
+        return url.href;
+    } catch (e) {
+        // If it's not an absolute URL, construct it using baseUrl
+        if (!baseUrl) {
+            return path;
+        }
+        const u = new URL(baseUrl);
+        u.pathname = path;
+        return u.href;
     }
-    const u = new URL(baseUrl);
-    u.pathname = path;
-    return u.href;
 };
 
 export default function Page({
