@@ -4,7 +4,6 @@ import Page from '../components/page';
 import Link from '@splunk/react-ui/Link';
 import styled from 'styled-components';
 import useSplunkTheme from '@splunk/themes/useSplunkTheme';
-import { format } from "util";
 import 'bootstrap/dist/css/bootstrap.css';
 import getScreenshotUrl from '../components/getScreenshotUrl';
 
