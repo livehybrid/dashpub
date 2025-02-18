@@ -1,41 +1,52 @@
 // // _middleware.js
 import { NextRequest, NextResponse } from 'next/server';
 
-async function verifyJwt(token, secret) {
-    // Split the JWT into its components
+async function verifyJwt(token: string, secret: string) {
     const parts = token.split('.');
     if (parts.length !== 3) {
         throw new Error('Invalid token');
     }
 
-    const header = JSON.parse(atob(parts[0]));
-    // const payload = JSON.parse(atob(parts[1]));
-    const signature = parts[2];
+    const [headerB64, payloadB64, signatureB64] = parts;
 
-    // Ensure the algorithm is HS256 (as an example)
-    if (header.alg !== 'HS256') {
-        throw new Error('Unsupported algorithm');
-    }
+    // Decode base64 URL to Uint8Array
+    const signature = decodeBase64Url(signatureB64);
 
-    // Prepare the signing input
-    const data = new TextEncoder().encode(parts.slice(0, 2).join('.'));
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
 
-    // Convert the secret and the signature into the format required by Web Crypto API
+    // Import the key
     const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        new TextEncoder().encode(secret),
-        { name: 'HMAC', hash: { name: 'SHA-256' } },
+        "raw", // key format
+        keyData,
+        { name: "HMAC", hash: "SHA-256" },
         false,
-        ['verify']
+        ["verify"]
     );
 
-    const signatureArrayBuffer = _base64UrlToArrayBuffer(signature);
+    // Verify the JWT
+    const valid = await crypto.subtle.verify(
+        "HMAC",
+        cryptoKey,
+        signature, // Must be Uint8Array
+        encoder.encode(headerB64 + "." + payloadB64) // Signed data
+    );
 
-    // Verify the signature
-    const isValid = await crypto.subtle.verify('HMAC', cryptoKey, signatureArrayBuffer, data);
-
-    return isValid;
+    return valid;
 }
+
+// Helper function to decode Base64 URL
+function decodeBase64Url(base64Url: string) {
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+}
+
 
 function _base64UrlToArrayBuffer(base64Url) {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -85,7 +96,7 @@ export async function middleware(req) {
     }
     try {
         // Verify the token
-        const decoded = await verifyJwt(token, process.env.JWT_KEY || 'DefaultJWTKey');
+        const decoded = await verifyJwt(token.value, process.env.JWT_KEY || 'DefaultJWTKey');
         if (!decoded) {
             return redirectToLogin(req, 'jwtInvalid');
         }
