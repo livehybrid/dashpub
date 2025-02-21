@@ -86,6 +86,9 @@ function parseRefreshTime(refresh, dsDefaults, defaultValue = 400) {
 }
 
 async function generateCdnDataSource([key, ds], app, allDataSources, defaults) {
+    if (ds.type === 'ds.test') {
+        return [[],[key, ds]];
+    }
     let settings = ds.options;
     if (ds.type === 'ds.chain') {
         const base = allDataSources[ds.options.extend];
