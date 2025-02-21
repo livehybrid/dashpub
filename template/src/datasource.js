@@ -71,7 +71,7 @@ export function createDataSet(data, options = {}) {
 
 function createNextPayload({ data, vizOptions }) {
     return {
-        data,
+        data: data.toJSONCols(),
         meta: {
             percentComplete: 100,
             status: 'done',
