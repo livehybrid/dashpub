@@ -23,7 +23,7 @@
         "next": "^15.1.6",
         "next-transpile-modules": "^10.0.1",
         "null-loader": "^4.0.1",
-        "postcss": "8.5.2",
+        "postcss": "8.5.3",
         "query-string": "9.1.1",
         "querystring": "0.2.1",
         "react": "18.3.1",
@@ -34,7 +34,7 @@
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
-        "eslint": "^9.20.1"
+        "eslint": "^9.21.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "28.1.0",
