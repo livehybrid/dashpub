@@ -69,10 +69,17 @@ export function createDataSet(data, options = {}) {
     return DataSet.fromJSONCols(transformedData.fields, transformedData.columns);
 }
 
-function createNextPayload({ data, vizOptions }) {
+function createNextPayload({ data, vizOptions, requestParams }) {
+    const pagedData = data
+        .getPage({
+            count: requestParams == null ? void 0 : requestParams.count,
+            offset: requestParams == null ? void 0 : requestParams.offset,
+        })
+        .toJSONCols();
     return {
-        data: data.toJSONCols(),
+        data: pagedData,
         meta: {
+            sid: 'dashpub_sid',
             percentComplete: 100,
             status: 'done',
             totalCount: (data.columns[0] || []).length,
@@ -99,13 +106,24 @@ export default class PublicDataSource extends DataSource {
 
             (async () => {
                 let initial = true;
-
+                observer.next({
+                    data: DataSet.empty(),
+                    meta: {
+                        sid: 'x',
+                        percentComplete: 0,
+                        status: 'running',
+                        totalCount: 0,
+                        lastUpdated: new Date().toISOString(),
+                    },
+                    vizOptions: this.vizOptions,
+                });
                 if (LAST_RESULTS[this.uri]) {
                     const { ts, data } = LAST_RESULTS[this.uri];
                     observer.next(
                         createNextPayload({
                             data: createDataSet(data, options),
                             vizOptions: this.vizOptions,
+                            requestParams: options,
                         })
                     );
                     const wait = this.refresh - (Date.now() - ts);
@@ -137,6 +155,7 @@ export default class PublicDataSource extends DataSource {
                             createNextPayload({
                                 data: createDataSet(data, options),
                                 vizOptions: this.vizOptions,
+                                requestParams: options,
                             })
                         );
                     } catch (e) {
