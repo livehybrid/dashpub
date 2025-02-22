@@ -114,7 +114,7 @@ export default function Dashboard({ definition, preset, width = '100vw', height 
         <DashboardContextProvider
             mapTileConfig={mapTileConfig}
             geoRegistry={geoRegistry}
-            featureFlags={{ enableSvgHttpDownloader: true, enableShowHide: true }}
+            featureFlags={{ enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true }}
             preset={defaultPreset}
             initialDefinition={processedDef}
             initialMode="view"

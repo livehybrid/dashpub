@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "license": "UNLICENSED",
     "dependencies": {
-        "@babel/runtime": "^7.26.7",
+        "@babel/runtime": "^7.26.9",
         "@splunk/dashboard-context": "28.1.0",
         "@splunk/dashboard-core": "28.1.0",
         "@splunk/dashboard-presets": "28.1.0",
@@ -17,13 +17,13 @@
         "cookies-next": "5.1.0",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
-        "eslint-config-next": "15.1.6",
+        "eslint-config-next": "15.1.7",
         "fast-text-encoding": "1.0.6",
         "jsonwebtoken": "9.0.2",
         "next": "^15.1.6",
         "next-transpile-modules": "^10.0.1",
         "null-loader": "^4.0.1",
-        "postcss": "8.5.1",
+        "postcss": "8.5.3",
         "query-string": "9.1.1",
         "querystring": "0.2.1",
         "react": "18.3.1",
@@ -34,7 +34,7 @@
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
-        "eslint": "^9.20.0"
+        "eslint": "^9.21.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "28.1.0",
