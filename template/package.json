@@ -17,7 +17,7 @@
         "cookies-next": "5.1.0",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
-        "eslint-config-next": "15.1.7",
+        "eslint-config-next": "15.2.3",
         "fast-text-encoding": "1.0.6",
         "jsonwebtoken": "9.0.2",
         "next": "^15.1.6",
