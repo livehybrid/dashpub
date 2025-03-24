@@ -50,7 +50,9 @@
         "is-extendable": "0.1.1",
         "extend-shallow": "2.0.1",
         "**/d3-color": "^3.1.0",
-        "**/postcss": "^8.4.31"
+        "**/postcss": "^8.4.31",
+        "**/jspdf": "^3.0.1",
+        "**/dompurify": "^3.2.4"
     },
     "scripts": {
         "dev": "next dev",
