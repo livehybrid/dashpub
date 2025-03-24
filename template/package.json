@@ -34,7 +34,7 @@
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
-        "eslint": "^9.21.0"
+        "eslint": "^9.23.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "28.1.0",
