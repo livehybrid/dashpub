@@ -20,7 +20,7 @@
         "eslint-config-next": "15.2.3",
         "fast-text-encoding": "1.0.6",
         "jsonwebtoken": "9.0.2",
-        "next": "^15.2.3",
+        "next": "^15.2.4",
         "next-transpile-modules": "^10.0.1",
         "null-loader": "^4.0.1",
         "postcss": "8.5.3",
