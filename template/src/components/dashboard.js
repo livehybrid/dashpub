@@ -69,11 +69,14 @@ function updateAssetUrls(orig, { origin = window.location.origin } = {}) {
             images.add(viz.options.src);
         }
     }
-    if (def.layout.options.backgroundImage && def.layout.options.backgroundImage.src) {
+    if (def.layout?.options?.backgroundImage?.src) {
         def.layout.options.backgroundImage.src = normalizeImageUrl(def.layout.options.backgroundImage.src);
         images.add(def.layout.options.backgroundImage.src);
     }
-    if (!def.layout.options.backgroundColor) {
+    if (!def.layout?.options?.backgroundColor) {
+        if (!def.layout.options) {
+            def.layout.options = {};
+        }
         def.layout.options.backgroundColor = '#ffffff';
     }
     return [def, [...images].filter((img) => img != null)];
