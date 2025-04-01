@@ -1064,10 +1064,10 @@
     "@splunk/ui-utils" "^1.8.0"
     prop-types "^15.8.1"
 
-"@splunk/react-icons@4.12.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.10.0", "@splunk/react-icons@^4.12.0", "@splunk/react-icons@^4.8.0":
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.12.0.tgz#019ad73046a3ac1317cb4c181c065f92cb1aea6e"
-  integrity sha512-nRWGInCtItSOeO+ocd1q8PfU0DbKQ5TbTaZRfe8ROosB0RGHLgozChzuwya6jqg4B+rYHjJciOMSRJS3YQLEAQ==
+"@splunk/react-icons@4.13.0", "@splunk/react-icons@^4.0.1", "@splunk/react-icons@^4.10.0", "@splunk/react-icons@^4.12.0", "@splunk/react-icons@^4.13.0", "@splunk/react-icons@^4.8.0":
+  version "4.13.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-icons/-/react-icons-4.13.0.tgz#5cb2593409dda759bfb6a0b0aac325a6fcef9b94"
+  integrity sha512-4dXiga8YKwpi+QCWU2Hmesl1DpcPTr6bzYoODPEKul3YB17jdYYQhvdAmheuCrqM/TuCDtbW8X7fvDHeiarrYw==
   dependencies:
     "@splunk/ui-utils" "^1.8.0"
     lodash "^4.17.14"
@@ -1117,16 +1117,16 @@
     lodash "^4.17.19"
     prop-types "^15.6.0"
 
-"@splunk/react-ui@4.43.0", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.42.0", "@splunk/react-ui@^4.43.0":
-  version "4.43.0"
-  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.43.0.tgz#939f54773bf5e9535664a4fc307d1f4d1130ac80"
-  integrity sha512-tLa3xT98Hq1ODUH07DCaatq23Mxqeyk1wcCj9gS/gk1uzz03HR92XFU3ePyKsDRv1b5vfz7ewnMNRGJEtX3J1g==
+"@splunk/react-ui@4.44.0", "@splunk/react-ui@^4.19.0", "@splunk/react-ui@^4.42.0", "@splunk/react-ui@^4.43.0":
+  version "4.44.0"
+  resolved "https://registry.yarnpkg.com/@splunk/react-ui/-/react-ui-4.44.0.tgz#d6c25fdb66c979c1d48e5298e8cbfa610c5b45ae"
+  integrity sha512-i6MZq3de8WpXFccZo9oFnvAaNBXnbEMojrwDE3G+kRJOZbN+vIiCrHwT7kL9WWU4Wb51mzK33JOWE8r13ei7pg==
   dependencies:
     "@dnd-kit/core" "^6.1.0"
     "@dnd-kit/modifiers" "^7.0.0"
     "@dnd-kit/sortable" "^8.0.0"
     "@dnd-kit/utilities" "^3.2.2"
-    "@splunk/react-icons" "^4.12.0"
+    "@splunk/react-icons" "^4.13.0"
     "@splunk/themes" "^0.23.0"
     "@splunk/ui-utils" "^1.8.0"
     commonmark "^0.30.0"
