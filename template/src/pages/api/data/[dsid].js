@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const qs = require('querystring');
 const DATASOURCES = require('./_datasources.json');
 const debug = require('debug')('datafn');
 debug.enabled = true;
@@ -74,20 +73,22 @@ const dataResp = async (req, res) => {
             ? `Bearer ${process.env.SPLUNKD_TOKEN}`
             : `Basic ${Buffer.from([process.env.SPLUNKD_USER, process.env.SPLUNKD_PASSWORD].join(':')).toString('base64')}`;
 
+        const bodyParams = new URLSearchParams({
+            output_mode: 'json',
+            earliest_time: (search.queryParameters || {}).earliest || '',
+            latest_time: (search.queryParameters || {}).latest || '',
+            search: qualifiedSearchString(query),
+            reuse_max_seconds_ago: refresh,
+            timeout: refresh * 2,
+        });
+
         const r = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
             method: 'POST',
             headers: {
                 Authorization: AUTH_HEADER,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: qs.stringify({
-                output_mode: 'json',
-                earliest_time: (search.queryParameters || {}).earliest,
-                latest_time: (search.queryParameters || {}).latest,
-                search: qualifiedSearchString(query),
-                reuse_max_seconds_ago: refresh,
-                timeout: refresh * 2,
-            }),
+            body: bodyParams,
             agent: agent,
         });
 
@@ -97,7 +98,6 @@ const dataResp = async (req, res) => {
         const { sid } = await r.json();
         const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
         log(`Received search job sid=${sid}, using checkDelay=${checkDelay} - waiting for job to complete`);
-
 
         let complete = false;
         while (!complete) {
@@ -121,23 +121,24 @@ const dataResp = async (req, res) => {
             }
         }
 
-
         log('Search job sid=%s for data fn id=%s is complete', sid, id);
 
-        const resultsQs = qs.stringify({
+        const resultsParams = new URLSearchParams({
             output_mode: 'json_cols',
             count: 50000,
             offset: 0,
-            search: search.postprocess,
+            search: search.postprocess || '',
         });
+
         const data = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
             method: 'POST',
             headers: {
                 Authorization: AUTH_HEADER,
             },
-            body: resultsQs,
+            body: resultsParams,
             agent,
         }).then((r) => r.json());
+
         log('Retrieved count=%d results from job sid=%s for data fn id=%s', data.columns.length, sid, id);
         res.setHeader('cache-control', `s-maxage=${refresh}, stale-while-revalidate`);
         const { columns, fields } = data;
