@@ -31,6 +31,12 @@ const { initVercelProject } = require('./vercel');
 
 require('dotenv').config();
 
+const debug = (msg) => {
+    if (process.env.DEBUG) {
+        console.log(`[DEBUG] ${msg}`);
+    }
+};
+
 const toFolderName = (projectName) => projectName.toLowerCase().replace(/[\W_]+/g, '-');
 
 const postInitInstructions = ({ folderName }) => chalk`
@@ -51,7 +57,7 @@ Next steps:
 async function findCustomVizJsFilesInDirectory() {
     const dirPath = process.env.DASHPUB_CUSTOM_VIZ_PATH;
     if (!dirPath) {
-        console.debug("Environment variable DASHPUB_CUSTOM_VIZ_PATH is not set.");
+        debug("Environment variable DASHPUB_CUSTOM_VIZ_PATH is not set.");
         return [];
     }
     try {
@@ -75,33 +81,46 @@ async function updateCustomViz(files, srcFolder, destFolder) {
         let data = await fs.readFile(presetFilePath, 'utf8');
         data = data.replace(/const CUSTOM_VIZ = \{\};/, `const CUSTOM_VIZ = {\n    ${customVizEntries}\n};`);
         await fs.writeFile(presetFilePath, data, 'utf8');
-        console.log('preset.js updated with custom viz files successfully');
+        debug('preset.js updated with custom viz files successfully');
     } catch (error) {
         console.error("Error updating preset.js:", error);
     }
 }
 
 async function generateDashboards(selectedDashboards, app, splunkdInfo, destFolder) {
-    await generate(app, selectedDashboards, splunkdInfo, destFolder);
+    debug('Starting dashboard generation process');
+    debug(`Selected dashboards: ${JSON.stringify(selectedDashboards, null, 2)}`);
+    debug(`App: ${app}`);
+    debug(`Destination folder: ${destFolder}`);
+    try {
+        await generate(app, selectedDashboards, splunkdInfo, destFolder);
+        debug('Dashboard generation completed successfully');
+    } catch (error) {
+        console.error('[ERROR] Dashboard generation failed:', error);
+        throw error;
+    }
 }
 
 async function parseDashboardsAndTags(dashboards) {
     let selectedDashboards = {};
 
     if (process.env.DASHPUB_DASHBOARDS) {
+        debug('Using dashboards from DASHPUB_DASHBOARDS environment variable');
         const dashboardEntries = process.env.DASHPUB_DASHBOARDS.split(',');
         dashboardEntries.forEach((entry) => {
-            const match = entry.match(/^([^[\]]+)(?:\[(.*?)\])?$/); // Match dashboard name optionally followed by [tags]
+            const match = entry.match(/^([^[\]]+)(?:\[(.*?)\])?$/);
             if (match) {
                 const dashboard = match[1].trim();
                 const tags = match[2] ? match[2].split('|').map((tag) => tag.trim()) : [];
-                selectedDashboards[dashboard] = { tags }; // Structure as per requirement
+                selectedDashboards[dashboard] = { tags };
+                debug(`Parsed dashboard: ${dashboard} with tags: ${tags.join(', ')}`);
             } else {
                 selectedDashboards[dashboard] = { tags: [] };
+                debug(`Parsed dashboard: ${dashboard} with no tags`);
             }
         });
     } else {
-        // Fallback to prompts if DASHPUB_DASHBOARDS is not defined
+        debug('No DASHPUB_DASHBOARDS environment variable, using interactive selection');
         selectedDashboards = await prompts.selectDashboards(dashboards);
     }
 
@@ -121,13 +140,13 @@ async function initNewProject() {
         splunkdInfo,
         splunkdPassword;
     if (process.env.DASHPUB_CONFIGFILE) {
+        debug('Using configuration from DASHPUB_CONFIGFILE');
         try {
             configObj = await fs.readJson(process.env.DASHPUB_CONFIGFILE);
-            console.log(configObj);
+            debug('Config file loaded successfully');
         } catch (err) {
             console.error(err);
         }
-        console.log(configObj);
         projectName = configObj.dashpub.projectName;
         folderName = 'app';
         splunkdUrl = configObj.dashpub.splunkd.url;
@@ -139,7 +158,9 @@ async function initNewProject() {
         splunkdUser = await splunkd.getUsername(splunkdInfo);
         selectedApp = configObj.dashpub.app;
         selectedDashboards = configObj.dashpub.dashboards;
+        debug(`Project configured from file: ${projectName} in ${folderName}`);
     } else {
+        debug('Using interactive/environment variable configuration');
         projectName = process.env.DASHPUB_PROJECTNAME ? process.env.DASHPUB_PROJECTNAME : await prompts.string('Project name:');
         folderName = process.env.DASHPUB_FOLDERNAME
             ? process.env.DASHPUB_FOLDERNAME
@@ -153,6 +174,7 @@ async function initNewProject() {
         splunkdToken = process.env.SPLUNKD_TOKEN ? process.env.SPLUNKD_TOKEN : await prompts.splunkdToken(splunkdUrl);
 
         if (!splunkdToken) {
+            debug('No token provided, using username/password authentication');
             splunkdUser = process.env.SPLUNKD_USER ? process.env.SPLUNKD_USER : await prompts.splunkdUsername();
             splunkdPassword = process.env.SPLUNKD_PASSWORD
                 ? process.env.SPLUNKD_PASSWORD
@@ -163,6 +185,7 @@ async function initNewProject() {
                 password: splunkdPassword,
             };
         } else {
+            debug('Using token authentication');
             splunkdInfo = {
                 url: splunkdUrl,
                 token: splunkdToken,
@@ -170,6 +193,8 @@ async function initNewProject() {
             splunkdUser = await splunkd.getUsername(splunkdInfo);
             splunkdPassword = '';
         }
+
+        debug('Loading available apps from Splunk');
         ux.action.start(`Loading apps`);
         const apps = await splunkd.listApps(splunkdInfo);
         ux.action.stop(`found ${apps.length} apps`);
@@ -177,49 +202,62 @@ async function initNewProject() {
 
         selectedApp =
             process.env.DASHPUB_APP && appNames.includes(process.env.DASHPUB_APP) ? process.env.DASHPUB_APP : await prompts.selectApp(apps);
+        debug(`Selected app: ${selectedApp}`);
 
+        debug(`Loading dashboards from ${selectedApp}`);
         ux.action.start(`Loading dashboards from ${selectedApp} app`);
         const dashboards = await splunkd.listDashboards(selectedApp, splunkdInfo);
         ux.action.stop(`found ${dashboards.length} dashboards`);
 
         selectedDashboards = await parseDashboardsAndTags(dashboards);
-        console.log('Selected Dashboards:', selectedDashboards);
+        debug('Selected dashboards:', selectedDashboards);
     }
 
+    debug(`Creating project in ./${folderName}`);
     console.log(`\nCreating project in ./${folderName}`);
     const srcFolder = path.join(__dirname, '..');
     const destFolder = path.join(process.cwd(), folderName);
     await fs.mkdir(destFolder);
 
     await fs.copy(path.join(srcFolder, 'template'), destFolder, { recursive: true });
+    debug('Template files copied');
 
     const jsFiles = await findCustomVizJsFilesInDirectory();
     if (jsFiles.length > 0) {
+        debug(`Found ${jsFiles.length} custom visualization files`);
         await updateCustomViz(jsFiles, process.env.DASHPUB_CUSTOM_VIZ_PATH, destFolder);
     }
-    //const copyToDest = (p, opts) => fs.copy(path.join(srcFolder, p), path.join(destFolder, p), opts);
-    //await copyToDest('yarn.lock');
+
+    debug('Updating package.json');
     await updatePackageJson(
         { folderName, version: '1.0.0', projectName, splunkdUrl, splunkdUser, selectedApp, selectedDashboards },
         { destFolder }
     );
+    debug('Writing .env file');
     await writeDotenv({ splunkdUrl, splunkdUser, splunkdPassword, splunkdToken }, { destFolder });
 
+    debug('Installing dependencies');
     await exec('yarn', ['install'], { cwd: destFolder });
     await generateDashboards(selectedDashboards, selectedApp, splunkdInfo, destFolder);
 
+    debug('Initializing git repository');
     await exec('git', ['init'], { cwd: destFolder });
     await exec('git', ['add', '.'], { cwd: destFolder });
     await exec('git', ['commit', '-m', 'initialized dashpub project'], { cwd: destFolder });
+
     if (!process.env.DASHPUB_VERCEL) {
         if (await prompts.confirm(`Setup Vercel project?`)) {
+            debug('Setting up Vercel project');
             await initVercelProject({ folderName, destFolder, splunkdUrl, splunkdUser, splunkdPassword });
         } else {
+            debug('Skipping Vercel setup');
             console.log(postInitInstructions({ folderName }));
         }
     } else if (process.env.DASHPUB_VERCEL.toLowerCase() == 'y') {
+        debug('Setting up Vercel project (automated)');
         await initVercelProject({ folderName, destFolder, splunkdUrl, splunkdUser, splunkdPassword });
     } else {
+        debug('Skipping Vercel setup (automated)');
         console.log(postInitInstructions({ folderName }));
     }
 }
