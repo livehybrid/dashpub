@@ -4,24 +4,54 @@
 
 ## Prerequisites
 
--   Node.js 12+, NPM, Yarn
--   [Vercel CLI](https://vercel.com/download) if you want to publish on Vercel
+- Node.js 18+ (Recommended)
+- npm (comes with Node)
+- [Vercel CLI](https://vercel.com/download) (if you want to publish on Vercel)
+
+### Installing Node.js on macOS (Recommended)
+We recommend using Homebrew to install Node.js:
+
+```bash
+brew install node
+```
+
+You can verify the installation with:
+
+```bash
+node -v
+npm -v
+```
 
 ## Get started
 
-1. Install `dashpub` CLI globally
+1. Clone this repository:
 
-```sh-session
-$ npm i -g @splunk/dashpub
+```bash
+git clone https://github.com/livehybrid/dashpub.git
+cd dashpub
 ```
 
-2. Initialize a new project
+2. Install dependencies:
 
-```sh-session
-$ dashpub init
+```bash
+npm install
 ```
 
-Follow the instructions to create your dashboard project.
+3. Install the CLI globally:
+
+```bash
+npm install -g .
+```
+
+4. Initialize a new project:
+
+```bash
+dashpub init
+```
+
+Follow the prompts to create your dashboard project.
+
+> Note: There is currently no `build` step required unless you add additional tooling.
 
 ---
 
@@ -38,3 +68,4 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
