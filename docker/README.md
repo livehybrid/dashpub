@@ -13,8 +13,8 @@ Note: that this image is maintained by @livehybrid and not maintained by Splunk.
 | DASHPUB_BUILD_ID | *None* | Numeric value used to assist browser caching, increment this number when rebuilding to ensure client machines reload the entire page. |  
 | DASHPUB_CUSTOM_VIZ_PATH | *None* | Path to the directory containing custom visualization files. |
 | DASHPUB_FOOTER | "Hosted Splunk Dashboards" | Set custom footer text on the home page. |
-| DASHPUB_HOSTEDBY_NAME | "" | Adds "By <Name>" to the footer, where <Name> is the value of this variable. |
-| DASHPUB_HOSTEDBY_URL | "#" | Sets the above <Name> as a link to the URL set in this variable. |
+| DASHPUB_HOSTEDBY_NAME | "" | Adds "By <n>" to the footer, where <n> is the value of this variable. |
+| DASHPUB_HOSTEDBY_URL | "#" | Sets the above <n> as a link to the URL set in this variable. |
 | DASHPUB_REPO | *None* | Used as URL in the last section of the footer which append "using Dashpub" and links the word Dashpub to the url in this variable. |
 | DASHPUB_SCREENSHOTS | *None* | Set to `Y` to enable screenshots to be displayed on the front page. *Note: This requires additional configuration and currently additional un-documented Docker services*. |  
 | DASHPUB_SCREENSHOT_EXT | "png" | Used when `DASHPUB_SCREENSHOTS` is enabled, the image extension to look for when using screenshots. |
@@ -23,6 +23,7 @@ Note: that this image is maintained by @livehybrid and not maintained by Splunk.
 | DASHPUB_TITLE | "Dashboards" | Set the page `<title>` and the header title on the front page. |
 | DASHPUB_VERCEL | *None* | Whether to deploy to Vercel, Set to `n` to prevent deploying to Vercel and continue with the local running of the app. This is used to remove the need for interactive configuration/setup. *Future enhancement in progress to remove the need to set this when within Docker Container* |
 | SEARCH_JOB_DELAY_MS | 250 | Sets the number of milliseconds to wait between checking if the search job has completed, defaults to 250ms if not set |
+| TZ | "America/Los_Angeles" | Sets the timezone for the dashboard. Uses IANA timezone format (e.g., 'America/New_York', 'Europe/London'). |
 | NEXT_PUBLIC_BASE_SCREENSHOT_URL | *None* | Use remote endpoint for Screenshots - *Experimental* - Designed for use with https://beta.dashpub.online
 | NODE_TLS_REJECT_UNAUTHORIZED | 1 | Check for validity of SSL certificate if connecting to Splunk with https:// - Set to 0 to disable SSL validation |
 | VERCEL_URL | *None* | Used in conjunction with `DASHPUB_SCREENSHOTS` to set HTML Metadata to display Dashboard screenshot when URL is *unfurled* (e.g., posting in Slack/LinkedIn etc) |

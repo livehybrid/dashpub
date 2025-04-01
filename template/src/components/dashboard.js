@@ -25,6 +25,21 @@ import { testTileConfig } from '@splunk/visualization-context/MapContext';
 
 const mapTileConfig = { defaultTileConfig: testTileConfig };
 
+/**
+ * Validates if a timezone string is a valid IANA timezone
+ * @param {string} tz - The timezone string to validate
+ * @returns {boolean} - Whether the timezone is valid
+ */
+const isValidTimezone = (tz) => {
+    try {
+        Intl.DateTimeFormat(undefined, { timeZone: tz });
+        return true;
+    } catch (e) {
+        console.warn(`Invalid timezone: ${tz}, falling back to default`);
+        return false;
+    }
+};
+
 const PROD_SRC_PREFIXES = [
     // Add URL prefixes here that will be replaced with the page's current origin
 ];
@@ -89,17 +104,32 @@ function PreloadImages(images) {
     }, [images]);
 }
 
+/**
+ * Dashboard component that renders a Splunk dashboard with configurable settings
+ * @param {Object} props - Component props
+ * @param {Object} props.definition - Dashboard definition object
+ * @param {Object} props.preset - Dashboard preset configuration
+ * @param {string} [props.width='100vw'] - Dashboard width
+ * @param {string} [props.height='100vh'] - Dashboard height
+ * @returns {React.ReactElement} Dashboard component
+ */
 export default function Dashboard({ definition, preset, width = '100vw', height = '100vh' }) {
     const [processedDef, images] = useMemo(() => updateAssetUrls(definition), [definition]);
-    PreloadImages(images);
-    // const geoRegistry = useMemo(() => {
-    //     const geoRegistry = GeoRegistry.create();
-    //     //geoRegistry.addDefaultProvider(new GeoJsonProvider());
-    //     return geoRegistry;
-    // }, []);
+    
+    const timezone = useMemo(() => {
+        const configuredTz = process.env.TZ || 'America/Los_Angeles';
+        return {
+            ianaTimezone: isValidTimezone(configuredTz) ? configuredTz : 'America/Los_Angeles'
+        };
+    }, []);
 
-    const geoRegistry = GeoRegistry.create();
-    geoRegistry.addDefaultProvider(new GeoJsonProvider());
+    PreloadImages(images);
+
+    const geoRegistry = useMemo(() => {
+        const registry = GeoRegistry.create();
+        registry.addDefaultProvider(new GeoJsonProvider());
+        return registry;
+    }, []);
 
     useEffect(() => {
         const readyDep = registerScreenshotReadinessDep('DASH');
@@ -114,6 +144,7 @@ export default function Dashboard({ definition, preset, width = '100vw', height 
         <DashboardContextProvider
             mapTileConfig={mapTileConfig}
             geoRegistry={geoRegistry}
+            timezone={timezone}
             featureFlags={{ enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true }}
             preset={defaultPreset}
             initialDefinition={processedDef}
