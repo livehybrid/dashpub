@@ -13,7 +13,7 @@
         "@splunk/react-icons": "4.12.0",
         "@splunk/react-ui": "4.43.0",
         "@splunk/visualization-context": "27.2.1",
-        "bootstrap": "5.3.3",
+        "bootstrap": "5.3.6",
         "cookies-next": "5.1.0",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
