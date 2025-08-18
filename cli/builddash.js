@@ -82,7 +82,7 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
         }
     }
 
-    if (newDash.layout.options.backgroundImage) {
+    if (newDash.layout && newDash.layout.options && newDash.layout.options.backgroundImage) {
         if (newDash.layout.options.backgroundImage.src.match(/\$.*\$/g) )
              console.log(`Skipping image download due to token ${viz.options.src}`)
         else if (newDash.layout.options.backgroundImage.src.startsWith("data:image")) {
@@ -122,28 +122,59 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
     dashboards = Array.isArray(dashboards) ? dashboards.reduce((a, v) => ({ ...a, [v]: {}}), {}) : dashboards
 
     for (const dashboard in dashboards) {
-        const targetName = dashboard;
-        ux.action.start(`Generating dashboard ${dashboard}`);
-        let dashboardTags=[];
-        if (Object.keys(dashboards[dashboard]).includes("tags")) {
-            console.log("Found tags: " + dashboards[dashboard]['tags'].join(", "));
-            dashboardTags = dashboards[dashboard]['tags'];
-        }
+        try {
+            console.log(`\n=== Starting dashboard generation for: ${dashboard} ===`);
+            const targetName = dashboard;
+            ux.action.start(`Generating dashboard ${dashboard}`);
+            let dashboardTags=[];
+            
+            console.log(`Processing dashboard: ${dashboard}`);
+            console.log(`Dashboard object keys: ${Object.keys(dashboards[dashboard]).join(', ')}`);
+            
+            if (Object.keys(dashboards[dashboard]).includes("tags")) {
+                console.log("Found tags: " + dashboards[dashboard]['tags'].join(", "));
+                dashboardTags = dashboards[dashboard]['tags'];
+            } else {
+                console.log("No tags found for this dashboard");
+            }
 
-        const [dsManifest, dashboardInfo] = await generateDashboard(
-            {
+            console.log(`Calling generateDashboard with:`, {
                 name: dashboard,
                 targetName,
                 app,
                 projectFolder,
                 dashboardTags
-            },
-            splunkdInfo
-        );
+            });
 
-        datasourcesManifest = Object.assign(datasourcesManifest, dsManifest);
-        Object.assign(dashboardsManifest, dashboardInfo);
-        ux.action.stop();
+            const [dsManifest, dashboardInfo] = await generateDashboard(
+                {
+                    name: dashboard,
+                    targetName,
+                    app,
+                    projectFolder,
+                    dashboardTags
+                },
+                splunkdInfo
+            );
+
+            console.log(`Dashboard ${dashboard} generated successfully`);
+            console.log(`Data sources found: ${Object.keys(dsManifest).length}`);
+
+            datasourcesManifest = Object.assign(datasourcesManifest, dsManifest);
+            Object.assign(dashboardsManifest, dashboardInfo);
+            ux.action.stop();
+            
+            console.log(`=== Completed dashboard generation for: ${dashboard} ===\n`);
+        } catch (error) {
+            console.error(`\n❌ ERROR generating dashboard ${dashboard}:`);
+            console.error(`Error message: ${error.message}`);
+            console.error(`Error stack: ${error.stack}`);
+            console.error(`Dashboard object:`, JSON.stringify(dashboards[dashboard], null, 2));
+            ux.action.stop(`Failed to generate dashboard ${dashboard}`);
+            
+            // Re-throw the error to stop execution and show the full error
+            throw error;
+        }
     }
 
     ux.action.start('Writing manifest files...');
