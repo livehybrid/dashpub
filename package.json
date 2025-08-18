@@ -25,21 +25,19 @@
   "bugs": {
     "url": "https://github.com/livehybrid/dashpub/issues"
   },
-  "bundleDependencies": false,
   "dependencies": {
     "@oclif/core": "^4.0.37",
     "debug": "^4.3.4",
-    "dotenv": "^16.3.1",
+    "dotenv": "^17.2.1",
     "execa": "^9.5.2",
     "fs-extra": "^11.2.0",
-    "inquirer": "^8.0.0",
+    "inquirer": "^12.9.3",
     "inquirer-checkbox-plus-prompt": "^1.4.2",
     "inquirer-search-list": "^1.2.6",
     "node-fetch": "^3.3.2",
     "prettier": "^3.1.1",
-    "querystring": "^0.2.1",
-    "sharp": "^0.33.5",
-    "xmldoc": "^1.3.0"
+    "sharp": "^0.34.3",
+    "xmldoc": "^2.0.2"
   },
   "resolutions": {
     "cross-spawn": "^7.0.5"
