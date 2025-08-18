@@ -22,7 +22,6 @@ const noValidateHttpsAgent = new (require('https').Agent)({
     rejectUnauthorized: false,
 });
 
-inquirer.registerPrompt('checkbox-plus', require('inquirer-checkbox-plus-prompt'));
 inquirer.registerPrompt('search-list', require('inquirer-search-list'));
 
 const string = (prompt, opts) =>
@@ -135,17 +134,15 @@ const splunkdToken = (url) =>
 const selectDashboards = dashboards =>
     inquirer
         .prompt({
-            type: 'checkbox-plus',
+            type: 'checkbox',
             name: 'dashboards',
             message: 'Select one or more dashboards you want to publish',
             pageSize: 10,
-            highlight: true,
-            searchable: true,
-            source: async (selected, input) => {
-                const search = (input || '').toLowerCase();
-                const matching = dashboards.filter(d => d.name.toLowerCase().includes(search) || d.label.toLowerCase().includes(search));
-                return matching.map(({ name, label }) => ({ name: `${label} [${name}]`, short: label, value: name }));
-            },
+            choices: dashboards.map(({ name, label }) => ({ 
+                name: `${label} [${name}]`, 
+                short: label, 
+                value: name 
+            })),
             validate: selected => {
                 if (selected.length > 0) {
                     return true;
