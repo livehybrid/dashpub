@@ -3,7 +3,7 @@ Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+You can obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
@@ -22,6 +22,7 @@ const noValidateHttpsAgent = new (require('https').Agent)({
     rejectUnauthorized: false,
 });
 
+inquirer.registerPrompt('checkbox-plus', require('inquirer-checkbox-plus-prompt'));
 inquirer.registerPrompt('search-list', require('inquirer-search-list'));
 
 const string = (prompt, opts) =>
@@ -134,15 +135,17 @@ const splunkdToken = (url) =>
 const selectDashboards = dashboards =>
     inquirer
         .prompt({
-            type: 'checkbox',
+            type: 'checkbox-plus',
             name: 'dashboards',
             message: 'Select one or more dashboards you want to publish',
             pageSize: 10,
-            choices: dashboards.map(({ name, label }) => ({ 
-                name: `${label} [${name}]`, 
-                short: label, 
-                value: name 
-            })),
+            highlight: true,
+            searchable: true,
+            source: async (selected, input) => {
+                const search = (input || '').toLowerCase();
+                const matching = dashboards.filter(d => d.name.toLowerCase().includes(search) || d.label.toLowerCase().includes(search));
+                return matching.map(({ name, label }) => ({ name: `${label} [${name}]`, short: label, value: name }));
+            },
             validate: selected => {
                 if (selected.length > 0) {
                     return true;
