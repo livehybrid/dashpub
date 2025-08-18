@@ -31,7 +31,7 @@
     "dotenv": "^17.2.1",
     "execa": "^9.5.2",
     "fs-extra": "^11.2.0",
-    "inquirer": "^8.0.0",
+    "inquirer": "^12.9.3",
     "inquirer-checkbox-plus-prompt": "^1.4.2",
     "inquirer-search-list": "^1.2.6",
     "node-fetch": "^3.3.2",
