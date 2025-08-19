@@ -3,7 +3,7 @@ Copyright 2020 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+You can obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
 
@@ -27,9 +27,9 @@ const withTM = require('next-transpile-modules')([
 ]);
 
 module.exports = withTM({
-  experimental: {
-    esmExternals: 'loose',
-  },
+  // Removed deprecated experimental.esmExternals option
+  reactStrictMode: true,
+  swcMinify: true,
   webpack(config, { isServer, buildId, webpack }) {
     // (Your snapshot file and plugin definitions remain the same)
     const snapshotPath = path.join(__dirname, 'src/pages/api/data/_snapshot.json');

@@ -1,7 +1,7 @@
-// // _middleware.js
+// _middleware.js
 import { NextRequest, NextResponse } from 'next/server';
 
-async function verifyJwt(token: string, secret: string) {
+async function verifyJwt(token, secret) {
     const parts = token.split('.');
     if (parts.length !== 3) {
         throw new Error('Invalid token');
@@ -36,7 +36,7 @@ async function verifyJwt(token: string, secret: string) {
 }
 
 // Helper function to decode Base64 URL
-function decodeBase64Url(base64Url: string) {
+function decodeBase64Url(base64Url) {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const binary = atob(base64);
     const len = binary.length;
@@ -46,7 +46,6 @@ function decodeBase64Url(base64Url: string) {
     }
     return bytes;
 }
-
 
 function _base64UrlToArrayBuffer(base64Url) {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -59,7 +58,7 @@ function _base64UrlToArrayBuffer(base64Url) {
     return bytes.buffer;
 }
 
-function redirectToLogin(req: NextRequest, reason: string) {
+function redirectToLogin(req, reason) {
     const url = req.nextUrl.clone();
     url.searchParams.set('returnTo', url.pathname);
     url.searchParams.set('reason', reason);
@@ -105,6 +104,7 @@ export async function middleware(req) {
         return redirectToLogin(req, 'jwtError');
     }
 }
+
 export const config = {
     matcher: ['/', '/((?!login|_next/static|_next/image|auth|favicon.ico|robots.txt|images|$).*)']
 };
