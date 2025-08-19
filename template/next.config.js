@@ -97,6 +97,29 @@ module.exports = withTM({
           fullySpecified: false
         }
       });
+      
+      // Handle maplibre-gl CSS imports
+      config.module.rules.push({
+        test: /maplibre-gl\.css$/,
+        use: ['style-loader', 'css-loader'],
+        sideEffects: true
+      });
+      
+      // Handle all CSS imports to prevent build errors
+      config.module.rules.push({
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+              modules: false
+            }
+          }
+        ],
+        sideEffects: true
+      });
     }
 
     // Handle maplibre-gl script property error using webpack plugin
