@@ -10,32 +10,27 @@ const generateHash = (url) => {
 
 /**
  * Returns the URL to the screenshot of the specified dashboard.
- * @param {string} dashboardKey - The unique key of the dashboard.
+ * This function handles both server-side and client-side rendering to prevent hydration mismatches.
+ * @param {string} dashboardId - The unique key of the dashboard.
  * @returns {string|null} - The screenshot URL or null if screenshots are disabled.
  */
-const getScreenshotUrl = (dashboardKey) => {
-    if (BASE_SCREENSHOT_URL) {
-        // Generate the hash and construct the screenshot URL
-        const adjustedDashboardKey = (dashboardKey === "index") ? "" : dashboardKey;
-        const dashboardURL = `${BASE_DASHBOARD_URL}/${adjustedDashboardKey}`;
-        const hash = generateHash(dashboardURL);
-        return `${BASE_SCREENSHOT_URL}/screenshots/${hash}.jpg`;
-    }
-    // Fallback to the original local logic if BASE_SCREENSHOT_URL is not set
-    return format("/%s/%s.%s", process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || "screens" , dashboardKey, process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || "png");
-};
-
-// getScreenshotUrl.js
-// This function should return consistent values to prevent hydration mismatches
-
 export default function getScreenshotUrl(dashboardId) {
     // Ensure consistent behavior between server and client
     if (typeof window === 'undefined') {
-        // Server-side: return a default or null to prevent hydration mismatch
+        // Server-side: return null to prevent hydration mismatch
         return null;
     }
     
     // Client-side: return the actual screenshot URL
+    if (BASE_SCREENSHOT_URL) {
+        // Generate the hash and construct the screenshot URL
+        const adjustedDashboardKey = (dashboardId === "index") ? "" : dashboardId;
+        const dashboardURL = `${BASE_DASHBOARD_URL}/${adjustedDashboardKey}`;
+        const hash = generateHash(dashboardURL);
+        return `${BASE_SCREENSHOT_URL}/screenshots/${hash}.jpg`;
+    }
+    
+    // Fallback to the original local logic if BASE_SCREENSHOT_URL is not set
     const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'assets';
     const screenshotExt = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 'png';
     
