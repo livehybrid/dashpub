@@ -30,6 +30,25 @@ module.exports = withTM({
   // Removed deprecated experimental.esmExternals option
   reactStrictMode: true,
   swcMinify: true,
+  
+  // Add trailing slash to help with routing
+  trailingSlash: false,
+  
+  // Configure headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
+    ];
+  },
+  
   webpack(config, { isServer, buildId, webpack }) {
     // (Your snapshot file and plugin definitions remain the same)
     const snapshotPath = path.join(__dirname, 'src/pages/api/data/_snapshot.json');
