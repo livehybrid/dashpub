@@ -15,12 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { DashboardContextProvider, GeoRegistry, GeoJsonProvider } from '@splunk/dashboard-context';
-import DashboardCore from '@splunk/dashboard-core';
-import React, { Suspense, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
+import { DashboardContextProvider, DashboardCore, defaultPreset } from '@splunk/dashboards';
+import { GeoRegistry, GeoJsonProvider } from '@splunk/dashboards';
+import { Suspense } from 'react';
 import Loading from './loading';
-import defaultPreset from '../preset';
-import { SayCheese, registerScreenshotReadinessDep } from '../ready';
+import { registerScreenshotReadinessDep, SayCheese } from './ready';
+import ClientOnly from './clientOnly';
 import { testTileConfig } from '@splunk/visualization-context/MapContext';
 
 const mapTileConfig = { defaultTileConfig: testTileConfig };
@@ -111,21 +112,23 @@ export default function Dashboard({ definition, preset, width = '100vw', height 
         };
     }, []);
 
-    return React.createElement(DashboardContextProvider, {
-        mapTileConfig: mapTileConfig,
-        geoRegistry: geoRegistry,
-        featureFlags: { enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true },
-        preset: defaultPreset,
-        initialDefinition: processedDef,
-        initialMode: "view"
-    },
-        React.createElement(Suspense, { fallback: React.createElement(Loading, null) },
-            React.createElement(SayCheese, null),
-            React.createElement(DashboardCore, { 
-                preset: preset || defaultPreset, 
-                width: width, 
-                height: height 
-            })
+    return React.createElement(ClientOnly, { fallback: React.createElement(Loading, null) },
+        React.createElement(DashboardContextProvider, {
+            mapTileConfig: mapTileConfig,
+            geoRegistry: geoRegistry,
+            featureFlags: { enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true },
+            preset: defaultPreset,
+            initialDefinition: processedDef,
+            initialMode: "view"
+        },
+            React.createElement(Suspense, { fallback: React.createElement(Loading, null) },
+                React.createElement(SayCheese, null),
+                React.createElement(DashboardCore, { 
+                    preset: preset || defaultPreset, 
+                    width: width, 
+                    height: height 
+                })
+            )
         )
     );
 }

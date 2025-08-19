@@ -26,6 +26,7 @@ import dynamic from 'next/dynamic';
 //import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
 import 'bootstrap/dist/css/bootstrap.css';
 import HomeHeader from "./home_header";
+import ClientOnly from './clientOnly';
 
 export const CardLayout = dynamic(() => import('@splunk/react-ui/CardLayout'), { ssr: false });
 export const CardDefault = dynamic(() => import('@splunk/react-ui/Card'), { ssr: false });
@@ -130,14 +131,17 @@ class Home extends Component {
         const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;                
         const renderScreenshot = (k) => {
             if (INSERT_SCREENSHOTS) {
-                const screenshotUrl = getScreenshotUrl(k);
-        
-                return React.createElement(Card.Body, null,
-                    React.createElement(Screenshot, {
-                        style: { width: 330 }, 
-                        src: screenshotUrl, 
-                        alt: dashboardManifest[k]?.title || "Screenshot"
-                    })
+                return React.createElement(ClientOnly, { 
+                    fallback: null,
+                    key: `screenshot-${k}`
+                },
+                    React.createElement(Card.Body, null,
+                        React.createElement(Screenshot, {
+                            style: { width: 330 }, 
+                            src: getScreenshotUrl(k), 
+                            alt: dashboardManifest[k]?.title || "Screenshot"
+                        })
+                    )
                 );
             }
             return null;

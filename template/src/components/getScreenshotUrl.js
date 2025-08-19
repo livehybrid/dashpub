@@ -25,4 +25,23 @@ const getScreenshotUrl = (dashboardKey) => {
     return format("/%s/%s.%s", process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || "screens" , dashboardKey, process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || "png");
 };
 
-export default getScreenshotUrl;
+// getScreenshotUrl.js
+// This function should return consistent values to prevent hydration mismatches
+
+export default function getScreenshotUrl(dashboardId) {
+    // Ensure consistent behavior between server and client
+    if (typeof window === 'undefined') {
+        // Server-side: return a default or null to prevent hydration mismatch
+        return null;
+    }
+    
+    // Client-side: return the actual screenshot URL
+    const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'assets';
+    const screenshotExt = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 'png';
+    
+    if (!dashboardId || dashboardId === 'index') {
+        return `/${screenshotDir}/home.${screenshotExt}`;
+    }
+    
+    return `/${screenshotDir}/${dashboardId}.${screenshotExt}`;
+}

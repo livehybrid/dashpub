@@ -91,7 +91,9 @@ export default class MyDocument extends Document {
                         }
                     })
                 ),
-                React.createElement('body', null,
+                React.createElement('body', { 
+                    suppressHydrationWarning: true 
+                },
                     React.createElement(Main, null),
                     React.createElement(NextScript, null)
                 )

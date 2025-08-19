@@ -8,10 +8,11 @@ import 'bootstrap/dist/css/bootstrap.css';
 import getScreenshotUrl from '../components/getScreenshotUrl';
 
 export async function getStaticProps() {
-    const screenshotUrl = getScreenshotUrl("index");
+    // Return null for screenshotUrl on server side to prevent hydration mismatch
+    // The client will handle this dynamically
     return {
         props: {
-            screenshotUrl,
+            screenshotUrl: null,
         },
     };
 }

@@ -30,7 +30,7 @@ module.exports = withTM({
   // Removed deprecated experimental.esmExternals option
   reactStrictMode: true,
   swcMinify: true,
-  allowedDevOrigins: ['http://localhost*', 'http://127.0.0.1*', 'http://192.168.*'],
+  allowedDevOrigins: ['localhost*', '127.0.0.*', '192.168.*'],
   // Add trailing slash to help with routing
   trailingSlash: false,
   

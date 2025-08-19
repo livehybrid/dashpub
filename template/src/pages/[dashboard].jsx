@@ -10,7 +10,13 @@ const Dashboard = dynamic(() => import('../components/dashboard'), {
 });
 
 export default function DashboardPage({ definition, dashboardId, baseUrl }) {
-    const screenshotUrl = getScreenshotUrl(dashboardId);
+    // Only get screenshot URL on client side to prevent hydration mismatch
+    const [screenshotUrl, setScreenshotUrl] = React.useState(null);
+    
+    React.useEffect(() => {
+        // Set screenshot URL only after component mounts on client
+        setScreenshotUrl(getScreenshotUrl(dashboardId));
+    }, [dashboardId]);
 
     return React.createElement(Page, {
         title: definition.title || 'Dashboard',
