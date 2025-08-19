@@ -34,6 +34,14 @@ module.exports = withTM({
   // Add trailing slash to help with routing
   trailingSlash: false,
   
+  // Disable static optimization for problematic pages
+  experimental: {
+    // Disable static optimization for 404 page
+    staticPageGenerationTimeout: 0,
+    // Add error boundaries for static generation
+    isrMemoryCacheSize: 0,
+  },
+  
   // Configure headers
   async headers() {
     return [
