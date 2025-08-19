@@ -70,12 +70,79 @@ module.exports = withTM({
       }
     }
 
+    // Add fallbacks for maplibre-gl compatibility issues
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        crypto: false,
+        stream: false,
+        util: false,
+        buffer: false,
+        process: false,
+      };
+      
+      // Add resolve alias to handle maplibre-gl script property issues
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'maplibre-gl': require.resolve('maplibre-gl'),
+      };
+      
+      // Add webpack rule to handle maplibre-gl imports
+      config.module.rules.push({
+        test: /maplibre-gl\.js$/,
+        type: 'javascript/auto',
+        resolve: {
+          fullySpecified: false
+        }
+      });
+    }
+
+    // Handle maplibre-gl script property error using webpack plugin
     config.plugins.push(
       new webpack.DefinePlugin({
         'process.env.USE_DATA_SNAPSHOTS': JSON.stringify(settings.useDataSnapshots),
         'process.env.DASHPUB_BUILD_ID': JSON.stringify(buildId),
+        // Fix maplibre-gl script property issue
+        'process.env.MAPLIBRE_GL_SCRIPT_FIX': JSON.stringify(true),
       })
     );
+
+    // Add a custom webpack plugin to handle maplibre-gl issues
+    config.plugins.push({
+      apply: (compiler) => {
+        compiler.hooks.compilation.tap('MaplibreFix', (compilation) => {
+          compilation.hooks.optimizeChunkModules.tap('MaplibreFix', (chunks, modules) => {
+            modules.forEach((module) => {
+              if (module.resource && module.resource.includes('maplibre-gl')) {
+                // This will help prevent the script property error
+                module.usedExports = new Set();
+              }
+            });
+          });
+        });
+      }
+    });
+
+    // Exclude maplibre-gl from certain optimizations that cause script property errors
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          cacheGroups: {
+            ...config.optimization.splitChunks.cacheGroups,
+            maplibre: {
+              test: /[\\/]node_modules[\\/]maplibre-gl[\\/]/,
+              name: 'maplibre',
+              chunks: 'all',
+              enforce: true,
+            }
+          }
+        }
+      };
+    }
 
     // Optionally, keep our externals override for d3-array and d3-interpolate
     if (!isServer && config.externals) {

@@ -21,3 +21,42 @@ export const polyfillTextDecoder = () => {
         return Promise.resolve();
     }
 };
+
+// Polyfills for compatibility issues
+
+// Fix maplibre-gl script property error
+if (typeof window !== 'undefined') {
+  // Polyfill for Canadian_Aboriginal script property
+  if (!window.Intl || !window.Intl.Segmenter) {
+    // Create a basic polyfill for script property
+    window.Intl = window.Intl || {};
+    window.Intl.Segmenter = window.Intl.Segmenter || function() {
+      return {
+        segment: function(input) {
+          return [input];
+        }
+      };
+    };
+  }
+  
+  // Fix for maplibre-gl script property validation
+  if (window.Intl && window.Intl.Segmenter) {
+    const originalSegmenter = window.Intl.Segmenter;
+    window.Intl.Segmenter = function(locale, options) {
+      try {
+        return new originalSegmenter(locale, options);
+      } catch (error) {
+        // If there's a script property error, return a fallback
+        if (error.message.includes('Canadian_Aboriginal')) {
+          console.warn('Using fallback segmenter due to script property issue');
+          return {
+            segment: function(input) {
+              return [input];
+            }
+          };
+        }
+        throw error;
+      }
+    };
+  }
+}

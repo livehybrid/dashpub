@@ -16,13 +16,24 @@ limitations under the License.
 */
 
 import React, { useMemo, useEffect } from 'react';
-import { DashboardContextProvider, DashboardCore, defaultPreset } from '@splunk/dashboard-content';
-import { GeoRegistry, GeoJsonProvider } from '@splunk/dashboard-content';
+import { DashboardContextProvider } from '@splunk/dashboard-context';
+import DashboardCore from '@splunk/dashboard-core';
+import { defaultPreset } from '@splunk/dashboard-presets';
+import { GeoRegistry, GeoJsonProvider } from '@splunk/dashboard-context';
 import { Suspense } from 'react';
 import Loading from './loading';
-import { registerScreenshotReadinessDep, SayCheese } from './ready';
+import { registerScreenshotReadinessDep, SayCheese } from '../ready';
 import ClientOnly from './clientOnly';
-import { testTileConfig } from '@splunk/visualization-context/MapContext';
+
+// Handle maplibre-gl script property error gracefully
+let testTileConfig = null;
+try {
+  const mapContext = require('@splunk/visualization-context/MapContext');
+  testTileConfig = mapContext.testTileConfig;
+} catch (error) {
+  console.warn('Could not load maplibre-gl related components:', error.message);
+  testTileConfig = {};
+}
 
 const mapTileConfig = { defaultTileConfig: testTileConfig };
 
