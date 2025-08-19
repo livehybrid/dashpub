@@ -12,22 +12,20 @@ const Dashboard = dynamic(() => import('../components/dashboard'), {
 export default function DashboardPage({ definition, dashboardId, baseUrl }) {
     const screenshotUrl = getScreenshotUrl(dashboardId);
 
-    return (
-        <Page
-            title={definition.title || 'Dashboard'}
-            description={definition.description}
-            imageUrl={screenshotUrl}
-            path={`/${dashboardId}`}
-            //  backgroundColor={"#171d21"}
-            theme={definition.theme || 'light'}
-            baseUrl={baseUrl}
-        >
-            <NoSSR>
-                <Suspense fallback={<Loading />}>
-                    <Dashboard definition={definition} />
-                </Suspense>
-            </NoSSR>
-        </Page>
+    return React.createElement(Page, {
+        title: definition.title || 'Dashboard',
+        description: definition.description,
+        imageUrl: screenshotUrl,
+        path: `/${dashboardId}`,
+        //  backgroundColor={"#171d21"}
+        theme: definition.theme || 'light',
+        baseUrl: baseUrl
+    },
+        React.createElement(NoSSR, null,
+            React.createElement(Suspense, { fallback: React.createElement(Loading, null) },
+                React.createElement(Dashboard, { definition: definition })
+            )
+        )
     );
 }
 
