@@ -92,5 +92,5 @@ export function useReadyForScreenshot() {
 
 export function SayCheese() {
     const ready = useReadyForScreenshot();
-    return ready ? <div className="url2png-cheese"></div> : null;
+    return ready ? React.createElement('div', { className: "url2png-cheese" }) : null;
 }

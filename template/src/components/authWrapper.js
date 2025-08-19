@@ -33,7 +33,7 @@ export default function AuthWrapper({ children, requireAuth = false }) {
     }, [requireAuth, router]);
 
     if (isLoading) {
-        return <div>Loading...</div>;
+        return React.createElement('div', null, "Loading...");
     }
 
     if (!isAuthenticated && requireAuth) {

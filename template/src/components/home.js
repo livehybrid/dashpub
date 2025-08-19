@@ -79,36 +79,28 @@ class AllTags extends Component {
             font-weight: bold;
             color: ${variables.textColor};
         `;
-        return (
-            <div>
-                <TagTitle>Tags:</TagTitle>
-                <Button
-                    selected={selectedTag === ''}
-                    icon={<Tag className={`ba bi-tag mr-2 tag-all`} />}
-                    key={'all'}
-                    onClick={() => tagClick('')}
-                    className={'badge badge-pill m-2'}
-                >
-                    All
-                </Button>
-                {uniqueTags
-                    .filter((tag) => tag !== 'hidden')
-                    .map((tag) => {
-                        const colorClass = selectedTag === tag ? 'secondary' : 'outline-secondary';
-                        return (
-                            <Button
-                                selected={selectedTag === tag}
-                                icon={<Tag className={`ba bi-tag mr-2 tag-{tag}`} />}
-                                key={tag}
-                                onClick={() => tagClick(tag)}
-                                variant={colorClass}
-                                className={'badge badge-pill'}
-                            >
-                                {tag}
-                            </Button>
-                        );
-                    })}
-            </div>
+        return React.createElement('div', null,
+            React.createElement(TagTitle, null, "Tags:"),
+            React.createElement(Button, {
+                selected: selectedTag === '',
+                icon: React.createElement(Tag, { className: `ba bi-tag mr-2 tag-all` }),
+                key: 'all',
+                onClick: () => tagClick(''),
+                className: 'badge badge-pill m-2'
+            }, "All"),
+            uniqueTags
+                .filter((tag) => tag !== 'hidden')
+                .map((tag) => {
+                    const colorClass = selectedTag === tag ? 'secondary' : 'outline-secondary';
+                    return React.createElement(Button, {
+                        selected: selectedTag === tag,
+                        icon: React.createElement(Tag, { className: `ba bi-tag mr-2 tag-${tag}` }),
+                        key: tag,
+                        onClick: () => tagClick(tag),
+                        variant: colorClass,
+                        className: 'badge badge-pill'
+                    }, tag);
+                })
         );
     }
 }
@@ -140,14 +132,12 @@ class Home extends Component {
             if (INSERT_SCREENSHOTS) {
                 const screenshotUrl = getScreenshotUrl(k);
         
-                return (
-                    <Card.Body>
-                        <Screenshot 
-                            style={{ width: 330 }} 
-                            src={screenshotUrl} 
-                            alt={dashboardManifest[k]?.title || "Screenshot"} 
-                        />
-                    </Card.Body>
+                return React.createElement(Card.Body, null,
+                    React.createElement(Screenshot, {
+                        style: { width: 330 }, 
+                        src: screenshotUrl, 
+                        alt: dashboardManifest[k]?.title || "Screenshot"
+                    })
                 );
             }
             return null;
@@ -155,16 +145,16 @@ class Home extends Component {
 
         const renderTags = (k) => {
             if (this.state.uniqueTags.length > 0) {
-                return (
-                    <Card.Footer>
-                        <TagContainer>
-                            {dashboardManifest[k]['tags'].map((tag) => (
-                                <Chip className="m-1" key={tag} icon={<Tag />}>
-                                    {tag}
-                                </Chip>
-                            ))}
-                        </TagContainer>
-                    </Card.Footer>
+                return React.createElement(Card.Footer, null,
+                    React.createElement(TagContainer, null,
+                        dashboardManifest[k]['tags'].map((tag) => 
+                            React.createElement(Chip, { 
+                                className: "m-1", 
+                                key: tag, 
+                                icon: React.createElement(Tag, null)
+                            }, tag)
+                        )
+                    )
                 );
             } else {
                 return null;
@@ -172,39 +162,50 @@ class Home extends Component {
         };
         const renderCardTitle = (k) => {
             if (INSERT_SCREENSHOTS) {
-                return <Card.Header title={dashboardManifest[k]['title']} subtitle={dashboardManifest[k]['description']} />;
+                return React.createElement(Card.Header, { 
+                    title: dashboardManifest[k]['title'], 
+                    subtitle: dashboardManifest[k]['description'] 
+                });
             } else {
-                return (
-                    <Card.Body>
-                        <CardTitle>{dashboardManifest[k]['title']}</CardTitle>
-                        <CardSubTitle>{dashboardManifest[k]['description']}</CardSubTitle>
-                    </Card.Body>
+                return React.createElement(Card.Body, null,
+                    React.createElement(CardTitle, null, dashboardManifest[k]['title']),
+                    React.createElement(CardSubTitle, null, dashboardManifest[k]['description'])
                 );
             }
         };
-        return (
-            <PageWrapper>
-                <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
-                <HomeHeader />
-                <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags} />
-                <DashWrapper>
-                    <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">
-                        {Object.keys(dashboardManifest)
-                            .filter(
-                                (k) =>
-                                    !dashboardManifest[k].tags.includes('hidden') &&
-                                    (dashboardManifest[k].tags.includes(this.state.selectedTag) || !this.state.selectedTag)
+        return React.createElement(PageWrapper, null,
+            React.createElement(Title, null, process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'),
+            React.createElement(HomeHeader, null),
+            React.createElement(AllTags, { 
+                tagClick: this.handleTagClick, 
+                selectedTag: this.state.selectedTag, 
+                uniqueTags: this.state.uniqueTags 
+            }),
+            React.createElement(DashWrapper, null,
+                React.createElement(CardLayout, { 
+                    alignCards: "center", 
+                    cardMaxWidth: "370px", 
+                    cardMinWidth: "370px" 
+                },
+                    Object.keys(dashboardManifest)
+                        .filter(
+                            (k) =>
+                                !dashboardManifest[k].tags.includes('hidden') &&
+                                (dashboardManifest[k].tags.includes(this.state.selectedTag) || !this.state.selectedTag)
+                        )
+                        .map((k) => 
+                            React.createElement(Card, { 
+                                minWidth: "350px", 
+                                key: k, 
+                                to: `/${k}` 
+                            },
+                                renderCardTitle(k),
+                                renderScreenshot(k),
+                                renderTags(k)
                             )
-                            .map((k) => (
-                                <Card minWidth="350px" key={k} to={`/${k}`}>
-                                    {renderCardTitle(k)}
-                                    {renderScreenshot(k)}
-                                    {renderTags(k)}
-                                </Card>
-                            ))}
-                    </CardLayout>
-                </DashWrapper>
-            </PageWrapper>
+                        )
+                )
+            )
         );
     }
 }

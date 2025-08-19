@@ -70,45 +70,41 @@ class Login extends Component {
             }
         };
 
-        return (
-            <PageWrapper>
-                <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
-                <SubTitle>Login</SubTitle>
-                <LoginForm onSubmit={handleSubmit}>
-                    <ControlGroup label="Username">
-                        <Text
-                            name="username"
-                            defaultValue=""
-                            startAdornment={
-                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
-                                    <User size={1} />
-                                </div>
-                            }
-                            inline
-                            placeholder="Username"
-                        />
-                    </ControlGroup>
-                    <ControlGroup label="Password">
-                        <Text
-                            name="password"
-                            inline
-                            type="password"
-                            onChange={this.handleChange}
-                            placeholder="*******"
-                            startAdornment={
-                                <div style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
-                                    <Key size={1} />
-                                </div>
-                            }
-                        />
-                    </ControlGroup>
-
-                    <br />
-
-                    <br />
-                    <Button label="Login &gt;" appearance="primary" type="submit" />
-                </LoginForm>
-            </PageWrapper>
+        return React.createElement(PageWrapper, null,
+            React.createElement(Title, null, process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'),
+            React.createElement(SubTitle, null, "Login"),
+            React.createElement(LoginForm, { onSubmit: handleSubmit },
+                React.createElement(ControlGroup, { label: "Username" },
+                    React.createElement(Text, {
+                        name: "username",
+                        defaultValue: "",
+                        startAdornment: React.createElement('div', {
+                            style: { display: 'flex', alignItems: 'center', padding: '0 8px' }
+                        }, React.createElement(User, { size: 1 })),
+                        inline: true,
+                        placeholder: "Username"
+                    })
+                ),
+                React.createElement(ControlGroup, { label: "Password" },
+                    React.createElement(Text, {
+                        name: "password",
+                        inline: true,
+                        type: "password",
+                        onChange: this.handleChange,
+                        placeholder: "*******",
+                        startAdornment: React.createElement('div', {
+                            style: { display: 'flex', alignItems: 'center', padding: '0 8px' }
+                        }, React.createElement(Key, { size: 1 }))
+                    })
+                ),
+                React.createElement('br', null),
+                React.createElement('br', null),
+                React.createElement(Button, { 
+                    label: "Login >", 
+                    appearance: "primary", 
+                    type: "submit" 
+                })
+            )
         );
     }
 }

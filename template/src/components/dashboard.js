@@ -111,19 +111,21 @@ export default function Dashboard({ definition, preset, width = '100vw', height 
         };
     }, []);
 
-    return (
-        <DashboardContextProvider
-            mapTileConfig={mapTileConfig}
-            geoRegistry={geoRegistry}
-            featureFlags={{ enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true }}
-            preset={defaultPreset}
-            initialDefinition={processedDef}
-            initialMode="view"
-        >
-            <Suspense fallback={<Loading />}>
-                <SayCheese />
-                <DashboardCore preset={preset || defaultPreset} width={width} height={height} />
-            </Suspense>
-        </DashboardContextProvider>
+    return React.createElement(DashboardContextProvider, {
+        mapTileConfig: mapTileConfig,
+        geoRegistry: geoRegistry,
+        featureFlags: { enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true },
+        preset: defaultPreset,
+        initialDefinition: processedDef,
+        initialMode: "view"
+    },
+        React.createElement(Suspense, { fallback: React.createElement(Loading, null) },
+            React.createElement(SayCheese, null),
+            React.createElement(DashboardCore, { 
+                preset: preset || defaultPreset, 
+                width: width, 
+                height: height 
+            })
+        )
     );
 }
