@@ -87,6 +87,7 @@ module.exports = withTM({
       config.resolve.alias = {
         ...config.resolve.alias,
         'maplibre-gl': require.resolve('maplibre-gl'),
+        'maplibre-gl/dist/maplibre-gl.css': require.resolve('maplibre-gl/dist/maplibre-gl.css'),
       };
       
       // Add webpack rule to handle maplibre-gl imports
@@ -96,29 +97,6 @@ module.exports = withTM({
         resolve: {
           fullySpecified: false
         }
-      });
-      
-      // Handle maplibre-gl CSS imports
-      config.module.rules.push({
-        test: /maplibre-gl\.css$/,
-        use: ['style-loader', 'css-loader'],
-        sideEffects: true
-      });
-      
-      // Handle all CSS imports to prevent build errors
-      config.module.rules.push({
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 1,
-              modules: false
-            }
-          }
-        ],
-        sideEffects: true
       });
     }
 
