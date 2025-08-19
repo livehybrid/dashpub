@@ -3,7 +3,7 @@ import React from "react";
 // import Message from "@splunk/react-ui/Message";
 
 export default () => {
-    return (<></>);
+    return React.createElement(React.Fragment, null);
     // return (
     //     <Message appearance="fill" type="info">
     //         <p>
