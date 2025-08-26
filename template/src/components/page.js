@@ -20,6 +20,7 @@ import Head from 'next/head';
 import { startAutoUpdateCheck } from '../autoupdate';
 import { SplunkThemeProvider, variables } from '@splunk/themes';
 import 'bootstrap/dist/css/bootstrap.css';
+import ClientOnly from './clientOnly';
 const TITLE_SUFFIX = 'Splunk Dashboard';
 
 const GlobalBackgroundStyle = createGlobalStyle`
@@ -58,35 +59,39 @@ export default function Page({
         startAutoUpdateCheck();
     }, []);
 
-    return (
-        <>
-            <Head>
-                <title>{`${title} - ${TITLE_SUFFIX}`}</title>
-                {description && <meta name="description" content={description} />}
-                <meta name="author" content="Splunk" />
-                <meta property="og:title" content={`${title} - ${TITLE_SUFFIX}`} />
-                {description && <meta property="og:description" content={description} />}
-                {imageUrl != null && baseUrl != null && (
-                    <>
-                        <meta property="og:image" content={fullUrl(baseUrl, imageUrl)} />
-                        <meta property="og:image:width" content={imageSize.width} />
-                        <meta property="og:image:height" content={imageSize.height} />
-                    </>
-                )}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={`${title} - ${TITLE_SUFFIX}`} />
-                <meta name="twitter:creator" content="@Splunk" />
-                {imageUrl != null && baseUrl != null && (
-                    <>
-                        <meta property="twitter:image" content={fullUrl(baseUrl, imageUrl)} />
-                    </>
-                )}
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-            </Head>
-            <SplunkThemeProvider family="enterprise" colorScheme={theme}>
-                <GlobalBackgroundStyle backgroundColor={backgroundColor} />
-                {children}
-            </SplunkThemeProvider>
-        </>
+    return React.createElement(React.Fragment, null,
+        React.createElement(Head, null,
+            React.createElement('title', null, `${title} - ${TITLE_SUFFIX}`),
+            description && React.createElement('meta', { name: "description", content: description }),
+            React.createElement('meta', { name: "author", content: "Splunk" }),
+            React.createElement('meta', { property: "og:title", content: `${title} - ${TITLE_SUFFIX}` }),
+            description && React.createElement('meta', { property: "og:description", content: description }),
+            imageUrl != null && baseUrl != null && 
+                React.createElement(ClientOnly, { 
+                    fallback: null,
+                    key: "og-image-meta"
+                },
+                    React.createElement(React.Fragment, null,
+                        React.createElement('meta', { property: "og:image", content: fullUrl(baseUrl, imageUrl) }),
+                        React.createElement('meta', { property: "og:image:width", content: imageSize.width }),
+                        React.createElement('meta', { property: "og:image:height", content: imageSize.height })
+                    )
+                ),
+            React.createElement('meta', { name: "twitter:card", content: "summary_large_image" }),
+            React.createElement('meta', { name: "twitter:title", content: `${title} - ${TITLE_SUFFIX}` }),
+            React.createElement('meta', { name: "twitter:creator", content: "@Splunk" }),
+            imageUrl != null && baseUrl != null && 
+                React.createElement(ClientOnly, { 
+                    fallback: null,
+                    key: "twitter-image-meta"
+                },
+                    React.createElement('meta', { property: "twitter:image", content: fullUrl(baseUrl, imageUrl) })
+                ),
+            React.createElement('meta', { name: "viewport", content: "width=device-width, initial-scale=1" })
+        ),
+        React.createElement(SplunkThemeProvider, { family: "enterprise", colorScheme: theme },
+            React.createElement(GlobalBackgroundStyle, { backgroundColor: backgroundColor }),
+            children
+        )
     );
 }

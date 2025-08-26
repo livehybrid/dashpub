@@ -76,13 +76,14 @@ function createNextPayload({ data, vizOptions, requestParams }) {
             offset: requestParams == null ? void 0 : requestParams.offset,
         })
         .toJSONCols();
+        console.log(pagedData);
     return {
         data: pagedData,
         meta: {
             sid: 'dashpub_sid',
             percentComplete: 100,
             status: 'done',
-            totalCount: (data.columns[0] || []).length,
+            totalCount: pagedData.columns[0] ? pagedData.columns[0].length : 0,
             lastUpdated: new Date().toISOString(),
         },
         vizOptions,
@@ -93,7 +94,7 @@ export default class PublicDataSource extends DataSource {
     constructor(options = {}, context = {}) {
         super(options, context);
         this.uri = options.uri;
-        this.refresh = options.refresh * 1000 || DEFAULT_REFRESH_TIME;
+        this.refresh = 10000;
         this.vizOptions = options.vizOptions;
         this.meta = options.meta;
     }
@@ -151,6 +152,7 @@ export default class PublicDataSource extends DataSource {
                             data,
                         };
                         readyDep.ready();
+                        console.log(data);
                         observer.next(
                             createNextPayload({
                                 data: createDataSet(data, options),

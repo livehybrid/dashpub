@@ -53,21 +53,12 @@ class Login extends Component {
             const password = event.target.password.value;
 
             const queryParams = new URLSearchParams(window.location.search);
-            const redirectUrl = queryParams.get('returnTo'); // Assuming 'redirectUrl' is your query parameter
-            // Send the credentials to your API route
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-
-            if (response.ok) {
-                // Redirect on successful login
-                window.location.href = redirectUrl;
-            } else {
-                // Handle errors, e.g., display an alert
-                alert('Login failed. Please check your credentials.');
-            }
+            const redirectUrl = queryParams.get('returnTo') || '/'; // Default to home if no redirect
+            
+            // For now, just redirect to home since we don't have API routes in Vite
+            // In a real app, you'd implement proper authentication
+            console.log('Login attempt:', { username, password });
+            window.location.href = redirectUrl;
         };
 
         return (
@@ -84,16 +75,15 @@ class Login extends Component {
                                     <User size={1} />
                                 </div>
                             }
-                            inline
+                            inline={true}
                             placeholder="Username"
                         />
                     </ControlGroup>
                     <ControlGroup label="Password">
                         <Text
                             name="password"
-                            inline
+                            inline={true}
                             type="password"
-                            onChange={this.handleChange}
                             placeholder="*******"
                             startAdornment={
                                 <div style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
@@ -102,11 +92,13 @@ class Login extends Component {
                             }
                         />
                     </ControlGroup>
-
                     <br />
-
                     <br />
-                    <Button label="Login &gt;" appearance="primary" type="submit" />
+                    <Button 
+                        label="Login >" 
+                        appearance="primary" 
+                        type="submit" 
+                    />
                 </LoginForm>
             </PageWrapper>
         );

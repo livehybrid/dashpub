@@ -22,8 +22,7 @@ const noValidateHttpsAgent = new (require('https').Agent)({
     rejectUnauthorized: false,
 });
 
-inquirer.registerPrompt('checkbox-plus', require('inquirer-checkbox-plus-prompt'));
-inquirer.registerPrompt('search-list', require('inquirer-search-list'));
+// Removed problematic prompt registrations that are incompatible with inquirer 9.x
 
 const string = (prompt, opts) =>
     inquirer
@@ -135,17 +134,13 @@ const splunkdToken = (url) =>
 const selectDashboards = dashboards =>
     inquirer
         .prompt({
-            type: 'checkbox-plus',
+            type: 'checkbox',
             name: 'dashboards',
             message: 'Select one or more dashboards you want to publish',
-            pageSize: 10,
-            highlight: true,
-            searchable: true,
-            source: async (selected, input) => {
-                const search = (input || '').toLowerCase();
-                const matching = dashboards.filter(d => d.name.toLowerCase().includes(search) || d.label.toLowerCase().includes(search));
-                return matching.map(({ name, label }) => ({ name: `${label} [${name}]`, short: label, value: name }));
-            },
+            choices: dashboards.map(({ name, label }) => ({ 
+                name: `${label} [${name}]`, 
+                value: name 
+            })),
             validate: selected => {
                 if (selected.length > 0) {
                     return true;
@@ -158,20 +153,13 @@ const selectDashboards = dashboards =>
 const selectApp = apps =>
     inquirer
         .prompt({
-            type: 'search-list',
+            type: 'list',
             name: 'app',
             message: 'Select which app contains your dashboard(s) to publish',
-            //pageSize: 20,
-            //highlight: true,
-            //searchable: true,
-            choices: apps.map(({ name, label }) => ({ name: `${label} [${name}]`, value: name }))
-//            choices: apps.map(({ name, label }) => ({ name: `${label} [${name}]`, value: name })),
-//            validate: selected => {
- //               if (selected.length == 1) {
-  //                  return true;
-   //             }
-     //           throw new Error('Please select an app');
-      //      },
+            choices: apps.map(({ name, label }) => ({ 
+                name: `${label} [${name}]`, 
+                value: name 
+            }))
         })
         .then(({ app }) => app);
 

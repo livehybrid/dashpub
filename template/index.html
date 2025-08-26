@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Splunk Dashboard</title>
+    
+    <!-- RxJS CDN for external dependency -->
+    <script src="https://unpkg.com/rxjs@5.5.12/bundles/Rx.min.js"></script>
+    
+    <!-- Splunk Theme CSS -->
+    <link rel="stylesheet" href="/fonts/proxima-regular-webfont.woff" />
+    <link rel="stylesheet" href="/fonts/proxima-semibold-webfont.woff" />
+    <link rel="stylesheet" href="/fonts/proxima-bold-webfont.woff" />
+    <link rel="stylesheet" href="/fonts/inconsolata-regular.woff" />
+    <link rel="stylesheet" href="/fonts/splunkdatasans-regular.webfont.woff2" />
+    <link rel="stylesheet" href="/fonts/splunkdatasans-semibold.webfont.woff2" />
+    <link rel="stylesheet" href="/fonts/splunkdatasans-bold.webfont.woff2" />
+    
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Splunk Platform Sans';
+      }
+      
+      @font-face {
+        font-family: 'Splunk Platform Sans';
+        src: url('/fonts/proxima-regular-webfont.woff') format('woff');
+        font-style: normal;
+        font-weight: normal;
+      }
+      
+      @font-face {
+        font-family: 'Splunk Platform Sans';
+        src: url('/fonts/proxima-semibold-webfont.woff') format('woff');
+        font-style: normal;
+        font-weight: 500;
+      }
+      
+      @font-face {
+        font-family: 'Splunk Platform Sans';
+        src: url('/fonts/proxima-bold-webfont.woff') format('woff');
+        font-style: normal;
+        font-weight: 700;
+      }
+      
+      @font-face {
+        font-family: 'Splunk Platform Mono';
+        src: url('/fonts/inconsolata-regular.woff') format('woff');
+        font-style: normal;
+        font-weight: normal;
+      }
+      
+      @font-face {
+        font-family: 'Splunk Data Sans';
+        src: url('/fonts/splunkdatasans-regular.woff2') format('woff2');
+        font-style: normal;
+        font-weight: normal;
+      }
+      
+      @font-face {
+        font-family: 'Splunk Data Sans';
+        src: url('/fonts/splunkdatasans-semibold.woff2') format('woff2');
+        font-style: normal;
+        font-weight: 500;
+      }
+      
+      @font-face {
+        font-family: 'Splunk Data Sans';
+        src: url('/fonts/splunkdatasans-bold.woff2') format('woff2');
+        font-style: normal;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

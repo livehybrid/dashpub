@@ -1,10 +1,12 @@
 {
-    "name": "package-name",
+    "name": "app",
     "private": true,
     "version": "1.0.0",
     "license": "UNLICENSED",
     "dependencies": {
         "@babel/runtime": "^7.27.0",
+        "@react-google-maps/api": "^2.19.2",
+        "@splunk/dashboard": "^29.0.0",
         "@splunk/dashboard-context": "29.0.0",
         "@splunk/dashboard-core": "29.0.0",
         "@splunk/dashboard-presets": "29.0.0",
@@ -14,14 +16,13 @@
         "@splunk/react-ui": "5.2.0",
         "@splunk/visualization-context": "28.0.0",
         "bootstrap": "5.3.7",
-        "cookies-next": "5.1.0",
+        "cors": "^2.8.5",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
-        "eslint-config-next": "15.4.6",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
         "fast-text-encoding": "1.0.6",
         "jsonwebtoken": "9.0.2",
-        "next": "^15.4.6",
-        "next-transpile-modules": "^10.0.1",
         "null-loader": "^4.0.1",
         "postcss": "8.5.3",
         "query-string": "9.1.1",
@@ -29,12 +30,27 @@
         "react": "18.3.1",
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "18.3.1",
+        "react-icons": "*",
+        "react-resize-detector": "^11.0.1",
+        "react-router-dom": "^7.8.1",
+        "rxjs": "^5.5.12",
         "styled-components": "5.3.11",
-        "typescript": "^5.9.2"
+        "tinyglobby": "*"
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
-        "eslint": "^9.33.0"
+        "@babel/preset-react": "^7.23.3",
+        "@vitejs/plugin-react": "^4.7.0",
+        "babel-plugin-styled-components": "^2.1.4",
+        "concurrently": "^9.2.0",
+        "css-loader": "^7.1.2",
+        "eslint": "^9.33.0",
+        "postcss-loader": "^8.1.1",
+        "puppeteer": "^24.16.2",
+        "style-loader": "^4.0.0",
+        "vite": "^6.3.5",
+        "vite-plugin-commonjs": "^0.10.4",
+        "vite-plugin-node-polyfills": "^0.24.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "29.0.0",
@@ -55,9 +71,13 @@
         "**/dompurify": "^3.2.4"
     },
     "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start"
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "setup": "npm install",
+        "server": "node server.js",
+        "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+        "start": "npm run build && npm run server"
     },
     "eslintConfig": {
         "env": {
@@ -67,8 +87,7 @@
             "src/node_modules"
         ],
         "extends": [
-            "eslint:recommended",
-            "next"
+            "eslint:recommended"
         ],
         "rules": {
             "react/display-name": "warn",
