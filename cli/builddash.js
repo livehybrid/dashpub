@@ -82,7 +82,7 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
         }
     }
 
-    if (newDash.layout.options.backgroundImage) {
+    if (newDash.layout && newDash.layout.options && newDash.layout.options.backgroundImage) {
         if (newDash.layout.options.backgroundImage.src.match(/\$.*\$/g) )
              console.log(`Skipping image download due to token ${viz.options.src}`)
         else if (newDash.layout.options.backgroundImage.src.startsWith("data:image")) {

@@ -25,3 +25,5 @@ yarn-error.log*
 
 /tmp
 custom_components
+TODO.md
+template/node_modules

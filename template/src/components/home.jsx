@@ -14,37 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React, { Component } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
 import dashboardManifest from '../_dashboards.json';
 import getScreenshotUrl from './getScreenshotUrl';
-//import {Tag} from '@styled-icons/bootstrap';
 import { Tag } from 'react-bootstrap-icons';
-
-import dynamic from 'next/dynamic';
-//import {CardLayout, Card, Chip, Button} from '../utils/react-ui';
 import 'bootstrap/dist/css/bootstrap.css';
 import HomeHeader from "./home_header";
+import ClientOnly from './ClientOnly';
 
-export const CardLayout = dynamic(() => import('@splunk/react-ui/CardLayout'), { ssr: false });
-export const CardDefault = dynamic(() => import('@splunk/react-ui/Card'), { ssr: false });
-export const CardHeader = dynamic(() => import('@splunk/react-ui/Card').then((lib) => lib.Header), { ssr: false });
-export const CardBody = dynamic(() => import('@splunk/react-ui/Card').then((lib) => lib.Body), { ssr: false });
-export const CardFooter = dynamic(() => import('@splunk/react-ui/Card').then((lib) => lib.Footer), { ssr: false });
+// Use lazy loading for Vite compatibility instead of Next.js dynamic
+const CardLayout = lazy(() => import('@splunk/react-ui/CardLayout'));
+const CardDefault = lazy(() => import('@splunk/react-ui/Card'));
+const CardHeader = lazy(() => import('@splunk/react-ui/Card').then((lib) => ({ default: lib.Header })));
+const CardBody = lazy(() => import('@splunk/react-ui/Card').then((lib) => ({ default: lib.Body })));
+const CardFooter = lazy(() => import('@splunk/react-ui/Card').then((lib) => ({ default: lib.Footer })));
+const Chip = lazy(() => import('@splunk/react-ui/Chip'));
+const Button = lazy(() => import('@splunk/react-ui/Button'));
 
-CardDefault.Header = CardHeader;
-CardDefault.Body = CardBody;
-CardDefault.Footer = CardFooter;
-
-export const Card = CardDefault;
-export const Chip = dynamic(() => import('@splunk/react-ui/Chip'), { ssr: false });
-export const Button = dynamic(() => import('@splunk/react-ui/Button'), { ssr: false });
-
+// Create a wrapper component for lazy-loaded components
+const LazyComponent = ({ component: Component, fallback = null, ...props }) => (
+  <Suspense fallback={fallback}>
+    <Component {...props} />
+  </Suspense>
+);
 
 const PageWrapper = styled.div`
     margin: 5%;
     text-align: center;
+    background-color: ${variables.backgroundColor};
 `;
 const DashWrapper = styled.div``;
 
@@ -66,6 +65,9 @@ const TagContainer = styled.div`
     padding: 5px;
     margin-bottom: 5px;
     margin-top: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    // gap: 2px;
 `;
 
 class AllTags extends Component {
@@ -78,34 +80,37 @@ class AllTags extends Component {
         const TagTitle = styled.span`
             font-weight: bold;
             color: ${variables.textColor};
+            background-color: ${variables.backgroundColor};
         `;
         return (
             <div>
                 <TagTitle>Tags:</TagTitle>
-                <Button
+                <LazyComponent
+                    component={Button}
                     selected={selectedTag === ''}
-                    icon={<Tag className={`ba bi-tag mr-2 tag-all`} />}
-                    key={'all'}
+                    icon={<Tag className="ba bi-tag mr-2 tag-all" />}
+                    key="all"
                     onClick={() => tagClick('')}
-                    className={'badge badge-pill m-2'}
+                    className="badge badge-pill m-2"
                 >
                     All
-                </Button>
+                </LazyComponent>
                 {uniqueTags
                     .filter((tag) => tag !== 'hidden')
                     .map((tag) => {
                         const colorClass = selectedTag === tag ? 'secondary' : 'outline-secondary';
                         return (
-                            <Button
-                                selected={selectedTag === tag}
-                                icon={<Tag className={`ba bi-tag mr-2 tag-{tag}`} />}
+                            <LazyComponent
                                 key={tag}
+                                component={Button}
+                                selected={selectedTag === tag}
+                                icon={<Tag className={`ba bi-tag mr-2 tag-${tag}`} />}
                                 onClick={() => tagClick(tag)}
                                 variant={colorClass}
-                                className={'badge badge-pill'}
+                                className="badge badge-pill m-1"
                             >
                                 {tag}
-                            </Button>
+                            </LazyComponent>
                         );
                     })}
             </div>
@@ -138,16 +143,16 @@ class Home extends Component {
         const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;                
         const renderScreenshot = (k) => {
             if (INSERT_SCREENSHOTS) {
-                const screenshotUrl = getScreenshotUrl(k);
-        
                 return (
-                    <Card.Body>
-                        <Screenshot 
-                            style={{ width: 330 }} 
-                            src={screenshotUrl} 
-                            alt={dashboardManifest[k]?.title || "Screenshot"} 
-                        />
-                    </Card.Body>
+                    <ClientOnly fallback={null} key={`screenshot-${k}`}>
+                        <LazyComponent component={CardBody}>
+                            <Screenshot
+                                style={{ width: 330 }} 
+                                src={getScreenshotUrl(k)} 
+                                alt={dashboardManifest[k]?.title || "Screenshot"}
+                            />
+                        </LazyComponent>
+                    </ClientOnly>
                 );
             }
             return null;
@@ -156,39 +161,62 @@ class Home extends Component {
         const renderTags = (k) => {
             if (this.state.uniqueTags.length > 0) {
                 return (
-                    <Card.Footer>
+                    <LazyComponent component={CardFooter}>
                         <TagContainer>
                             {dashboardManifest[k]['tags'].map((tag) => (
-                                <Chip className="m-1" key={tag} icon={<Tag />}>
+                                <LazyComponent
+                                    key={tag}
+                                    component={Chip}
+                                    className="m-1"
+                                    icon={<Tag />}
+                                    style={{ width: 'max-content' }}
+                                >
                                     {tag}
-                                </Chip>
+                                </LazyComponent>
                             ))}
                         </TagContainer>
-                    </Card.Footer>
+                    </LazyComponent>
                 );
             } else {
                 return null;
             }
         };
+        
         const renderCardTitle = (k) => {
             if (INSERT_SCREENSHOTS) {
-                return <Card.Header title={dashboardManifest[k]['title']} subtitle={dashboardManifest[k]['description']} />;
+                return (
+                    <LazyComponent
+                        component={CardHeader}
+                        title={dashboardManifest[k]['title']}
+                        subtitle={dashboardManifest[k]['description'] || ''}
+                    />
+                );
             } else {
                 return (
-                    <Card.Body>
+                    <LazyComponent component={CardBody}>
                         <CardTitle>{dashboardManifest[k]['title']}</CardTitle>
-                        <CardSubTitle>{dashboardManifest[k]['description']}</CardSubTitle>
-                    </Card.Body>
+                        <CardSubTitle>{dashboardManifest[k]['description'] || ''}</CardSubTitle>
+                    </LazyComponent>
                 );
             }
         };
+        
         return (
             <PageWrapper>
                 <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
                 <HomeHeader />
-                <AllTags tagClick={this.handleTagClick} selectedTag={this.state.selectedTag} uniqueTags={this.state.uniqueTags} />
+                <AllTags 
+                    tagClick={this.handleTagClick} 
+                    selectedTag={this.state.selectedTag} 
+                    uniqueTags={this.state.uniqueTags} 
+                />
                 <DashWrapper>
-                    <CardLayout alignCards="center" cardMaxWidth="370px" cardMinWidth="370px">
+                    <LazyComponent
+                        component={CardLayout}
+                        alignCards="center"
+                        cardMaxWidth="370px"
+                        cardMinWidth="370px"
+                    >
                         {Object.keys(dashboardManifest)
                             .filter(
                                 (k) =>
@@ -196,13 +224,18 @@ class Home extends Component {
                                     (dashboardManifest[k].tags.includes(this.state.selectedTag) || !this.state.selectedTag)
                             )
                             .map((k) => (
-                                <Card minWidth="350px" key={k} to={`/${k}`}>
+                                <LazyComponent
+                                    key={k}
+                                    component={CardDefault}
+                                    minWidth="350px"
+                                    to={`/${k}`}
+                                >
                                     {renderCardTitle(k)}
                                     {renderScreenshot(k)}
                                     {renderTags(k)}
-                                </Card>
+                                </LazyComponent>
                             ))}
-                    </CardLayout>
+                    </LazyComponent>
                 </DashWrapper>
             </PageWrapper>
         );

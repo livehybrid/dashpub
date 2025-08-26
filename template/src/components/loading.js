@@ -34,11 +34,9 @@ const Msg = styled.span`
 `;
 
 export default function Loading() {
-    return (
-        <Wrapper>
-            <Inner>
-                <Msg>Loading...</Msg>
-            </Inner>
-        </Wrapper>
+    return React.createElement(Wrapper, null,
+        React.createElement(Inner, null,
+            React.createElement(Msg, null, "Loading...")
+        )
     );
 }
