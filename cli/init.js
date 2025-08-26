@@ -43,9 +43,9 @@ Next steps:
 
 {gray # Start developing}
 
-{yellow $} yarn dev
+{yellow $} npm run dev:full
 
-{gray Open a browser at http://localhost:3000}
+{gray Open a browser at http://localhost:5137}
 `;
 
 async function findCustomVizJsFilesInDirectory() {

@@ -25,7 +25,7 @@ then
   then
     echo "Configuring dashpub with Env variables"
     dashpub init
-    cd /app
+    cd /home/nodejs/app
     if [ "${DASHPUB_CUSTOM_HOME_PATH}" ];
       then
       cp $DASHPUB_CUSTOM_HOME_PATH src/components/home_header.js
@@ -40,10 +40,9 @@ then
   else
     echo "Configuring dashpub"
     dashpub init
-    cd /app
-    yarn add typescript
-    yarn add --dev typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin @next/eslint-plugin-next
-    yarn build
+    cd /home/nodejs/app
+    npm install
+    npm run build
     touch /tmp/hasBuilt
   fi
 fi
@@ -52,9 +51,9 @@ do
   echo "Waiting for app to be built - Please configure and build to continue..."
   sleep 5
 done
-cd /app
+cd /home/nodejs/app
 if [ "$ENV_MODE" = "dev" ]; then
-  yarn dev
+  npm run dev:full
 else
-  yarn start
+  node server.js
 fi

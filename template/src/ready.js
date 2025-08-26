@@ -20,18 +20,24 @@ class ReadyHandle {
     _ready = false;
     constructor(type) {
         this.type = type;
+        // Initialize notify as a no-op function to prevent errors
+        this.notify = () => {};
     }
     ready() {
         if (!this._ready) {
             this._ready = true;
-            this.notify(this.type);
+            if (typeof this.notify === 'function') {
+                this.notify(this.type);
+            }
         }
     }
     isReady() {
         return this._ready;
     }
     remove() {
-        this.onDelete();
+        if (typeof this.onDelete === 'function') {
+            this.onDelete();
+        }
         this.notify = null;
     }
 }
@@ -44,26 +50,47 @@ function trigger() {
     if (isReady) {
         return;
     }
-    if ([...readinessDeps].every((d) => d.isReady())) {
-        isReady = true;
-        setTimeout(() => {
-            for (const cb of readynessCallbacks) {
-                cb();
-            }
-        }, 250);
+    
+    try {
+        if ([...readinessDeps].every((d) => d && typeof d.isReady === 'function' && d.isReady())) {
+            isReady = true;
+            setTimeout(() => {
+                for (const cb of readynessCallbacks) {
+                    try {
+                        if (typeof cb === 'function') {
+                            cb();
+                        }
+                    } catch (error) {
+                        console.warn('Error in readiness callback:', error);
+                    }
+                }
+            }, 250);
+        }
+    } catch (error) {
+        console.warn('Error in trigger function:', error);
     }
 }
 
 function sub(cb) {
     if (isReady) {
-        cb();
+        try {
+            if (typeof cb === 'function') {
+                cb();
+            }
+        } catch (error) {
+            console.warn('Error in immediate callback:', error);
+        }
         return () => {};
     } else {
-        readynessCallbacks.add(cb);
+        if (typeof cb === 'function') {
+            readynessCallbacks.add(cb);
+        }
         const fallbackTimer = setTimeout(trigger, 100);
         return () => {
             clearTimeout(fallbackTimer);
-            readynessCallbacks.delete(cb);
+            if (typeof cb === 'function') {
+                readynessCallbacks.delete(cb);
+            }
         };
     }
 }
@@ -71,10 +98,15 @@ function sub(cb) {
 export function registerScreenshotReadinessDep(type) {
     const handle = new ReadyHandle(type);
     readinessDeps.add(handle);
+    
+    // Ensure notify is properly assigned
     handle.notify = trigger;
+    
+    // Ensure onDelete is properly assigned
     handle.onDelete = () => {
         readinessDeps.delete(handle);
     };
+    
     return handle;
 }
 
@@ -92,5 +124,5 @@ export function useReadyForScreenshot() {
 
 export function SayCheese() {
     const ready = useReadyForScreenshot();
-    return ready ? <div className="url2png-cheese"></div> : null;
+    return ready ? React.createElement('div', { className: "url2png-cheese" }) : null;
 }
