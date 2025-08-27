@@ -129,6 +129,6 @@ if [ "$ENV_MODE" = "dev" ]; then
   npm run dev:full
 else
   echo "Starting in production mode on port 3001..."
-  export PORT=3001
+  export PORT=3000
   node server.js
 fi

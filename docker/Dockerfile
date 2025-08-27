@@ -69,7 +69,7 @@ RUN git config --global user.email "dashpub@yourdomain.com" && \
 USER nodejs
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=600s --retries=3 \
