@@ -52,8 +52,10 @@ do
   sleep 5
 done
 cd /home/nodejs/app
+NODE_OPTIONS="--max-old-space-size=4096" npm run build
 if [ "$ENV_MODE" = "dev" ]; then
   npm run dev:full
 else
+  export PORT=3000
   node server.js
 fi

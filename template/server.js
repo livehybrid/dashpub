@@ -7,7 +7,7 @@ const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Enhanced logging with rotation, retention, and Splunk HEC support
 const LOG_ROTATION_CONFIG = {
@@ -645,7 +645,7 @@ app.get('/health', async (req, res) => {
 
     // Test Splunk connectivity
     try {
-      const testResponse = await fetch(`${process.env.SPLUNKD_URL}/services/server/info`, {
+      const testResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/services/server/info`, {
         headers: {
           Authorization: process.env.SPLUNKD_TOKEN
             ? `Bearer ${process.env.SPLUNKD_TOKEN}`
@@ -677,92 +677,536 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Cache management endpoints (protected by CACHE_KEY)
-const CACHE_KEY = process.env.CACHE_MANAGEMENT_KEY || 'default-cache-key-123';
-
-// Middleware to validate cache management requests
-function validateCacheKey(req, res, next) {
-  const providedKey = req.headers['x-cache-key'] || req.query.key;
-  
-  if (!providedKey || providedKey !== CACHE_KEY) {
-    logger.warn('Invalid cache key attempt', { 
-      ip: req.ip, 
-      providedKey: providedKey ? 'provided' : 'missing',
-      userAgent: req.get('User-Agent')
+// Enhanced fetch wrapper with better error handling
+async function enhancedFetch(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    
+    // Log response details for debugging
+    logger.debug('HTTP response received', {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      method: options.method || 'GET'
     });
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Invalid or missing cache management key'
-    });
+    
+    return response;
+  } catch (error) {
+    // Enhanced error logging for fetch failures
+    const errorDetails = {
+      url,
+      method: options.method || 'GET',
+      errorType: error.name,
+      errorMessage: error.message,
+      errorCode: error.code,
+      errorStack: error.stack,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Add request details if available
+    if (options.headers) {
+      errorDetails.requestHeaders = Object.fromEntries(
+        Object.entries(options.headers).filter(([key]) => 
+          !key.toLowerCase().includes('authorization') && 
+          !key.toLowerCase().includes('password')
+        )
+      );
+    }
+    
+    if (options.body) {
+      errorDetails.hasBody = true;
+      errorDetails.bodyType = typeof options.body;
+    }
+    
+    logger.error('Fetch request failed', errorDetails);
+    throw error;
   }
-  
-  next();
 }
 
-// Get cache statistics (read-only, no protection needed)
-app.get('/api/cache/stats', (req, res) => {
-  const stats = {
-    totalEntries: searchCache.size,
-    memoryUsage: process.memoryUsage(),
-    hitRate: calculateHitRate(),
-    lastCleanup: lastCacheCleanup,
-    rateLimitStats: {
-      activeIPs: rateLimitStore.size,
-      windowMs: RATE_LIMIT_CONFIG.windowMs / 1000 / 60 + ' minutes',
-      maxRequests: RATE_LIMIT_CONFIG.maxRequests
+// Function to execute Splunk search
+async function executeSplunkSearch(datasource) {
+  const { search, app } = datasource;
+  let query = search.query;
+  const refresh = Math.max(parseInt(process.env.MIN_REFRESH_TIME, 10) || 60, search.refresh || 60);
+  
+  logger.info('Executing Splunk search', { datasourceId: datasource.id, query, app, refresh });
+  const searchStartTime = Date.now();
+  
+  // Build service prefix and auth header
+  const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(process.env.SPLUNKD_USER || 'admin')}/${encodeURIComponent(app)}`;
+  const AUTH_HEADER = process.env.SPLUNKD_TOKEN
+    ? `Bearer ${process.env.SPLUNKD_TOKEN}`
+    : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
+
+  // Prepare search parameters
+  const bodyParams = new URLSearchParams({
+    output_mode: 'json',
+    earliest_time: (search.queryParameters || {}).earliest || '',
+    latest_time: (search.queryParameters || {}).latest || '',
+    search: qualifiedSearchString(query),
+    reuse_max_seconds_ago: refresh,
+    timeout: refresh * 2,
+  });
+
+  // Dispatch search job
+  logger.info('Dispatching search job to Splunk', { datasourceId: datasource.id });
+  const dispatchStartTime = Date.now();
+  const searchResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
+    method: 'POST',
+    headers: {
+      Authorization: AUTH_HEADER,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: bodyParams,
+    agent: agent,
+  });
+
+  if (searchResponse.status > 299) {
+    const error = `Failed to dispatch job, Splunk returned HTTP status ${searchResponse.status}`;
+    logger.error(error, { datasourceId: datasource.id, status: searchResponse.status });
+    throw new Error(error);
+  }
+
+  const { sid } = await searchResponse.json();
+  const dispatchTime = Date.now() - dispatchStartTime;
+  const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
+  logger.info('Search job dispatched successfully', { 
+    datasourceId: datasource.id, 
+    sid, 
+    dispatchTime, 
+    checkDelay 
+  });
+
+  // Wait for job completion
+  let complete = false;
+  const waitStartTime = Date.now();
+  while (!complete) {
+    const statusResponse = await enhancedFetch(
+      `${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${encodeURIComponent(sid)}?output_mode=json`,
+      {
+        headers: {
+          Authorization: AUTH_HEADER,
+        },
+        agent: agent,
+      }
+    ).then((r) => r.json());
+
+    const jobStatus = statusResponse.entry[0].content;
+    if (jobStatus.isFailed) {
+      const error = 'Search job failed';
+      logger.error(error, { datasourceId: datasource.id, sid });
+      throw new Error(error);
+    }
+    complete = jobStatus.isDone;
+    if (!complete) {
+      await sleep(checkDelay);
+    }
+  }
+  
+  const waitTime = Date.now() - waitStartTime;
+  logger.info('Search job completed, retrieving results', { datasourceId: datasource.id, sid, waitTime });
+
+  // Get search results
+  const resultsStartTime = Date.now();
+  const resultsParams = new URLSearchParams({
+    output_mode: 'json_cols',
+    count: 50000,
+    offset: 0,
+    search: search.postprocess || '',
+  });
+
+  const resultsResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
+    method: 'POST',
+    headers: {
+      Authorization: AUTH_HEADER,
+    },
+    body: resultsParams,
+    agent: agent,
+  }).then((r) => r.json());
+
+  const resultsTime = Date.now() - resultsStartTime;
+  const totalSearchTime = Date.now() - searchStartTime;
+  
+  logger.info('Search results retrieved successfully', { 
+    datasourceId: datasource.id, 
+    recordCount: resultsResponse.columns ? resultsResponse.columns[0].length : 0,
+    timing: { dispatch: dispatchTime, wait: waitTime, results: resultsTime, total: totalSearchTime }
+  });
+  
+  return {
+    fields: resultsResponse.fields || [],
+    columns: resultsResponse.columns || [],
+    meta: {
+      sid: sid,
+      percentComplete: 100,
+      status: 'done',
+      totalCount: resultsResponse.columns ? resultsResponse.columns[0].length : 0,
+      lastUpdated: new Date().toISOString(),
+      timing: {
+        dispatch: dispatchTime,
+        wait: waitTime,
+        results: resultsTime,
+        total: totalSearchTime
+      }
     }
   };
-  
-  res.json(stats);
-});
+}
 
-// Delete specific cache entry (protected)
-app.delete('/api/cache/:key', validateCacheKey, (req, res) => {
-  const cacheKey = req.params.key;
-  
-  if (searchCache.has(cacheKey)) {
-    searchCache.delete(cacheKey);
-    logger.info('Cache entry deleted', { key: cacheKey, ip: req.ip });
-    res.json({ 
-      success: true, 
-      message: `Cache entry '${cacheKey}' deleted`,
-      remainingEntries: searchCache.size
+// Dashboard management endpoints
+app.get('/api/dashboards', rateLimit, async (req, res) => {
+  try {
+    const dashboardManifestPath = path.join(__dirname, 'src/_dashboards.json');
+    
+    if (!fs.existsSync(dashboardManifestPath)) {
+      logger.warn('Dashboard manifest file not found', { path: dashboardManifestPath });
+      return res.json({
+        dashboards: [],
+        metadata: {
+          total: 0,
+          lastUpdated: new Date().toISOString(),
+          version: '1.0.0'
+        }
+      });
+    }
+    
+    const dashboardManifestContent = fs.readFileSync(dashboardManifestPath, 'utf8');
+    const dashboardManifest = JSON.parse(dashboardManifestContent);
+    
+    // Convert manifest format to expected API format
+    const dashboards = Object.keys(dashboardManifest).map(id => ({
+      id,
+      name: dashboardManifest[id].title,
+      description: dashboardManifest[id].description || '',
+      path: `/api/dashboards/${id}/definition`,
+      url: `/dashboard/${id}`,
+      tags: dashboardManifest[id].tags || [],
+      lastUpdated: new Date().toISOString(),
+      version: '1.0.0'
+    }));
+    
+    logger.info('Retrieved dashboard manifest', { total: dashboards.length });
+    res.json({
+      dashboards,
+      metadata: {
+        total: dashboards.length,
+        lastUpdated: new Date().toISOString(),
+        version: '1.0.0'
+      }
     });
-  } else {
-    res.status(404).json({ 
-      error: 'Not Found', 
-      message: `Cache entry '${cacheKey}' not found` 
+    
+  } catch (error) {
+    logger.error('Failed to retrieve dashboard manifest', { error: error.message, stack: error.stack });
+    res.status(500).json({
+      error: 'Failed to retrieve dashboard manifest',
+      details: error.message
     });
   }
 });
 
-// Clear all cache (protected)
-app.delete('/api/cache/clear', validateCacheKey, (req, res) => {
-  const entryCount = searchCache.size;
-  searchCache.clear();
-  
-  logger.warn('Cache cleared', { 
-    clearedEntries: entryCount, 
-    ip: req.ip, 
-    userAgent: req.get('User-Agent')
-  });
-  
-  res.json({ 
-    success: true, 
-    message: `All cache entries cleared (${entryCount} entries)`,
-    remainingEntries: searchCache.size
-  });
+// Enhanced dashboard list endpoint with detailed information (MUST come before /:id route)
+app.get('/api/dashboards/list', (req, res) => {
+  try {
+    const dashboardList = [];
+    const dashboardDir = path.join(__dirname, 'src/dashboards');
+    
+    if (!fs.existsSync(dashboardDir)) {
+      return res.json({
+        dashboards: [],
+        metadata: {
+          total: 0,
+          message: 'No dashboard directory found'
+        }
+      });
+    }
+    
+    const dashboardFolders = fs.readdirSync(dashboardDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+    
+    for (const slug of dashboardFolders) {
+      const definitionPath = path.join(dashboardDir, slug, 'definition.json');
+      if (fs.existsSync(definitionPath)) {
+        try {
+          const content = fs.readFileSync(definitionPath, 'utf8');
+          const definition = JSON.parse(content);
+          const stats = fs.statSync(definitionPath);
+          
+          dashboardList.push({
+            slug,
+            title: definition.title || slug,
+            description: definition.description || '',
+            dataSourceCount: Object.keys(definition.dataSources || {}).length,
+            visualizationCount: Object.keys(definition.visualizations || {}).length,
+            lastModified: stats.mtime.toISOString(),
+            fileSize: stats.size,
+            path: `/api/dashboards/${slug}/definition`
+          });
+        } catch (parseError) {
+          logger.warn('Failed to parse dashboard definition', { slug, error: parseError.message });
+          dashboardList.push({
+            slug,
+            title: slug,
+            description: 'Invalid dashboard definition',
+            error: parseError.message,
+            path: `/api/dashboards/${slug}/definition`
+          });
+        }
+      }
+    }
+    
+    logger.info('Served enhanced dashboard list', { 
+      total: dashboardList.length,
+      dashboards: dashboardList.map(d => d.slug)
+    });
+    
+    res.json({
+      dashboards: dashboardList,
+      metadata: {
+        total: dashboardList.length,
+        lastUpdated: new Date().toISOString(),
+        servedVia: 'api'
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to serve enhanced dashboard list', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to load dashboard list',
+      details: error.message
+    });
+  }
 });
 
-// Helper function to calculate cache hit rate
-function calculateHitRate() {
-  // This is a simplified calculation - in production you'd want more sophisticated metrics
-  const totalRequests = (global.cacheStats && global.cacheStats.totalRequests) || 0;
-  const cacheHits = (global.cacheStats && global.cacheStats.cacheHits) || 0;
+app.get('/api/dashboards/:id', rateLimit, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const dashboardPath = path.join(__dirname, `src/dashboards/${id}/definition.json`);
+    
+    if (!fs.existsSync(dashboardPath)) {
+      logger.warn('Dashboard definition not found', { id, path: dashboardPath });
+      return res.status(404).json({
+        error: 'Dashboard not found',
+        message: `No dashboard with ID '${id}' exists`
+      });
+    }
+    
+    const dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
+    const dashboardDefinition = JSON.parse(dashboardContent);
+    
+    logger.info('Retrieved dashboard definition', { id, title: dashboardDefinition.title });
+    res.json(dashboardDefinition);
+    
+  } catch (error) {
+    logger.error('Failed to retrieve dashboard definition', { id: req.params.id, error: error.message, stack: error.stack });
+    res.status(500).json({
+      error: 'Failed to retrieve dashboard definition',
+      details: error.message
+    });
+  }
+});
+
+// Helper function to convert data to CSV format
+function convertToCSV(data) {
+  if (!data.fields || !data.columns || data.fields.length === 0) {
+    return 'No data available';
+  }
   
-  if (totalRequests === 0) return 0;
-  return Math.round((cacheHits / totalRequests) * 100);
+  // Create CSV header
+  const header = data.fields.join(',');
+  
+  // Create CSV rows
+  const rows = [];
+  const rowCount = data.columns[0] ? data.columns[0].length : 0;
+  
+  for (let i = 0; i < rowCount; i++) {
+    const row = data.fields.map((field, fieldIndex) => {
+      const value = data.columns[fieldIndex] ? data.columns[fieldIndex][i] : '';
+      // Escape CSV values (handle commas, quotes, newlines)
+      if (value === null || value === undefined) {
+        return '';
+      }
+      const stringValue = String(value);
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    });
+    rows.push(row.join(','));
+  }
+  
+  return [header, ...rows].join('\n');
 }
+
+// API endpoint for data sources (with rate limiting)
+app.get('/api/data/:dsid', rateLimit, async (req, res) => {
+  const { dsid } = req.params;
+  const searchStartTime = Date.now();
+  
+  logger.info('Looking up datasource', { dsid });
+  
+  if (!dsid || !(dsid in DATASOURCES)) {
+    logger.warn('Datasource not found', { dsid, availableCount: Object.keys(DATASOURCES).length });
+    res.setHeader('cache-control', 's-maxage=3600');
+    res.json({ 
+      error: 'Datasource not found',
+      message: `The requested datasource '${dsid}' does not exist in the system.`,
+      availableDatasources: Object.keys(DATASOURCES).slice(0, 10), // Show first 10 available
+      totalCount: Object.keys(DATASOURCES).length
+    });
+    return;
+  }
+  
+  const datasource = DATASOURCES[dsid];
+  logger.info('Datasource found', { dsid, query: datasource.search.query, app: datasource.app });
+  
+  // Check cache first
+  const cacheKey = `${dsid}_${JSON.stringify(datasource.search.queryParameters || {})}`;
+  const cachedResult = searchCache.get(cacheKey);
+  
+  if (cachedResult && Date.now() < cachedResult.expiresAt) {
+    logger.info('Cache hit for datasource', { dsid, cacheAge: Date.now() - cachedResult.createdAt });
+    const totalTime = Date.now() - searchStartTime;
+    
+    // Add cache info to response
+    const responseData = {
+      ...cachedResult.data,
+      meta: {
+        ...cachedResult.data.meta,
+        searchTime: totalTime,
+        datasourceId: dsid,
+        fromCache: true,
+        cacheAge: Date.now() - cachedResult.createdAt,
+        nextRefresh: cachedResult.expiresAt - Date.now()
+      }
+    };
+    
+    res.json(responseData);
+    return;
+  }
+  
+  logger.info('Cache miss for datasource', { dsid });
+  
+  try {
+    // Execute real Splunk search with retry logic
+    const data = await retryWithBackoff(() => executeSplunkSearch(datasource));
+    
+    const refresh = datasource.search.refresh || parseInt(process.env.DASHPUB_DEFAULT_TTL) || 60;
+    const cacheExpiry = Date.now() + (refresh * 1000);
+    
+    // Cache the result
+    searchCache.set(cacheKey, {
+      data: data,
+      expiresAt: cacheExpiry,
+      createdAt: Date.now()
+    });
+    
+    logger.info('Result cached for datasource', { dsid, refresh, cacheExpiry });
+    
+    res.setHeader('cache-control', `s-maxage=${refresh}, stale-while-revalidate`);
+    
+    // Add timing information to response
+    const totalTime = Date.now() - searchStartTime;
+    data.meta.searchTime = totalTime;
+    data.meta.datasourceId = dsid;
+    data.meta.fromCache = false;
+    
+    res.json(data);
+  } catch (error) {
+    // Enhanced error logging with more context
+    const errorContext = {
+      dsid,
+      errorType: error.name,
+      errorMessage: error.message,
+      errorCode: error.code,
+      errorStack: error.stack,
+      timestamp: new Date().toISOString(),
+      datasource: {
+        id: datasource.id,
+        app: datasource.app,
+        query: datasource.search.query,
+        parameters: datasource.search.queryParameters || {}
+      },
+      environment: {
+        splunkdUrl: process.env.SPLUNKD_URL,
+        splunkdUser: process.env.SPLUNKD_USER || 'admin',
+        hasToken: !!process.env.SPLUNKD_TOKEN,
+        hasPassword: !!process.env.SPLUNKD_PASSWORD
+      }
+    };
+    
+    logger.error('Error executing Splunk search', errorContext);
+    const totalTime = Date.now() - searchStartTime;
+    
+    // Try to return cached data if available (even if expired)
+    if (cachedResult) {
+      logger.info('Returning expired cached data due to search failure', { dsid, cacheAge: Date.now() - cachedResult.createdAt });
+      const responseData = {
+        ...cachedResult.data,
+        meta: {
+          ...cachedResult.data.meta,
+          searchTime: totalTime,
+          datasourceId: dsid,
+          fromCache: true,
+          cacheAge: Date.now() - cachedResult.createdAt,
+          warning: 'Using expired cached data due to search failure',
+          error: {
+            message: 'Search failed, showing cached data',
+            details: error.message,
+            timestamp: new Date().toISOString()
+          }
+        }
+      };
+      
+      res.json(responseData);
+      return;
+    }
+    
+    // Provide user-friendly error message
+    let errorMessage = 'Failed to fetch data from Splunk';
+    let errorDetails = error.message;
+    
+    if (error.message.includes('Failed to dispatch job')) {
+      errorMessage = 'Unable to start Splunk search job';
+      errorDetails = 'The search request could not be initiated. Please check Splunk connectivity.';
+    } else if (error.message.includes('Search job failed')) {
+      errorMessage = 'Splunk search execution failed';
+      errorDetails = 'The search query encountered an error during execution.';
+    } else if (error.message.includes('timeout')) {
+      errorMessage = 'Search request timed out';
+      errorDetails = 'The search took too long to complete. Please try a smaller time range.';
+    }
+    
+    res.status(500).json({ 
+      error: errorMessage,
+      message: errorDetails,
+      details: error.message,
+      searchTime: totalTime,
+      datasourceId: dsid,
+      debug: {
+        errorType: error.name,
+        errorCode: error.code,
+        datasource: {
+          app: datasource.app,
+          query: datasource.search.query,
+          parameters: datasource.search.queryParameters || {}
+        },
+        environment: {
+          splunkdUrl: process.env.SPLUNKD_URL,
+          hasToken: !!process.env.SPLUNKD_TOKEN,
+          hasPassword: !!process.env.SPLUNKD_PASSWORD
+        }
+      },
+      suggestions: [
+        'Check if Splunk is accessible and running',
+        'Verify your authentication credentials',
+        'Try reducing the time range for your search',
+        'Check the search query syntax in your datasource configuration',
+        'Review server logs for detailed error information'
+      ],
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // HEC management endpoints
 app.get('/api/logs/hec/status', rateLimit, (req, res) => {
@@ -1143,453 +1587,6 @@ app.get('/api/export/saved-search/:id/:format', rateLimit, async (req, res) => {
     });
   }
 });
-
-// Dashboard management endpoints
-app.get('/api/dashboards', rateLimit, async (req, res) => {
-  try {
-    const dashboardManifestPath = path.join(__dirname, 'src/_dashboards.json');
-    
-    if (!fs.existsSync(dashboardManifestPath)) {
-      logger.warn('Dashboard manifest file not found', { path: dashboardManifestPath });
-      return res.json({
-        dashboards: [],
-        metadata: {
-          total: 0,
-          lastUpdated: new Date().toISOString(),
-          version: '1.0.0'
-        }
-      });
-    }
-    
-    const dashboardManifestContent = fs.readFileSync(dashboardManifestPath, 'utf8');
-    const dashboardManifest = JSON.parse(dashboardManifestContent);
-    
-    // Convert manifest format to expected API format
-    const dashboards = Object.keys(dashboardManifest).map(id => ({
-      id,
-      name: dashboardManifest[id].title,
-      description: dashboardManifest[id].description || '',
-      path: `/api/dashboards/${id}/definition`,
-      url: `/dashboard/${id}`,
-      tags: dashboardManifest[id].tags || [],
-      lastUpdated: new Date().toISOString(),
-      version: '1.0.0'
-    }));
-    
-    logger.info('Retrieved dashboard manifest', { total: dashboards.length });
-    res.json({
-      dashboards,
-      metadata: {
-        total: dashboards.length,
-        lastUpdated: new Date().toISOString(),
-        version: '1.0.0'
-      }
-    });
-    
-  } catch (error) {
-    logger.error('Failed to retrieve dashboard manifest', { error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to retrieve dashboard manifest',
-      details: error.message
-    });
-  }
-});
-
-// Enhanced dashboard list endpoint with detailed information (MUST come before /:id route)
-app.get('/api/dashboards/list', (req, res) => {
-  try {
-    const dashboardList = [];
-    const dashboardDir = path.join(__dirname, 'src/dashboards');
-    
-    if (!fs.existsSync(dashboardDir)) {
-      return res.json({
-        dashboards: [],
-        metadata: {
-          total: 0,
-          message: 'No dashboard directory found'
-        }
-      });
-    }
-    
-    const dashboardFolders = fs.readdirSync(dashboardDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
-    
-    for (const slug of dashboardFolders) {
-      const definitionPath = path.join(dashboardDir, slug, 'definition.json');
-      if (fs.existsSync(definitionPath)) {
-        try {
-          const content = fs.readFileSync(definitionPath, 'utf8');
-          const definition = JSON.parse(content);
-          const stats = fs.statSync(definitionPath);
-          
-          dashboardList.push({
-            slug,
-            title: definition.title || slug,
-            description: definition.description || '',
-            dataSourceCount: Object.keys(definition.dataSources || {}).length,
-            visualizationCount: Object.keys(definition.visualizations || {}).length,
-            lastModified: stats.mtime.toISOString(),
-            fileSize: stats.size,
-            path: `/api/dashboards/${slug}/definition`
-          });
-        } catch (parseError) {
-          logger.warn('Failed to parse dashboard definition', { slug, error: parseError.message });
-          dashboardList.push({
-            slug,
-            title: slug,
-            description: 'Invalid dashboard definition',
-            error: parseError.message,
-            path: `/api/dashboards/${slug}/definition`
-          });
-        }
-      }
-    }
-    
-    logger.info('Served enhanced dashboard list', { 
-      total: dashboardList.length,
-      dashboards: dashboardList.map(d => d.slug)
-    });
-    
-    res.json({
-      dashboards: dashboardList,
-      metadata: {
-        total: dashboardList.length,
-        lastUpdated: new Date().toISOString(),
-        servedVia: 'api'
-      }
-    });
-  } catch (error) {
-    logger.error('Failed to serve enhanced dashboard list', { error: error.message });
-    res.status(500).json({
-      error: 'Failed to load dashboard list',
-      details: error.message
-    });
-  }
-});
-
-app.get('/api/dashboards/:id', rateLimit, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const dashboardPath = path.join(__dirname, `src/dashboards/${id}/definition.json`);
-    
-    if (!fs.existsSync(dashboardPath)) {
-      logger.warn('Dashboard definition not found', { id, path: dashboardPath });
-      return res.status(404).json({
-        error: 'Dashboard not found',
-        message: `No dashboard with ID '${id}' exists`
-      });
-    }
-    
-    const dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
-    const dashboardDefinition = JSON.parse(dashboardContent);
-    
-    logger.info('Retrieved dashboard definition', { id, title: dashboardDefinition.title });
-    res.json(dashboardDefinition);
-    
-  } catch (error) {
-    logger.error('Failed to retrieve dashboard definition', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to retrieve dashboard definition',
-      details: error.message
-    });
-  }
-});
-
-// Helper function to convert data to CSV format
-function convertToCSV(data) {
-  if (!data.fields || !data.columns || data.fields.length === 0) {
-    return 'No data available';
-  }
-  
-  // Create CSV header
-  const header = data.fields.join(',');
-  
-  // Create CSV rows
-  const rows = [];
-  const rowCount = data.columns[0] ? data.columns[0].length : 0;
-  
-  for (let i = 0; i < rowCount; i++) {
-    const row = data.fields.map((field, fieldIndex) => {
-      const value = data.columns[fieldIndex] ? data.columns[fieldIndex][i] : '';
-      // Escape CSV values (handle commas, quotes, newlines)
-      if (value === null || value === undefined) {
-        return '';
-      }
-      const stringValue = String(value);
-      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
-    });
-    rows.push(row.join(','));
-  }
-  
-  return [header, ...rows].join('\n');
-}
-
-// API endpoint for data sources (with rate limiting)
-app.get('/api/data/:dsid', rateLimit, async (req, res) => {
-  const { dsid } = req.params;
-  const searchStartTime = Date.now();
-  
-  logger.info('Looking up datasource', { dsid });
-  
-  if (!dsid || !(dsid in DATASOURCES)) {
-    logger.warn('Datasource not found', { dsid, availableCount: Object.keys(DATASOURCES).length });
-    res.setHeader('cache-control', 's-maxage=3600');
-    res.json({ 
-      error: 'Datasource not found',
-      message: `The requested datasource '${dsid}' does not exist in the system.`,
-      availableDatasources: Object.keys(DATASOURCES).slice(0, 10), // Show first 10 available
-      totalCount: Object.keys(DATASOURCES).length
-    });
-    return;
-  }
-  
-  const datasource = DATASOURCES[dsid];
-  logger.info('Datasource found', { dsid, query: datasource.search.query, app: datasource.app });
-  
-  // Check cache first
-  const cacheKey = `${dsid}_${JSON.stringify(datasource.search.queryParameters || {})}`;
-  const cachedResult = searchCache.get(cacheKey);
-  
-  if (cachedResult && Date.now() < cachedResult.expiresAt) {
-    logger.info('Cache hit for datasource', { dsid, cacheAge: Date.now() - cachedResult.createdAt });
-    const totalTime = Date.now() - searchStartTime;
-    
-    // Add cache info to response
-    const responseData = {
-      ...cachedResult.data,
-      meta: {
-        ...cachedResult.data.meta,
-        searchTime: totalTime,
-        datasourceId: dsid,
-        fromCache: true,
-        cacheAge: Date.now() - cachedResult.createdAt,
-        nextRefresh: cachedResult.expiresAt - Date.now()
-      }
-    };
-    
-    res.json(responseData);
-    return;
-  }
-  
-  logger.info('Cache miss for datasource', { dsid });
-  
-  try {
-    // Execute real Splunk search with retry logic
-    const data = await retryWithBackoff(() => executeSplunkSearch(datasource));
-    
-    const refresh = datasource.search.refresh || parseInt(process.env.DASHPUB_DEFAULT_TTL) || 60;
-    const cacheExpiry = Date.now() + (refresh * 1000);
-    
-    // Cache the result
-    searchCache.set(cacheKey, {
-      data: data,
-      expiresAt: cacheExpiry,
-      createdAt: Date.now()
-    });
-    
-    logger.info('Result cached for datasource', { dsid, refresh, cacheExpiry });
-    
-    res.setHeader('cache-control', `s-maxage=${refresh}, stale-while-revalidate`);
-    
-    // Add timing information to response
-    const totalTime = Date.now() - searchStartTime;
-    data.meta.searchTime = totalTime;
-    data.meta.datasourceId = dsid;
-    data.meta.fromCache = false;
-    
-    res.json(data);
-  } catch (error) {
-    logger.error('Error executing Splunk search', { dsid, error: error.message, stack: error.stack });
-    const totalTime = Date.now() - searchStartTime;
-    
-    // Try to return cached data if available (even if expired)
-    if (cachedResult) {
-      logger.info('Returning expired cached data due to search failure', { dsid, cacheAge: Date.now() - cachedResult.createdAt });
-      const responseData = {
-        ...cachedResult.data,
-        meta: {
-          ...cachedResult.data.meta,
-          searchTime: totalTime,
-          datasourceId: dsid,
-          fromCache: true,
-          cacheAge: Date.now() - cachedResult.createdAt,
-          warning: 'Using expired cached data due to search failure',
-          error: {
-            message: 'Search failed, showing cached data',
-            details: error.message,
-            timestamp: new Date().toISOString()
-          }
-        }
-      };
-      
-      res.json(responseData);
-      return;
-    }
-    
-    // Provide user-friendly error message
-    let errorMessage = 'Failed to fetch data from Splunk';
-    let errorDetails = error.message;
-    
-    if (error.message.includes('Failed to dispatch job')) {
-      errorMessage = 'Unable to start Splunk search job';
-      errorDetails = 'The search request could not be initiated. Please check Splunk connectivity.';
-    } else if (error.message.includes('Search job failed')) {
-      errorMessage = 'Splunk search execution failed';
-      errorDetails = 'The search query encountered an error during execution.';
-    } else if (error.message.includes('timeout')) {
-      errorMessage = 'Search request timed out';
-      errorDetails = 'The search took too long to complete. Please try a smaller time range.';
-    }
-    
-    res.status(500).json({ 
-      error: errorMessage,
-      message: errorDetails,
-      details: error.message,
-      searchTime: totalTime,
-      datasourceId: dsid,
-      suggestions: [
-        'Check if Splunk is accessible and running',
-        'Verify your authentication credentials',
-        'Try reducing the time range for your search',
-        'Check the search query syntax in your datasource configuration'
-      ],
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-// Function to execute Splunk search
-async function executeSplunkSearch(datasource) {
-  const { search, app } = datasource;
-  let query = search.query;
-  const refresh = Math.max(parseInt(process.env.MIN_REFRESH_TIME, 10) || 60, search.refresh || 60);
-  
-  logger.info('Executing Splunk search', { datasourceId: datasource.id, query, app, refresh });
-  const searchStartTime = Date.now();
-  
-  // Build service prefix and auth header
-  const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(process.env.SPLUNKD_USER || 'admin')}/${encodeURIComponent(app)}`;
-  const AUTH_HEADER = process.env.SPLUNKD_TOKEN
-    ? `Bearer ${process.env.SPLUNKD_TOKEN}`
-    : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
-
-  // Prepare search parameters
-  const bodyParams = new URLSearchParams({
-    output_mode: 'json',
-    earliest_time: (search.queryParameters || {}).earliest || '',
-    latest_time: (search.queryParameters || {}).latest || '',
-    search: qualifiedSearchString(query),
-    reuse_max_seconds_ago: refresh,
-    timeout: refresh * 2,
-  });
-
-  // Dispatch search job
-  logger.info('Dispatching search job to Splunk', { datasourceId: datasource.id });
-  const dispatchStartTime = Date.now();
-  const searchResponse = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
-    method: 'POST',
-    headers: {
-      Authorization: AUTH_HEADER,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: bodyParams,
-    agent: agent,
-  });
-
-  if (searchResponse.status > 299) {
-    const error = `Failed to dispatch job, Splunk returned HTTP status ${searchResponse.status}`;
-    logger.error(error, { datasourceId: datasource.id, status: searchResponse.status });
-    throw new Error(error);
-  }
-
-  const { sid } = await searchResponse.json();
-  const dispatchTime = Date.now() - dispatchStartTime;
-  const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
-  logger.info('Search job dispatched successfully', { 
-    datasourceId: datasource.id, 
-    sid, 
-    dispatchTime, 
-    checkDelay 
-  });
-
-  // Wait for job completion
-  let complete = false;
-  const waitStartTime = Date.now();
-  while (!complete) {
-    const statusResponse = await fetch(
-      `${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${encodeURIComponent(sid)}?output_mode=json`,
-      {
-        headers: {
-          Authorization: AUTH_HEADER,
-        },
-        agent: agent,
-      }
-    ).then((r) => r.json());
-
-    const jobStatus = statusResponse.entry[0].content;
-    if (jobStatus.isFailed) {
-      const error = 'Search job failed';
-      logger.error(error, { datasourceId: datasource.id, sid });
-      throw new Error(error);
-    }
-    complete = jobStatus.isDone;
-    if (!complete) {
-      await sleep(checkDelay);
-    }
-  }
-  
-  const waitTime = Date.now() - waitStartTime;
-  logger.info('Search job completed, retrieving results', { datasourceId: datasource.id, sid, waitTime });
-
-  // Get search results
-  const resultsStartTime = Date.now();
-  const resultsParams = new URLSearchParams({
-    output_mode: 'json_cols',
-    count: 50000,
-    offset: 0,
-    search: search.postprocess || '',
-  });
-
-  const resultsResponse = await fetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
-    method: 'POST',
-    headers: {
-      Authorization: AUTH_HEADER,
-    },
-    body: resultsParams,
-    agent: agent,
-  }).then((r) => r.json());
-
-  const resultsTime = Date.now() - resultsStartTime;
-  const totalSearchTime = Date.now() - searchStartTime;
-  
-  logger.info('Search results retrieved successfully', { 
-    datasourceId: datasource.id, 
-    recordCount: resultsResponse.columns ? resultsResponse.columns[0].length : 0,
-    timing: { dispatch: dispatchTime, wait: waitTime, results: resultsTime, total: totalSearchTime }
-  });
-  
-  return {
-    fields: resultsResponse.fields || [],
-    columns: resultsResponse.columns || [],
-    meta: {
-      sid: sid,
-      percentComplete: 100,
-      status: 'done',
-      totalCount: resultsResponse.columns ? resultsResponse.columns[0].length : 0,
-      lastUpdated: new Date().toISOString(),
-      timing: {
-        dispatch: dispatchTime,
-        wait: waitTime,
-        results: resultsTime,
-        total: totalSearchTime
-      }
-    }
-  };
-}
 
 // Dashboard definitions API endpoint (replaces static file serving)
 app.get('/api/dashboards/:slug/definition', (req, res) => {

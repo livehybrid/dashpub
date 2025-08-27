@@ -99,26 +99,6 @@ export default defineConfig({
       transformMixedEsModules: true
     },
     rollupOptions: {
-      external: [
-        'rxjs',
-        'rxjs/add/observable/bindCallback',
-        'rxjs/add/observable/bindNodeCallback',
-        'rxjs/add/observable/fromEvent',
-        'rxjs/add/observable/fromPromise',
-        'rxjs/add/observable/interval',
-        'rxjs/add/observable/merge',
-        'rxjs/add/observable/of',
-        'rxjs/add/observable/timer',
-        'rxjs/add/operator/catch',
-        'rxjs/add/operator/debounceTime',
-        'rxjs/add/operator/distinctUntilChanged',
-        'rxjs/add/operator/filter',
-        'rxjs/add/operator/map',
-        'rxjs/add/operator/mergeMap',
-        'rxjs/add/operator/switchMap',
-        'rxjs/add/operator/take',
-        'rxjs/add/operator/takeUntil'
-      ],
       plugins: [
         {
           name: 'css-import-resolver',
@@ -140,11 +120,14 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           splunk: ['@splunk/dashboard-core', '@splunk/dashboard-context']
-        },
-        globals: {
-          'rxjs': 'Rx'
         }
       }
+    },
+    // Ensure all dependencies are bundled
+    modulePreload: false,
+    // Handle dynamic imports properly
+    dynamicImportVarsOptions: {
+      warnOnError: false
     }
   },
 

@@ -78,7 +78,8 @@
         "preview": "vite preview",
         "setup": "npm install",
         "server": "node server.js",
-        "dev:full": "concurrently \"npm run server\" \"npm run dev\""
+        "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+        "start": "npm run build && npm run server"
     },
     "eslintConfig": {
         "env": {
