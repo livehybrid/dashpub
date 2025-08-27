@@ -15,6 +15,9 @@ export NEXT_PUBLIC_URL=$VERCEL_URL
 ENV_MODE="${ENV_MODE:-production}"
 NODE_ENV="${NODE_ENV:-production}"
 
+git config --global user.email "dashpub@yourdomain.com"
+git config --global user.name "Splunk DashPub"
+
 # Ensure PATH includes standard locations
 export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
 

@@ -518,6 +518,21 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Serve screenshots directory if screenshots are enabled
+if (process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS) {
+  const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'screenshots';
+  const screenshotPath = path.join(__dirname, screenshotDir);
+  
+  // Create screenshots directory if it doesn't exist
+  if (!fs.existsSync(screenshotPath)) {
+    fs.mkdirSync(screenshotPath, { recursive: true });
+    logger.info(`Created screenshots directory: ${screenshotPath}`);
+  }
+  
+  app.use(`/${screenshotDir}`, express.static(screenshotPath));
+  logger.info(`Serving screenshots from: ${screenshotPath} at /${screenshotDir}`);
+}
+
 // Request timing middleware
 app.use((req, res, next) => {
   req.startTime = Date.now();
