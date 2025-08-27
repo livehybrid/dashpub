@@ -16,7 +16,7 @@
         "@splunk/react-ui": "5.2.0",
         "@splunk/visualization-context": "28.0.0",
         "bootstrap": "5.3.7",
-        "cookies-next": "5.1.0",
+        "cookies-next": "6.1.0",
         "cors": "^2.8.5",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
