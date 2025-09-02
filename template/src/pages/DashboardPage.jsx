@@ -1,6 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
-import { SplunkThemeProvider } from '@splunk/themes';
 import Page from '../components/Page';
 import DashboardComponent from '../components/Dashboard';
 import customPreset from '../preset';
@@ -45,21 +44,19 @@ export default function DashboardPage({ baseUrl }) {
     }
 
     return (
-        <SplunkThemeProvider>
-            <Page
-                title={definition?.title || 'Dashboard'}
-                description={definition?.description}
-                imageUrl={`/screenshot/${dashboard}.jpg`}
-                path={`/${dashboard}`}
-                theme={definition?.theme || 'light'}
-                baseUrl={baseUrl}
-            >
-                <NoSSR>
-                    <Suspense fallback={<Loading />}>
-                        <DashboardComponent preset={customPreset} definition={definition} />
-                    </Suspense>
-                </NoSSR>
-            </Page>
-        </SplunkThemeProvider>
+        <Page
+            title={definition?.title || 'Dashboard'}
+            description={definition?.description}
+            imageUrl={`/screenshot/${dashboard}.jpg`}
+            path={`/${dashboard}`}
+            theme={definition?.theme || 'light'}
+            baseUrl={baseUrl}
+        >
+            <NoSSR>
+                <Suspense fallback={<Loading />}>
+                    <DashboardComponent preset={customPreset} definition={definition} />
+                </Suspense>
+            </NoSSR>
+        </Page>
     );
 }

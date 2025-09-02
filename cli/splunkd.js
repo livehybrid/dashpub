@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 const fetch = global.fetch;
-const { XmlDocument } = require('xmldoc');
+import { XmlDocument } from 'xmldoc';
 
 const qs = obj =>
     Object.entries(obj)
@@ -157,7 +157,30 @@ async function validateAuth({ url, user, password }) {
     }
 }
 
-module.exports = {
+// Helper function to get Splunk connection info
+async function getSplunkdInfo() {
+    return {
+        url: process.env.SPLUNKD_URL,
+        username: process.env.SPLUNKD_USER,
+        password: process.env.SPLUNKD_PASSWORD,
+        token: process.env.SPLUNKD_TOKEN,
+    };
+}
+
+// Helper function to get apps (alias for listApps)
+async function getApps(splunkdInfo) {
+    return await listApps(splunkdInfo);
+}
+
+// Helper function to get dashboards (alias for listDashboards)
+async function getDashboards(splunkdInfo, apps) {
+    // For now, just get dashboards from the first app
+    // This could be enhanced to get dashboards from all apps
+    const app = apps && apps.length > 0 ? apps[0].name : 'search';
+    return await listDashboards(app, splunkdInfo);
+}
+
+export {
     splunkd,
     loadDashboard,
     listApps,
@@ -165,4 +188,7 @@ module.exports = {
     validateAuth,
     getUsername,
     qs,
+    getSplunkdInfo,
+    getApps,
+    getDashboards,
 };

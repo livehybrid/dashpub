@@ -1,0 +1,821 @@
+{
+    "i3abab80og8t": {
+        "search": {
+            "query": "index=main sourcetype=\"splunk:user\" source=livehybrid \n| timechart span=1d latest(*) as *\n|  fields _time karma_received posts solutions",
+            "queryParameters": {
+                "earliest": "@y",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "i3abab80og8t"
+    },
+    "ipvkuyudphkv": {
+        "search": {
+            "query": "index=main sourcetype=\"splunk:user\" source=livehybrid \n| timechart span=4h latest(*) as *\n|  fields _time karma_given posts solutions",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "ipvkuyudphkv"
+    },
+    "guwlxc7c4l71": {
+        "search": {
+            "query": "index=main sourcetype=\"splunk:user\" source=livehybrid \n| timechart span=4h latest(*) as *\n|  fields _time karma_received posts solutions",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "guwlxc7c4l71"
+    },
+    "2xl0skxytdkk": {
+        "search": {
+            "refresh": 3600,
+            "query": "index=nhschange sourcetype=nhs:change:idea \n| bin span=1d _time \n| dedup id _time \n| rename attributes.* as * \n| eval overall_score = likes_count - dislikes_count \n| timechart span=1d partial=f sum(likes_count) AS total_likes, sum(dislikes_count) AS total_dislikes, dc(id) as ideas_count, dc(author_hash) AS total_authors \n| where ideas_count>0",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            }
+        },
+        "app": "etyd",
+        "id": "2xl0skxytdkk"
+    },
+    "3z3jn0vqb4oy": {
+        "search": {
+            "refresh": 3600,
+            "query": "index=nhschange sourcetype=nhs:change:idea \n| bin span=1d _time \n| dedup id _time \n| rename attributes.* as * \n| eval overall_score = likes_count - dislikes_count \n| timechart span=1d partial=f sum(likes_count) AS total_likes, sum(dislikes_count) AS total_dislikes, dc(id) as ideas_count, dc(author_hash) AS total_authors \n| where ideas_count>0",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "postprocess": "| timechart span=1h partial=f sum(likes_count) AS total_likes, sum(dislikes_count) AS total_dislikes, dc(id) as ideas_count, dc(author_hash) AS total_authors\n| where ideas_count>0"
+        },
+        "app": "etyd",
+        "id": "3z3jn0vqb4oy"
+    },
+    "pcwtugi5o23i": {
+        "search": {
+            "query": "index=nhschange sourcetype=nhs:change:idea \n| rename attributes.* as * \n| eval overall_score = likes_count - dislikes_count\n| table id title_multiloc.en-GB _slug *_count overall_score",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "postprocess": "| sort overall_score\n| rename \"title_multiloc.en-GB\" AS Title, dislikes_count AS Dislikes, likes_count AS Likes, overall_score AS OverallScore, comments_count AS Comments\n| rename slug AS _slug\n| sort 50 - OverallScore\n| table Title, Dislikes, Likes, Comments,OverallScore",
+            "refresh": 3600
+        },
+        "app": "etyd",
+        "id": "pcwtugi5o23i"
+    },
+    "0gg42ucpt27k": {
+        "search": {
+            "query": "index=nhschange sourcetype=nhs:change:idea \n| rename attributes.* as * \n| eval overall_score = likes_count - dislikes_count\n| table id title_multiloc.en-GB _slug *_count overall_score",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "postprocess": "| dedup id\n| rename \"title_multiloc.en-GB\" AS Title, dislikes_count AS Dislikes, likes_count AS Likes, overall_score AS OverallScore, comments_count AS Comments\n| rename slug AS _slug\n| eventstats max(Dislikes) AS max_dislikes, max(Likes) AS max_likes, max(Comments) as max_comments, max(OverallScore) as max_score\n| eval isMaxLikes=IF(max_likes==Likes,Title.\" (\".Likes.\")\",null())\n| eval isMaxDisLikes=IF(max_dislikes==Dislikes,Title.\" (\".Dislikes.\")\",null())\n| eval isMaxComments=IF(max_comments==Comments,Title.\" (\".Comments.\")\",null())\n| eval isMaxScore=IF(max_score==OverallScore,Title.\" (\".OverallScore.\")\",null())\n| stats ,latest(isMaxLikes) AS maxLiked, latest(isMaxDisLikes) AS maxDisliked, latest(isMaxComments) AS maxCommented, latest(isMaxScore) AS maxScored",
+            "refresh": 3600
+        },
+        "app": "etyd",
+        "id": "0gg42ucpt27k"
+    },
+    "0r9w2rixu66e": {
+        "search": {
+            "query": "index=nhschange sourcetype=nhs:change:idea \n| rename attributes.* as * \n| eval overall_score = likes_count - dislikes_count\n| table id title_multiloc.en-GB _slug *_count overall_score",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 3599
+        },
+        "app": "etyd",
+        "id": "0r9w2rixu66e"
+    },
+    "ja1wfnaq1cwt": {
+        "search": {
+            "query": "index=github action=created release.id=* | rename release.* as *\n| table _time repository.full_name name html_url\n| rename repository.full_name AS Repository, name AS \"Release Title\", html_url AS url\n| dedup Repository",
+            "queryParameters": {
+                "earliest": "0"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "ja1wfnaq1cwt"
+    },
+    "ogib9dh6rx1x": {
+        "search": {
+            "query": "index=github NOT \"check_run.conclusion\"=\"null\" NOT \"workflow_run.conclusion\"=\"null\" NOT TERM(\"workflow_job\") (action IN (\"opened\",\"created\",\"completed\", \"closed\") OR NOT action=*)\n| eval type=IF(LIKE(number,\"%\"),\"pullrequest\",\"other\")\n| eval {type}_action=action\n| eval repo=coalesce('repository.full_name',json_extract(_raw,\"repository.full_name\"), json_extract(_raw, \"pull_request.base.repo.full_name\")) \n| eval a_pullrequest_id=coalesce('workflow_run.pull_requests{}.id','pull_request.id','check_run.pull_requests{}.id') \n| eval a_checkrun_id=json_extract(_raw, \"check_run.id\") \n| eval a_workflow_run='workflow_run.id' \n| eval workflow_status='workflow_run.conclusion' \n| eval workflow_name='workflow_run.name' \n| eval checkrun_status='check_run.conclusion' \n| eval checkrun_name='check_run.name' \n| eval job_{checkrun_name}=checkrun_status\n| stats values(pull_request.title) AS Title, values(pull_request.user.login) AS User, latest(job_*) AS job_*, values(pull_request.html_url) as url, latest(pullrequest_action) as latestAction values(pullrequest_action) as actions values(a_workflow_run) AS workflow_id, values(a_checkrun_id) AS workflow_jobs, latest(workflow_status) AS workflow_status, values(workflow_name) AS workflow_name, values(checkrun_status) AS checkrun_status, values(checkrun_name) as checkrun_name by a_pullrequest_id, repo \n| eval workflow=mvzip(workflow_name, workflow_status, \" = \") \n| eval checkruns=mvzip(checkrun_name, checkrun_status, \" = \")\n| fields - *_name *_status workflow_* checkruns\n| search actions!=closed\n| table a_pullrequest_id repo User Title url actions workflow job_*\n| rename a_pullrequest_id AS PullRequestID",
+            "queryParameters": {
+                "earliest": "0",
+                "latest": ""
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "ogib9dh6rx1x"
+    },
+    "akfosfr7jrfv": {
+        "search": {
+            "query": "index=github number=* \n| eval repo=json_extract(_raw, \"pull_request.base.repo.full_name\")\n| stats latest(action) as latestAction values(action) as actions latest(pull_request.html_url) as url by number, repo, pull_request.title, pull_request.user.login, pull_request.id\n| search actions!=closed\n| fields - latestAction actions\n| rename number AS \"PR#\", repo AS Repo, pull_request.title AS \"Pull Request Title\", pull_request.user.login AS User",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "akfosfr7jrfv"
+    },
+    "p3redkoowd3o": {
+        "search": {
+            "query": "index=main source=\"multi5.json\" host=\"macdev\" sourcetype=\"_json\" earliest=0 \n| sort 0 - _time \n| table vehicle_id latitude longitude \n| eval icon=\"FaTaxi\" \n| rename latitude as lat, longitude as lng\n| eval vehicle_id=\"TesTelem-\".substr(md5(vehicle_id),-5)",
+            "queryParameters": {
+                "earliest": "1705531020",
+                "latest": "1705703820"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "p3redkoowd3o"
+    },
+    "01x1o7cnx3wk": {
+        "search": {
+            "query": "index=main source=\"multi5.json\" host=\"macdev\" sourcetype=\"_json\" earliest=0 \n| sort 0 - _time \n| stats latest(name) AS name, by vehicle_id \n| where name != \"\" \n| eval vehicle_id=\"TesTelem-\".substr(md5(vehicle_id),-5)\n| rename vehicle_id AS \"Vehicle\", name AS \"Location\"",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "01x1o7cnx3wk"
+    },
+    "p5tqln4me0jf": {
+        "search": {
+            "query": "|tstats count WHERE index=home_docker sourcetype=healthcheck TERM(passed) by _time span=5m prestats=t | timechart span=5m count partial=false | eval status=IF(count>=4,\"Healthy\",\"UnHealthy\")",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "p5tqln4me0jf"
+    },
+    "osye61a4psgl": {
+        "search": {
+            "query": "source=radarbox \"Packets sent in the last 60 seconds\" index=home_docker \n| rex field=_raw \"Packets sent in the last 60 seconds:\\s(?<packetsSent>[0-9]+)\" \n| timechart latest(packetsSent) as packetsSent span=1m \n|  filldown",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "osye61a4psgl"
+    },
+    "u06qnnr4j1ns": {
+        "search": {
+            "query": "index=etyd supplier=Booker \"function=setproductstock\"\n| bin span=1d _time \n| dedup productID _time \n| eval stockLevel = if(toStockLevel>0, \"InStock\",\"OOS\") \n| timechart span=1d count by stockLevel \n| eval instockPerc=InStock/(InStock+OOS)*100\n| filldown InStock OOS instockPerc",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "u06qnnr4j1ns"
+    },
+    "170ruq724bte": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "170ruq724bte"
+    },
+    "80qby3w0x1m8": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| where host=\"macdev\" \n|  timechart span=5m sum(memUsedMB) AS memUsedMB,   by category",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "80qby3w0x1m8"
+    },
+    "hunvr4g75qjq": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| where host=\"macdev\" \n|  timechart span=5m  sum(cpuPerc) AS cpuPerc by category",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "hunvr4g75qjq"
+    },
+    "638hyhwri3zi": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| table category \n|  dedup category\n| sort 0 category",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "638hyhwri3zi"
+    },
+    "fafx8clncbl4": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| eval container=category.\" - \".service\n| stats latest(memUsedMB) AS memUsedMB by container\n|  sort 5 - memUsedMB",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "fafx8clncbl4"
+    },
+    "wqer3yznokrh": {
+        "search": {
+            "query": "| makeresults \n|  eval message=\"Reset Tokens\"",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "wqer3yznokrh"
+    },
+    "0xnnpn7nws8x": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| eval container=category.\" - \".service\n|  stats  latest(cpuPerc) AS cpuPerc by container \n|  sort 5 - cpuPerc",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "0xnnpn7nws8x"
+    },
+    "yylmhgkpybwb": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-15m source=rancher \n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000) \n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\" \n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName) \n| dedup containerName | where host=\"hpelite\" \n| stats sum(cpuPerc) AS cpu",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "yylmhgkpybwb"
+    },
+    "6pihc0zl642m": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| where host=\"hpelite\" \n|  timechart span=5m sum(memUsedMB) AS memUsedMB,   by category",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "6pihc0zl642m"
+    },
+    "52by825gnal3": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB, sum(cpuPerc) AS totalCpuPerc  by _time, host\n| eval {host}_cpuperc=totalCpuPerc, {host}_totalMemUsedGB=totalMemUsedGB\n| eventstats latest(*_totalMemUsedGB) AS *_totalMemUsedGB, latest(*_cpuperc) AS *_cpuperc",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "postprocess": "| where host=\"hpelite\" \n|  timechart span=5m  sum(cpuPerc) AS cpuPerc by category",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "52by825gnal3"
+    },
+    "pprk4rtvly4h": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-15m source=rancher \n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000) \n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\" \n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName) \n| dedup containerName | stats sum(cpuPerc) AS cpu",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "pprk4rtvly4h"
+    },
+    "qs4n4u3pr40o": {
+        "search": {
+            "query": "index=home_docker sourcetype=dockermon earliest=-12h\n| eval memUsedMB=CASE(LIKE(memUsed,\"%MiB%\"),REPLACE(memUsed,\"MiB\",\"\"),LIKE(memUsed,\"%GiB%\"),tonumber(REPLACE(memUsed,\"GiB\",\"\"))*1000)\n| rex field=containerName \"r-(?<category>[^\\-]+)\\-(?<service>.+)\\-[0-9]+\\-[a-z0-9]+$\"\n| eval category=COALESCE(category,\"Internal\"), service=COALESCE(service, containerName)\n| bin _time span=5m\n| stats latest(memUsedMB) AS memUsedMB,  latest(cpuPerc) AS cpuPerc by _time, category, service, host\n| eventstats sum(eval(memUsedMB/1024)) AS totalMemUsedGB  by _time, host",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "qs4n4u3pr40o"
+    },
+    "vftsocykzbzm": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-24h \n| append \n    [ search index=main sourcetype=\"octopusenergy:io:completeddispatch\" \n    | eval _time=strptime(json_extract(_raw,\"startDt\"),\"%Y-%m-%d %H:%M:%S%:z\") \n    | eval cost=7.5 \n    | timechart span=30m latest(cost) AS cost \n    | fillnull cost value=37\n    | eval cost=if((tonumber(strftime(_time,\"%H\"))=23 and tonumber(strftime(_time,\"%M\"))>=30 OR tonumber(strftime(_time,\"%H\"))<4 or (tonumber(strftime(_time,\"%H\"))=4 and tonumber(strftime(_time,\"%M\"))<30)),7.5,cost)] \n| timechart max(demand) AS \"Demand (Wh)\" latest(cost) as cost span=10s \n| filldown cost",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "vftsocykzbzm"
+    },
+    "rsz5a8glhgom": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-24h | timechart max(demand) AS \"Demand (Wh)\" span=10s",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "rsz5a8glhgom"
+    },
+    "czwag1jhph1o": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:meter_reading:Electric\" | timechart sum(consumption) as consumptionKW span=1h",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "czwag1jhph1o"
+    },
+    "knl8ld3tiwo6": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-24h | timechart max(demand) AS demandWatts span=10s",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "knl8ld3tiwo6"
+    },
+    "4vnk9os57mfl": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-24h \n| dedup _raw | stats avg(demand) AS avgusageWatts \n|  eval usageKW=avgusageWatts*24/1000\n| fields usageKW",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "4vnk9os57mfl"
+    },
+    "12a65vuhjg06": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-90m \n| head 6 | stats avg(demand) AS demandWatts",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "12a65vuhjg06"
+    },
+    "w32turxm9vlk": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-24h | timechart p95(demand) AS demandWatts span=1h",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "w32turxm9vlk"
+    },
+    "hibhrh6jr8mv": {
+        "search": {
+            "query": "index=octopusenergy sourcetype=\"octopusenergy:live_meter_reading:Electric\" earliest=-24h \n| dedup _raw | stats max(demand) AS maxDemand \n|  eval maxDemand=maxDemand/1000",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "hibhrh6jr8mv"
+    },
+    "ifhlqmkopedf": {
+        "search": {
+            "query": "index=equine source=\"energy_usage://Equine1\" earliest=-24h | timechart max(demand) AS \"Demand (Wh)\" span=10s",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "ifhlqmkopedf"
+    },
+    "mjtc4agfb72v": {
+        "search": {
+            "query": "index=equine source=\"energy_usage://Equine1\" earliest=-24h | timechart avg(demand) as avgDemand max(demand) as maxDemand latest(demand) AS latestDemand, p95(demand) AS p95demandWatts span=1h | eventstats  max(maxDemand) AS max24h, avg(avgDemand) as avg24h |  eval usage24KW=avg24h*24/1000, max24h=max24h/1000",
+            "queryParameters": {
+                "earliest": "-60m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "mjtc4agfb72v"
+    },
+    "j7nuw6v5jmxm": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.lb.hosts').sum().publish(label='A')\"| stats latest(_value)",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "j7nuw6v5jmxm"
+    },
+    "hwspbxypj54v": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.count', rollup='rate').mean(over='10m').sum().publish(label='A')\" | stats latest(_value)",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "hwspbxypj54v"
+    },
+    "1zwffvlk1d39": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.count', rollup='rate').publish(label='A')\" | eval dims=demo_datacenter+\" | \"+demo_customer+\" | \"+demo_host | chart latest(_value) over _time by dims",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "1zwffvlk1d39"
+    },
+    "vr7o24mjv0hh": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.latency').max().publish(label='Max Latency')\nB = data('demo.trans.latency').percentile(pct=50).publish(label='50th percentile latency')\nC = data('demo.trans.latency').min().publish(label='Min latency')\" | chart latest(_value) over _time by sf_streamLabel",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "vr7o24mjv0hh"
+    },
+    "i5cwz1qj0rws": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.count', rollup='rate').sum(by=['demo_host']).publish(label='A')\" | chart latest(_value) as latest, sparkline(avg(_value),10s) AS sparkline by demo_host | table sparkline latest demo_host",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "i5cwz1qj0rws"
+    },
+    "hr9m1phjcutg": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.latency').sum(by=['demo_customer']).publish(label='A', enable=False)\nB = data('demo.trans.count', rollup='rate').sum(by=['demo_customer']).publish(label='B', enable=False)\nC = (A/B).publish(label='C')\" | chart latest(_value) over _time by demo_customer",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "hr9m1phjcutg"
+    },
+    "rysmnwefn6r1": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.latency').mean().publish(label='Latency (ms)')\nB = data('demo.trans.count', rollup='rate').sum().publish(label='Transactions')\" | chart latest(_value) over _time by sf_streamLabel",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "rysmnwefn6r1"
+    },
+    "uz8kixdnd3ih": {
+        "search": {
+            "query": "|sim flow resolution=5000 query=\"A = data('demo.trans.count', rollup='rate').sum(by=['demo_customer']).mean(over='1m').publish(label='A')\" | chart latest(_value) over _time by demo_customer",
+            "queryParameters": {
+                "earliest": "-5m@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "uz8kixdnd3ih"
+    },
+    "7nqqtgdo3i0x": {
+        "search": {
+            "query": "| tstats count WHERE index=main sourcetype=ev:charger by source",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "7nqqtgdo3i0x"
+    },
+    "r55e9kbkn7j2": {
+        "search": {
+            "query": "index=evchargers InUseCcs=* earliest=-4h latest=now | timechart avg(InUseCcs) AS InUseCcs span=1m by Description limit=100",
+            "queryParameters": {
+                "earliest": "-4h@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "r55e9kbkn7j2"
+    },
+    "oqp015xmxxon": {
+        "search": {
+            "query": "index=evchargers InUseCcs=* FailedCcs=0  | timechart span=15m partial=f dc(Id)",
+            "queryParameters": {
+                "earliest": "-4h@m",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "oqp015xmxxon"
+    },
+    "fbwyrkzhesa4": {
+        "search": {
+            "query": "index=* InUseCcs=*  source=$source$\n                        | stats sum(InUseCcs) AS inUse count AS mins by Description\n                        | eval inUsePerc=round((inUse/mins)*100,2)\n                        | sort 0 - inUsePerc | head 5 | fields Description inUsePerc",
+            "queryParameters": {
+                "earliest": "$timesel.earliest$",
+                "latest": "$timesel.latest$"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "fbwyrkzhesa4"
+    },
+    "hl2uxs8wte0z": {
+        "search": {
+            "query": "index=* InUseCcs=* FailedCcs=1  source=$source$\n| stats latest(FailedCcs) AS FailedCcs by Description",
+            "queryParameters": {
+                "earliest": "$timesel.earliest$",
+                "latest": "$timesel.latest$"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "hl2uxs8wte0z"
+    },
+    "j1ykxlmx0cd0": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"88\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "j1ykxlmx0cd0"
+    },
+    "7lrz251ay7gn": {
+        "search": {
+            "query": "| makeresults\n| eval speed=124\n| eval status=case(speed>0, \"On\", 1=1, \"Off\")\n| eval fan=\"fan\"\n| table speed, status, fan",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "7lrz251ay7gn"
+    },
+    "ir8bcqlun257": {
+        "search": {
+            "query": "| makeresults count=6500\n| eval temp=(random() %100)\n| eval c=1\n| eval diff=(random() % 110000)\n| eval _time=now()-diff\n| timechart count(c) as val by temp span=1h\n| eval val=val/max(val)\n",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "ir8bcqlun257"
+    },
+    "yqjsq811a5y7": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"42\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "yqjsq811a5y7"
+    },
+    "cc3u0nhaj6gh": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"72\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "cc3u0nhaj6gh"
+    },
+    "bel6i1sirpos": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"39\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "bel6i1sirpos"
+    },
+    "vyn0sos28343": {
+        "search": {
+            "query": "| makeresults\n| eval Host=\"mysql-02\"\n| eval Rack=2\n| eval Priority=\"High\"\n| eval Row=\"A\"\n| append \n    [makeresults\n| eval Host=\"storage_websever-02\"\n| eval Rack=2\n| eval Priority=\"Medium\"\n| eval Row=\"A\"]\n| append \n    [makeresults\n| eval Host=\"storage_exchange-03\"\n| eval Rack=2\n| eval Priority=\"High\"\n| eval Row=\"C\"]\n| append \n    [makeresults\n| eval Host=\"db-01\"\n| eval Rack=2\n| eval Priority=\"Critical\"\n| eval Row=\"A\"]\n| append \n    [makeresults\n| eval Host=\"websphere-01\"\n| eval Rack=2\n| eval Priority=\"Medium\"\n| eval Row=\"A\"]\n| append \n    [makeresults\n| eval Host=\"websphere-01\"\n| eval Rack=2\n| eval Priority=\"Medium\"\n| eval Row=\"A\"]\n| append \n    [makeresults\n| eval Host=\"storage_websever-01\"\n| eval Rack=2\n| eval Priority=\"Low\"\n| eval Row=\"B\"]\n| append \n    [makeresults\n| eval Host=\"storage_exchange-05\"\n| eval Rack=3\n| eval Priority=\"Low\"\n| eval Row=\"C\"]\n| append \n    [makeresults\n| eval Host=\"db-01\"\n| eval Rack=1\n| eval Priority=\"Medium\"\n| eval Row=\"B\"]\n| append \n    [makeresults\n| eval Host=\"websphere-01\"\n| eval Rack=2\n| eval Priority=\"High\"\n| eval Row=\"B\"]\n| append \n    [makeresults\n| eval Host=\"websphere-01\"\n| eval Rack=2\n| eval Priority=\"Medium\"\n| eval Row=\"B\"]\n| search Row=*\n| table Host Priority Rack Row",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "vyn0sos28343"
+    },
+    "zaj4qthio6n9": {
+        "search": {
+            "query": "| makeresults count=5000\n| eval diff=(random() % 100000)\n| eval server=\"1\"\n| eval row=\"A\"\n| eval _time=now()-diff\n| append \n    [ makeresults count=6000\n| eval diff=(random() % 100000)\n| eval server=\"2\"\n| eval row=\"A\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=4000\n| eval diff=(random() % 100000)\n| eval server=\"3\"\n| eval row=\"A\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=7000\n| eval diff=(random() % 100000)\n| eval server=\"4\"\n| eval row=\"A\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=5000\n| eval diff=(random() % 100000)\n| eval server=\"5\"\n| eval row=\"A\"\n| eval _time=now()-diff]\n| append\n\t[ makeresults count=6000\n| eval diff=(random() % 100000)\n| eval server=\"1\"\n| eval row=\"B\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=7000\n| eval diff=(random() % 100000)\n| eval server=\"2\"\n| eval row=\"B\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=5000\n| eval diff=(random() % 100000)\n| eval server=\"3\"\n| eval row=\"B\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=4000\n| eval diff=(random() % 100000)\n| eval server=\"4\"\n| eval row=\"B\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=5000\n| eval diff=(random() % 100000)\n| eval server=\"5\"\n| eval row=\"B\"\n| eval _time=now()-diff]\n| append\n\t[ makeresults count=4000\n| eval diff=(random() % 100000)\n| eval server=\"1\"\n| eval row=\"C\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=5000\n| eval diff=(random() % 100000)\n| eval server=\"2\"\n| eval row=\"C\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=6000\n| eval diff=(random() % 100000)\n| eval server=\"3\"\n| eval row=\"C\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=9000\n| eval diff=(random() % 100000)\n| eval server=\"4\"\n| eval row=\"C\"\n| eval _time=now()-diff]\n| append \n    [ makeresults count=7000\n| eval diff=(random() % 100000)\n| eval server=\"5\"\n| eval row=\"C\"\n| eval _time=now()-diff]\n| search row=*\n| timechart span=30min count by server",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "zaj4qthio6n9"
+    },
+    "j5wybpuojycb": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"43\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "j5wybpuojycb"
+    },
+    "f97qrlp530bo": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"58\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "f97qrlp530bo"
+    },
+    "k3c0s21rbgmg": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"47\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "k3c0s21rbgmg"
+    },
+    "mhevgrexbl24": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"55\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "mhevgrexbl24"
+    },
+    "a8jnvgl7rucb": {
+        "search": {
+            "query": "| makeresults\n| eval System=\"Power\"\n| eval Rack=2\n| eval Devices=\"PDU-02\"\n| eval Value=3400\n| append \n    [makeresults\n| eval System=\"Power\"\n| eval Rack=2\n| eval Devices=\"PDU-07\"\n| eval Value=2375]\n| append \n    [makeresults\n| eval System=\"Power\"\n| eval Rack=2\n| eval Devices=\"PDU-12\"\n| eval Value=2245]\n| table System Rack Devices Value",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "a8jnvgl7rucb"
+    },
+    "t2jcl07vo4q4": {
+        "search": {
+            "query": "| makeresults count=7000\n| eval temp=(random() %1000)\n| eval c=1\n| eval diff=(random() % 110000)\n| eval _time=now()-diff\n| timechart count(c) as water by temp span=1h\n| eval water=water/max(water)\n\n",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "t2jcl07vo4q4"
+    },
+    "oz3vb3oo21dc": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"52\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "oz3vb3oo21dc"
+    },
+    "d239wy1jujj8": {
+        "search": {
+            "query": "| makeresults count=250000\n| eval diff=(random() % 110000)\n| eval _time=now()-diff\n| timechart count as power by temp span=1h\n| eval power=power/max(power)\n",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "d239wy1jujj8"
+    },
+    "we9mwqgvrbnf": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"57\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "we9mwqgvrbnf"
+    },
+    "83ezdu2cete9": {
+        "search": {
+            "query": "| makeresults\n| eval speed=0\n| eval status=case(speed>0, \"On\", 1=1, \"Off\")\n| eval fan=\"fan\"\n| table speed, status, fan",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "83ezdu2cete9"
+    },
+    "49oc3yppt477": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"46\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "49oc3yppt477"
+    },
+    "75dqid5h9mri": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"49\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "75dqid5h9mri"
+    },
+    "i2ebkr02sw6d": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"37\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "i2ebkr02sw6d"
+    },
+    "t5ivasj9vdwj": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"77\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "t5ivasj9vdwj"
+    },
+    "9463e5gjobp9": {
+        "search": {
+            "query": "| makeresults\n| eval temp=\"64\"\n| table temp",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "9463e5gjobp9"
+    },
+    "zgqryt589p0z": {
+        "search": {
+            "query": "| makeresults\n| eval speed=0\n| eval status=case(speed>0, \"On\", 1=1, \"Off\")\n| eval fan=\"fan\"\n| table speed, status, fan",
+            "postprocess": "| table status",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "zgqryt589p0z"
+    },
+    "ud0rv2lof9ta": {
+        "search": {
+            "query": "| makeresults\n| eval speed=124\n| eval status=case(speed>0, \"On\", 1=1, \"Off\")\n| eval fan=\"fan\"\n| table speed, status, fan",
+            "postprocess": "| table status",
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "ud0rv2lof9ta"
+    }
+}

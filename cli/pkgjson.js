@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const fs = require('fs-extra');
-const path = require('path');
+import fs from 'fs-extra';
+import path from 'path';
 
 async function getPackageJson(folder = process.cwd()) {
     return JSON.parse(await fs.readFile(path.join(folder, 'package.json'), { encoding: 'utf-8' }));
@@ -60,7 +60,4 @@ async function updatePackageJson(
     await fs.writeFile(path.join(destFolder, 'package.json'), JSON.stringify(pkg, null, 4));
 }
 
-module.exports = {
-    updatePackageJson,
-    getPackageJson,
-};
+export { updatePackageJson, getPackageJson };

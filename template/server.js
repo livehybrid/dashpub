@@ -868,6 +868,103 @@ async function executeSplunkSearch(datasource) {
   };
 }
 
+// Configuration endpoint for client-side settings
+app.get('/api/config', (req, res) => {
+  try {
+    const config = {
+      title: process.env.DASHPUB_TITLE || process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards',
+      theme: process.env.DASHPUB_THEME || process.env.NEXT_PUBLIC_HOMETHEME || 'light',
+      footer: process.env.DASHPUB_FOOTER || process.env.NEXT_PUBLIC_DASHPUBFOOTER || 'Hosted Splunk Dashboards',
+      hostedBy: process.env.DASHPUB_HOSTEDBY_NAME || process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY || '',
+      hostedByUrl: process.env.DASHPUB_HOSTEDBY_URL || process.env.NEXT_PUBLIC_DASHPUBHOSTEDURL || '#',
+      repo: process.env.DASHPUB_REPO || process.env.NEXT_PUBLIC_DASHPUBREPO || '',
+      screenshots: {
+        enabled: process.env.DASHPUB_SCREENSHOTS || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS  || 'false',
+        baseUrl: process.env.DASHPUB_BASE_SCREENSHOT_URL || process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || '',
+        dir: process.env.DASHPUB_SCREENSHOTDIR || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'screenshots',
+        ext: process.env.DASHPUB_SCREENSHOTEXT || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 'png'
+      },
+      baseUrl: process.env.DASHPUB_URL || process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost',
+      timezone: process.env.DASHPUB_TZ || process.env.NEXT_PUBLIC_TZ || 'UTC'
+    };
+
+    logger.info('Served client configuration', { 
+      title: config.title,
+      theme: config.theme,
+      screenshotsEnabled: config.screenshots.enabled
+    });
+
+    res.json(config);
+  } catch (error) {
+    logger.error('Failed to serve client configuration', { error: error.message });
+    res.status(500).json({
+      error: 'Failed to load configuration',
+      details: error.message
+    });
+  }
+});
+
+// Dashboard manifest endpoint with pre-computed screenshot hashes
+app.get('/api/dashboards/manifest', rateLimit, async (req, res) => {
+  try {
+    const dashboardManifestPath = path.join(__dirname, 'src/_dashboards.json');
+    
+    if (!fs.existsSync(dashboardManifestPath)) {
+      logger.warn('Dashboard manifest file not found', { path: dashboardManifestPath });
+      return res.json({
+        dashboards: {},
+        metadata: {
+          total: 0,
+          lastUpdated: new Date().toISOString(),
+          version: '1.0.0'
+        }
+      });
+    }
+    
+    const dashboardManifestContent = fs.readFileSync(dashboardManifestPath, 'utf8');
+    const dashboardManifest = JSON.parse(dashboardManifestContent);
+    
+    // Generate screenshot hashes for each dashboard
+    const baseUrl = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost';
+    const enhancedManifest = {};
+    
+    for (const [dashboardId, dashboardData] of Object.entries(dashboardManifest)) {
+      const adjustedDashboardKey = (dashboardId === "index") ? "" : dashboardId;
+      const dashboardURL = `${baseUrl}/${adjustedDashboardKey}`;
+      const hash = require('crypto').createHash("sha256").update(dashboardURL).digest("hex").substring(0, 32);
+      
+      enhancedManifest[dashboardId] = {
+        ...dashboardData,
+        screenshotHash: hash,
+        screenshotUrl: process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL ? 
+          `${process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL}/screenshots/${hash}.jpg` : null
+      };
+    }
+    
+    logger.info('Served enhanced dashboard manifest with screenshot hashes', { 
+      total: Object.keys(enhancedManifest).length 
+    });
+    
+    res.json({
+      dashboards: enhancedManifest,
+      metadata: {
+        total: Object.keys(enhancedManifest).length,
+        lastUpdated: new Date().toISOString(),
+        version: '1.0.0',
+        baseUrl: baseUrl,
+        screenshotBaseUrl: process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Failed to serve dashboard manifest', { error: error.message, stack: error.stack });
+    res.status(500).json({
+      error: 'Failed to load dashboard manifest',
+      details: error.message
+    });
+  }
+});
+
 // Dashboard management endpoints
 app.get('/api/dashboards', rateLimit, async (req, res) => {
   try {
