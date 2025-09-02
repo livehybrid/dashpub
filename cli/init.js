@@ -197,7 +197,14 @@ async function initNewProject() {
 
         await generateDashboards(selectedDashboards, app, splunkdInfo, destFolder);
 
-        await updatePackageJson(destFolder, projectName, selectedDashboards, app);
+        await updatePackageJson(
+            { 
+                projectName, 
+                selectedApp: app, 
+                selectedDashboards 
+            }, 
+            { destFolder }
+        );
         await writeDotenv(splunkdInfo, { destFolder });
 
 

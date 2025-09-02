@@ -25,7 +25,18 @@ async function updatePackageJson(
     { folderName, version, projectName, splunkdUrl, splunkdUser, selectedApp, selectedDashboards, settings },
     { destFolder = process.cwd() } = {}
 ) {
-    const pkg = await getPackageJson(destFolder);
+    let pkg;
+    try {
+        pkg = await getPackageJson(destFolder);
+    } catch (error) {
+        // If package.json doesn't exist, create a basic one
+        pkg = {
+            name: folderName || "dashpub-project",
+            version: version || "1.0.0",
+            dependencies: {},
+            dashpub: {}
+        };
+    }
     if (folderName != null) {
         pkg.name = folderName;
     }
