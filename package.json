@@ -27,6 +27,7 @@
     },
     "dependencies": {
         "@oclif/core": "^4.0.37",
+        "chalk": "^4.1.2",
         "debug": "^4.3.4",
         "dotenv": "^17.2.1",
         "execa": "^9.5.2",
@@ -34,6 +35,7 @@
         "inquirer": "^12.9.4",
         "node-fetch": "^3.3.2",
         "prettier": "^3.1.1",
+        "react": "^18.2.0",
         "sharp": "^0.34.3",
         "xmldoc": "^2.0.2",
         "@react-google-maps/api": "^2.19.2",
