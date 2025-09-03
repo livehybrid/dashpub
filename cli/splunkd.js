@@ -68,14 +68,19 @@ const loadDashboard = (
     name,
     app,
     { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token=process.env.SPLUNKD_TOKEN } = {}
-) =>
-    splunkd('GET', `/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`, {
-        url,
+) => {
+    console.log(`/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`);    
+    return splunkd('GET', `/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`, {
+        url,    
         username,
         password,
         token,
-    }).then(data => extractDashboardDefinition(data.entry[0].content['eai:data']));
-
+    }).then(
+        data => {
+            return extractDashboardDefinition(data.entry[0].content['eai:data']);
+        }
+    );
+}
 const listDashboards = async (
     app,
     { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN } = {}
@@ -95,7 +100,6 @@ const listDashboards = async (
             token,
         }
     );
-
     return res.entry
         .filter(entry => entry.acl.app === app)
         .map(entry => ({
@@ -157,27 +161,14 @@ async function validateAuth({ url, user, password }) {
     }
 }
 
-// Helper function to get Splunk connection info
 async function getSplunkdInfo() {
+    // Return splunkd connection info from environment variables
     return {
         url: process.env.SPLUNKD_URL,
         username: process.env.SPLUNKD_USER,
         password: process.env.SPLUNKD_PASSWORD,
-        token: process.env.SPLUNKD_TOKEN,
+        token: process.env.SPLUNKD_TOKEN
     };
-}
-
-// Helper function to get apps (alias for listApps)
-async function getApps(splunkdInfo) {
-    return await listApps(splunkdInfo);
-}
-
-// Helper function to get dashboards (alias for listDashboards)
-async function getDashboards(splunkdInfo, apps) {
-    // For now, just get dashboards from the first app
-    // This could be enhanced to get dashboards from all apps
-    const app = apps && apps.length > 0 ? apps[0].name : 'search';
-    return await listDashboards(app, splunkdInfo);
 }
 
 export {
@@ -187,8 +178,6 @@ export {
     listDashboards,
     validateAuth,
     getUsername,
-    qs,
     getSplunkdInfo,
-    getApps,
-    getDashboards,
+    qs,
 };

@@ -82,7 +82,6 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
             console.error(`Failed to download image ${viz.options.icon || viz.options.src}`, e);
         }
     }
-
     if (newDash.layout && newDash.layout.options && newDash.layout.options.backgroundImage) {
         if (newDash.layout.options.backgroundImage.src.match(/\$.*\$/g) )
              console.log(`Skipping image download due to token ${viz.options.src}`)
@@ -97,7 +96,6 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
             );
        }
     }
-
     const dir = path.join(projectFolder, 'src/dashboards', targetName);
     await mkdirp(dir);
     await writeFile(path.join(dir, 'definition.json'), Buffer.from(JSON.stringify(newDash, null, 2), 'utf-8'));

@@ -62,9 +62,9 @@ export const selectDashboards = async (dashboards) => {
       name: 'answer',
       message: 'Select dashboards to include:',
       choices: dashboards.map(d => ({
-        name: d.title || d.id,
-        value: d.id,
-        checked: true
+        name: d.label || d.name,
+        value: d.name,
+        checked: false
       }))
     }
   ]);
@@ -83,7 +83,6 @@ export const confirm = async (message, default_value = true) => {
   ]);
   return answer;
 };
-
 // Helper function to create a password prompt for Splunk credentials
 export const splunkdPassword = async (url, user) => {
   const { answer } = await inquirer.prompt([

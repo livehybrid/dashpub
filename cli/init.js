@@ -109,7 +109,7 @@ async function parseDashboardsAndTags(dashboards) {
         value: name 
     }));
 
-    const selectedDashboardNames = await prompts.selectDashboards(dashboardChoices);
+    const selectedDashboardNames = await prompts.selectDashboards(dashboards);
     
     selectedDashboardNames.forEach(dashboardName => {
         selectedDashboards[dashboardName] = { tags: [] };
@@ -156,8 +156,17 @@ async function initNewProject() {
 
         const splunkdInfo = await splunkd.getSplunkdInfo();
         
-        const apps = await splunkd.getApps(splunkdInfo);
-        const dashboards = await splunkd.getDashboards(splunkdInfo, apps);
+        const apps = await splunkd.listApps(splunkdInfo);
+        
+        const app = process.env.DASHPUB_APP && apps.some(a => a.name === process.env.DASHPUB_APP) 
+            ? process.env.DASHPUB_APP 
+            : await prompts.selectApp(apps);
+
+        // Only get dashboards if DASHPUB_DASHBOARDS is not set
+        let dashboards = [];
+        if (!process.env.DASHPUB_DASHBOARDS) {
+            dashboards = await splunkd.listDashboards(app, splunkdInfo);
+        }
 
         const projectName = process.env.DASHPUB_PROJECTNAME ? process.env.DASHPUB_PROJECTNAME : await prompts.string('Project name:');
         const folderName = process.env.DASHPUB_FOLDERNAME
@@ -170,10 +179,6 @@ async function initNewProject() {
             console.error('No dashboards selected. Exiting.');
             process.exit(1);
         }
-
-        const app = process.env.DASHPUB_APP && apps.some(a => a.name === process.env.DASHPUB_APP) 
-            ? process.env.DASHPUB_APP 
-            : await prompts.selectApp(apps);
 
         const destFolder = path.join(process.cwd(), folderName);
 
