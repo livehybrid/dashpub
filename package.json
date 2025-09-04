@@ -35,14 +35,17 @@
         "inquirer": "^12.9.4",
         "node-fetch": "^3.3.2",
         "prettier": "^3.1.1",
-        "react": "^18.2.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
         "sharp": "^0.34.3",
         "xmldoc": "^2.0.2",
         "@react-google-maps/api": "^2.19.2",
         "react-icons": "*"
     },
     "resolutions": {
-        "cross-spawn": "^7.0.5"
+        "cross-spawn": "^7.0.5",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
     },
     "deprecated": false,
     "description": "Generate next.js apps to publish Splunk dashboards",

@@ -76,3 +76,4 @@ __tests__/
 # Development scripts
 scripts/
 dev/
+app/
