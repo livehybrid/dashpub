@@ -15,7 +15,7 @@
         "@splunk/react-icons": "5.2.0",
         "@splunk/react-ui": "5.2.0",
         "@splunk/visualization-context": "28.1.0",
-        "bootstrap": "5.3.7",
+        "bootstrap": "5.3.8",
         "cookie-parser": "^1.4.7",
         "cookies-next": "5.1.0",
         "cors": "^2.8.5",
