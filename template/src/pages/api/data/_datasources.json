@@ -1,4 +1,40 @@
 {
+    "eu3i2i6lvov8": {
+        "search": {
+            "query": "index=main source=\"splunk:talks:json\" | eval _raw=json_extract(_raw,\"data.sessionTimes{}\") | spath| eval myTitle=code+\" - \"+title| timechart span=12h latest(registered) AS registered, latest(attended) AS attended by code \n|  filldown",
+            "queryParameters": {
+                "earliest": "-7d@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "eu3i2i6lvov8"
+    },
+    "zmesmibphzxf": {
+        "search": {
+            "query": "index=main source=\"splunk:talks:json\" | eval _raw=json_extract(_raw,\"data.sessionTimes{}\") | spath| eval myTitle=code+\" - \"+title| timechart span=12h latest(registered) AS registered, latest(attended) AS attended by myTitle \n|  filldown",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "zmesmibphzxf"
+    },
+    "hw6nrh3mzpdp": {
+        "search": {
+            "query": "index=main source=\"splunk:talks:json\" | eval _raw=json_extract(_raw,\"data.sessionTimes{}\") | spath| eval myTitle=code+\" - \"+title| timechart span=12h latest(registered) AS registered, latest(attended) AS attended by code \n|  filldown",
+            "queryParameters": {
+                "earliest": "-24h@h",
+                "latest": "now"
+            },
+            "refresh": 400
+        },
+        "app": "etyd",
+        "id": "hw6nrh3mzpdp"
+    },
     "i3abab80og8t": {
         "search": {
             "query": "index=main sourcetype=\"splunk:user\" source=livehybrid \n| timechart span=1d latest(*) as *\n|  fields _time karma_received posts solutions",

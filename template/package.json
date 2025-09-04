@@ -6,16 +6,17 @@
     "dependencies": {
         "@babel/runtime": "^7.27.0",
         "@react-google-maps/api": "^2.19.2",
-        "@splunk/dashboard": "^29.0.0",
-        "@splunk/dashboard-context": "29.0.0",
-        "@splunk/dashboard-core": "29.0.0",
-        "@splunk/dashboard-presets": "29.0.0",
-        "@splunk/datasource-utils": "29.0.0",
-        "@splunk/datasources": "29.0.0",
+        "@splunk/dashboard": "29.1.0",
+        "@splunk/dashboard-context": "29.1.0",
+        "@splunk/dashboard-core": "29.1.0",
+        "@splunk/dashboard-presets": "29.1.0",
+        "@splunk/datasource-utils": "29.1.0",
+        "@splunk/datasources": "29.1.0",
         "@splunk/react-icons": "5.2.0",
         "@splunk/react-ui": "5.2.0",
-        "@splunk/visualization-context": "28.0.0",
+        "@splunk/visualization-context": "28.1.0",
         "bootstrap": "5.3.7",
+        "cookie-parser": "^1.4.7",
         "cookies-next": "5.1.0",
         "cors": "^2.8.5",
         "crypto-js": "4.2.0",
@@ -110,5 +111,80 @@
             "last 1 firefox version",
             "last 1 safari version"
         ]
+    },
+    "dashpub": {
+        "projectName": "app",
+        "settings": {
+            "useDataSnapshots": false
+        },
+        "splunkd": {},
+        "app": "etyd",
+        "dashboards": {
+            "conf_registrations": {
+                "tags": [
+                    "Conf"
+                ]
+            },
+            "splunk_answers": {
+                "tags": [
+                    "Challenge",
+                    "Splunk"
+                ]
+            },
+            "nhs_change_ideas": {
+                "tags": [
+                    "NHS"
+                ]
+            },
+            "github_status": {
+                "tags": [
+                    "Monitoring",
+                    "GitHub"
+                ]
+            },
+            "tesla_telemetry": {
+                "tags": [
+                    "Demo",
+                    "Tesla"
+                ]
+            },
+            "highlevel": {
+                "tags": [
+                    "Demo",
+                    "Monitoring"
+                ]
+            },
+            "octopus_energy_usage": {
+                "tags": [
+                    "Monitoring",
+                    "Energy"
+                ]
+            },
+            "equine_energy_usage": {
+                "tags": [
+                    "Demo",
+                    "Energy",
+                    "Monitoring"
+                ]
+            },
+            "o11y_sample_charts": {
+                "tags": [
+                    "Demo",
+                    "Observability",
+                    "O11y"
+                ]
+            },
+            "engenie_chargers_2": {
+                "tags": [
+                    "Demo",
+                    "Energy"
+                ]
+            },
+            "example": {
+                "tags": [
+                    "Demo"
+                ]
+            }
+        }
     }
 }

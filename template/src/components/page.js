@@ -21,6 +21,8 @@ import ClientOnly from './clientOnly';
 const TITLE_SUFFIX = 'Splunk Dashboard';
 
 const fullUrl = (baseUrl, path) => {
+    console.log("baseUrl", baseUrl);
+    console.log("path", path);
     try {
         // Check if the path is already an absolute URL
         const url = new URL(path);
@@ -81,14 +83,12 @@ export default function Page({
         updateMetaTag('twitter:title', `${title} - ${TITLE_SUFFIX}`);
         updateMetaTag('twitter:creator', '@Splunk');
         updateMetaTag('viewport', 'width=device-width, initial-scale=1');
-
         // Handle image meta tags
-        if (imageUrl && baseUrl) {
-            const fullImageUrl = fullUrl(baseUrl, imageUrl);
-            updateMetaTag('og:image', fullImageUrl, true);
+        if (imageUrl ) {
+            updateMetaTag('og:image', imageUrl, true);
             updateMetaTag('og:image:width', imageSize.width, true);
             updateMetaTag('og:image:height', imageSize.height, true);
-            updateMetaTag('twitter:image', fullImageUrl);
+            updateMetaTag('twitter:image', imageUrl);
         }
     }, [title, description, imageUrl, imageSize, baseUrl]);
 

@@ -152,7 +152,6 @@ export default class PublicDataSource extends DataSource {
                             data,
                         };
                         readyDep.ready();
-                        console.log(data);
                         observer.next(
                             createNextPayload({
                                 data: createDataSet(data, options),

@@ -60,7 +60,7 @@ function AppWithTheme() {
   }
 
   return (
-    <SplunkThemeProvider family="enterprise" colorScheme={config?.theme || 'light'} density="comfortable">
+    <SplunkThemeProvider family="enterprise" colorScheme={config?.theme || 'dark'} density="comfortable">
       <App />
     </SplunkThemeProvider>
   );

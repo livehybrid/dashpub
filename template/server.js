@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const cookieParser = require('cookie-parser');
 
 // Load environment variables from .env file
 require('dotenv').config();
@@ -516,6 +517,7 @@ setInterval(cleanupRateLimits, RATE_LIMIT_CONFIG.windowMs);
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Serve screenshots directory if screenshots are enabled
@@ -871,6 +873,14 @@ async function executeSplunkSearch(datasource) {
 // Configuration endpoint for client-side settings
 app.get('/api/config', (req, res) => {
   try {
+    const baseUrl = process.env.DASHPUB_URL || process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost';
+    const screenshotBaseUrl = process.env.DASHPUB_BASE_SCREENSHOT_URL || process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || '';
+    
+    // Generate home screenshot hash from baseUrl
+    const homeScreenshotHash = require('crypto').createHash("sha256").update(baseUrl).digest("hex").substring(0, 32);
+    const homeScreenshot = screenshotBaseUrl ? 
+      `${screenshotBaseUrl}/screenshots/${homeScreenshotHash}.jpg` : null;
+    
     const config = {
       title: process.env.DASHPUB_TITLE || process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards',
       theme: process.env.DASHPUB_THEME || process.env.NEXT_PUBLIC_HOMETHEME || 'light',
@@ -880,11 +890,13 @@ app.get('/api/config', (req, res) => {
       repo: process.env.DASHPUB_REPO || process.env.NEXT_PUBLIC_DASHPUBREPO || '',
       screenshots: {
         enabled: process.env.DASHPUB_SCREENSHOTS || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS  || 'false',
-        baseUrl: process.env.DASHPUB_BASE_SCREENSHOT_URL || process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || '',
+        baseUrl: screenshotBaseUrl,
         dir: process.env.DASHPUB_SCREENSHOTDIR || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'screenshots',
         ext: process.env.DASHPUB_SCREENSHOTEXT || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 'png'
       },
-      baseUrl: process.env.DASHPUB_URL || process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost',
+      baseUrl: baseUrl,
+      homeScreenshot: homeScreenshot,
+      jwtRequired: process.env.JWT_REQUIRED === 'true',
       timezone: process.env.DASHPUB_TZ || process.env.NEXT_PUBLIC_TZ || 'UTC'
     };
 
@@ -900,6 +912,145 @@ app.get('/api/config', (req, res) => {
     res.status(500).json({
       error: 'Failed to load configuration',
       details: error.message
+    });
+  }
+});
+
+// Helper function to parse JWT expiry string to milliseconds
+function parseJWTExpiry(expiry) {
+  if (!expiry) return 24 * 60 * 60 * 1000; // Default 24 hours
+  
+  const match = expiry.match(/^(\d+)([smhd])$/);
+  if (!match) return 24 * 60 * 60 * 1000; // Default 24 hours if invalid format
+  
+  const value = parseInt(match[1]);
+  const unit = match[2];
+  
+  switch (unit) {
+    case 's': return value * 1000; // seconds
+    case 'm': return value * 60 * 1000; // minutes
+    case 'h': return value * 60 * 60 * 1000; // hours
+    case 'd': return value * 24 * 60 * 60 * 1000; // days
+    default: return 24 * 60 * 60 * 1000; // Default 24 hours
+  }
+}
+
+// JWT verification middleware
+function verifyJWT(req, res, next) {
+  if (process.env.JWT_REQUIRED !== 'true') {
+    return next();
+  }
+  
+  const token = req.cookies.jwt_token;
+  
+  if (!token) {
+    return res.status(401).json({
+      error: 'Authentication required',
+      message: 'No authentication token provided'
+    });
+  }
+  
+  try {
+    const jwt = require('jsonwebtoken');
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    const decoded = jwt.verify(token, jwtSecret);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    logger.warn('Invalid JWT token', { error: error.message, ip: req.ip });
+    return res.status(401).json({
+      error: 'Invalid token',
+      message: 'Authentication token is invalid or expired'
+    });
+  }
+}
+
+// JWT verification endpoint
+app.get('/api/auth/verify', verifyJWT, (req, res) => {
+  res.json({
+    authenticated: true,
+    user: req.user
+  });
+});
+
+// JWT Login endpoint
+app.post('/api/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    // Check if JWT is required
+    if (process.env.JWT_REQUIRED !== 'true') {
+      return res.status(400).json({
+        error: 'JWT authentication not enabled',
+        message: 'JWT authentication is not configured for this instance'
+      });
+    }
+    
+    // Validate credentials
+    const expectedUsername = process.env.JWT_USERNAME || 'admin';
+    const expectedPassword = process.env.JWT_PASSWORD || 'admin';
+    
+    if (!username || !password) {
+      return res.status(400).json({
+        error: 'Missing credentials',
+        message: 'Username and password are required'
+      });
+    }
+    
+    if (username !== expectedUsername || password !== expectedPassword) {
+      logger.warn('Invalid login attempt', { username, ip: req.ip });
+      return res.status(401).json({
+        error: 'Invalid credentials',
+        message: 'Username or password is incorrect'
+      });
+    }
+    
+    // Generate JWT token
+    const jwt = require('jsonwebtoken');
+    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    const jwtExpiry = process.env.JWT_EXPIRY || '24h';
+    
+    const token = jwt.sign(
+      { 
+        username: username,
+        iat: Math.floor(Date.now() / 1000)
+      }, 
+      jwtSecret, 
+      { expiresIn: jwtExpiry }
+    );
+    
+    // Calculate maxAge from JWT_EXPIRY
+    const maxAgeMs = parseJWTExpiry(jwtExpiry);
+    
+    // Set HTTP-only cookie
+    res.cookie('jwt_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: maxAgeMs
+    });
+    
+    logger.info('User logged in successfully', { 
+      username, 
+      ip: req.ip, 
+      jwtExpiry, 
+      cookieMaxAgeMs: maxAgeMs,
+      cookieMaxAgeHours: Math.round(maxAgeMs / (60 * 60 * 1000) * 100) / 100
+    });
+    
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: { username },
+      expiresIn: jwtExpiry,
+      cookieMaxAge: maxAgeMs
+    });
+    
+  } catch (error) {
+    logger.error('Login failed', { error: error.message, stack: error.stack });
+    res.status(500).json({
+      error: 'Login failed',
+      message: 'An error occurred during login'
     });
   }
 });
@@ -1717,9 +1868,17 @@ app.get('/api/dashboards/:slug/definition', (req, res) => {
     const dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
     const dashboardDefinition = JSON.parse(dashboardContent);
     
+    // Generate screenshot hash for this dashboard
+    const baseUrl = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost';
+    const dashboardURL = `${baseUrl}/${slug}`;
+    const screenshotHash = require('crypto').createHash("sha256").update(dashboardURL).digest("hex").substring(0, 32);
+    
     // Add metadata for API response
     const enhancedDefinition = {
       ...dashboardDefinition,
+      screenshotHash,
+      screenshotUrl: process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL ? 
+        `${process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL}/screenshots/${screenshotHash}.jpg` : null,
       _metadata: {
         slug,
         lastModified: fs.statSync(dashboardPath).mtime.toISOString(),

@@ -68,24 +68,131 @@ const TagContainer = styled.div`
     // gap: 2px;
 `;
 
-// Component to handle screenshot display
+// Component to handle screenshot display with retry logic
 class ScreenshotComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            imageSrc: props.screenshotUrl,
+            retryCount: 0,
+            isLoading: true,
+            hasError: false
+        };
+        this.maxRetries = 3;
+        this.retryDelay = 1000; // 1 second
+    }
+
+    componentDidMount() {
+        this.loadImage();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.screenshotUrl !== this.props.screenshotUrl) {
+            this.setState({
+                imageSrc: this.props.screenshotUrl,
+                retryCount: 0,
+                isLoading: true,
+                hasError: false
+            });
+            this.loadImage();
+        }
+    }
+
+    loadImage = () => {
+        const { imageSrc } = this.state;
+        if (!imageSrc) {
+            this.setState({ isLoading: false, hasError: true });
+            return;
+        }
+
+        const img = new Image();
+        
+        img.onload = () => {
+            console.log('Screenshot loaded successfully:', imageSrc);
+            this.setState({ isLoading: false, hasError: false });
+        };
+
+        img.onerror = () => {
+            console.warn(`Screenshot failed to load (attempt ${this.state.retryCount + 1}):`, imageSrc);
+            this.handleImageError();
+        };
+
+        // Add cache busting parameter to force fresh load
+        const cacheBuster = `?t=${Date.now()}`;
+        const urlWithCacheBuster = imageSrc.includes('?') 
+            ? `${imageSrc}&_cb=${Date.now()}` 
+            : `${imageSrc}${cacheBuster}`;
+        
+        img.src = urlWithCacheBuster;
+    };
+
+    handleImageError = () => {
+        const { retryCount } = this.state;
+        
+        if (retryCount < this.maxRetries) {
+            console.log(`Retrying screenshot load in ${this.retryDelay}ms (attempt ${retryCount + 1}/${this.maxRetries})`);
+            setTimeout(() => {
+                this.setState(prevState => ({ retryCount: prevState.retryCount + 1 }));
+                this.loadImage();
+            }, this.retryDelay * (retryCount + 1)); // Exponential backoff
+        } else {
+            console.error('Screenshot failed to load after all retries:', this.state.imageSrc);
+            this.setState({ isLoading: false, hasError: true });
+        }
+    };
+
     render() {
         const { title, screenshotUrl } = this.props;
+        const { isLoading, hasError } = this.state;
 
         if (!screenshotUrl) {
             return null;
         }
 
+        if (hasError) {
+            return (
+                <div style={{ 
+                    width: 310, 
+                    height: 200, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    color: '#666',
+                    fontSize: '12px'
+                }}>
+                    Screenshot unavailable
+                </div>
+            );
+        }
+
+        if (isLoading) {
+            return (
+                <div style={{ 
+                    width: 310, 
+                    height: 200, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    color: '#666',
+                    fontSize: '12px'
+                }}>
+                    Loading screenshot...
+                </div>
+            );
+        }
+
         return (
             <Screenshot
                 style={{ width: 310 }} 
-                src={screenshotUrl} 
+                src={this.state.imageSrc} 
                 alt={title}
-                onError={(e) => {
-                    console.warn('Screenshot failed to load:', screenshotUrl);
-                    e.target.style.display = 'none';
-                }}
+                onError={this.handleImageError}
             />
         );
     }
@@ -258,12 +365,28 @@ class Home extends Component {
 
         const renderScreenshot = (k) => {
             if (INSERT_SCREENSHOTS && dashboardManifest[k]?.screenshotUrl) {
+                const screenshotUrl = dashboardManifest[k].screenshotUrl;
+                console.log(`Rendering screenshot for ${k}:`, screenshotUrl);
+                
+                // Test if the URL is accessible
+                fetch(screenshotUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log(`Screenshot URL is accessible: ${screenshotUrl}`);
+                        } else {
+                            console.warn(`Screenshot URL returned ${response.status}: ${screenshotUrl}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Screenshot URL test failed: ${screenshotUrl}`, error);
+                    });
+                
                 return (
                     <ClientOnly fallback={null} key={`screenshot-${k}`}>
                         <LazyComponent component={CardBody}>
                             <ScreenshotComponent 
                                 title={dashboardManifest[k]?.title || "Screenshot"}
-                                screenshotUrl={dashboardManifest[k].screenshotUrl}
+                                screenshotUrl={screenshotUrl}
                             />
                         </LazyComponent>
                     </ClientOnly>

@@ -4,6 +4,7 @@ import Page from '../components/Page';
 import Link from '@splunk/react-ui/Link';
 import styled, { css } from 'styled-components';
 import useSplunkTheme from '@splunk/themes/useSplunkTheme';
+import { useConfig } from '../contexts/ConfigContext';
 import 'bootstrap/dist/css/bootstrap.css';
 
 // Define Footer outside of LoginPage
@@ -16,39 +17,58 @@ const Footer = styled.p`
 
 export default function LoginPage() {
     const { focusColor } = useSplunkTheme();
+    const { config, loading: configLoading, error: configError } = useConfig();
+
+    // Handle loading state
+    if (configLoading) {
+        return (
+            <Page title="Loading..." theme="light">
+                <div>Loading configuration...</div>
+            </Page>
+        );
+    }
+
+    // Handle error state
+    if (configError) {
+        return (
+            <Page title="Error" theme="light">
+                <div>Error loading configuration: {configError}</div>
+            </Page>
+        );
+    }
 
     return (
         <Page
-            title={process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}
-            theme={process.env.NEXT_PUBLIC_HOMETHEME || 'light'}
+            title={config?.title || 'Dashboards'}
+            theme={config?.theme || 'light'}
+            baseUrl={config?.baseUrl || null}
+            imageUrl={config?.homeScreenshot || null}
         >
-            <Login />
-            {process.env.NEXT_PUBLIC_DASHPUBFOTER !== 'false' && (
+            <Login config={config} />
+            {config?.footer !== "false" ? (
                 <Footer focusColor={focusColor || '#defaultColor'}>
-                    {process.env.NEXT_PUBLIC_DASHPUBFOTER || 'Hosted Splunk Dashboards'}
-                    {process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY && (
+                    {config?.footer || "Hosted Splunk Dashboards"}
+                    {config?.hostedBy ? (
                         <>
-                            {' '}
-                            by
-                            {' '}
+                            {" by "}
                             <Link
-                                to={process.env.NEXT_PUBLIC_DASHPUBHOSTEDURL || '#'}
+                                to={config?.hostedByUrl || '#'}
                                 openInNewContext=""
                             >
-                                {process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY}
+                                {config?.hostedBy}
                             </Link>
-                            {' '}
+                            {" "}
                         </>
-                    )}
-                    using{' '}
+                    ) : " "}
+                    {"using "}
                     <Link
-                        to={process.env.NEXT_PUBLIC_DASHPUBREPO || 'https://github.com/splunk/dashpub'}
+                        to={config?.repo || "https://github.com/splunk/dashpub"}
                         openInNewContext=""
                     >
                         Dashpub
                     </Link>
                 </Footer>
-            )}
+            ) : null}
         </Page>
     );
 }

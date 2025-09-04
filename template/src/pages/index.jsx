@@ -41,6 +41,7 @@ export default function HomePage() {
     <Page 
       title={config?.title || 'Dashboards'}
       baseUrl={config?.baseUrl || null}
+      imageUrl={config?.homeScreenshot || null}
     >
       <Home />
       {config?.footer !== "false" ? (
