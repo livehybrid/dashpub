@@ -27,7 +27,7 @@ RUN if [ ! -f /usr/local/bin/dashpub ]; then \
 
 # Verify dependencies are available
 RUN echo "Checking if inquirer is available in build directory:"
-RUN cd /build && node -e "try { require('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
+RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
 # Runtime stage
 FROM node:24-alpine
@@ -72,7 +72,7 @@ USER nodejs
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=600s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=300s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
 # Use dumb-init to handle signals properly

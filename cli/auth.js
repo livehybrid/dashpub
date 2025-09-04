@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const { getPackageJson } = require('./pkgjson');
-const { writeDotenv } = require('./env');
-const { splunkdPassword } = require('./prompts');
+import { getPackageJson } from './pkgjson.js';
+import { writeDotenv } from './env.js';
+import { splunkdPassword } from './prompts.js';
 
 async function updatePassword() {
     const pkg = await getPackageJson();
@@ -45,7 +45,4 @@ async function ensureAuth() {
     return { username: user, url, password: process.env.SPLUNKD_PASSWORD, token: process.env.SPLUNKD_TOKEN };
 }
 
-module.exports = {
-    updatePassword,
-    ensureAuth,
-};
+export { updatePassword, ensureAuth };

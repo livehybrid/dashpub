@@ -17,12 +17,11 @@ limitations under the License.
 import React, { Component, lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import { variables } from '@splunk/themes';
-import dashboardManifest from '../_dashboards.json';
-import getScreenshotUrl from './getScreenshotUrl';
 import { Tag } from 'react-bootstrap-icons';
 import 'bootstrap/dist/css/bootstrap.css';
 import HomeHeader from "./home_header";
-import ClientOnly from './ClientOnly';
+import ClientOnly from './clientOnly';
+import { useConfig } from '../contexts/ConfigContext';
 
 // Use lazy loading for Vite compatibility instead of Next.js dynamic
 const CardLayout = lazy(() => import('@splunk/react-ui/CardLayout'));
@@ -41,14 +40,13 @@ const LazyComponent = ({ component: Component, fallback = null, ...props }) => (
 );
 
 const PageWrapper = styled.div`
-    margin: 5%;
+    margin: 2% 5%;
     text-align: center;
-    background-color: ${variables.backgroundColor};
 `;
 const DashWrapper = styled.div``;
 
 const Screenshot = styled.img`
-    width: 330px;
+    width: 310px;
 `;
 
 const Title = styled.h1`
@@ -69,6 +67,136 @@ const TagContainer = styled.div`
     flex-wrap: wrap;
     // gap: 2px;
 `;
+
+// Component to handle screenshot display with retry logic
+class ScreenshotComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            imageSrc: props.screenshotUrl,
+            retryCount: 0,
+            isLoading: true,
+            hasError: false
+        };
+        this.maxRetries = 3;
+        this.retryDelay = 1000; // 1 second
+    }
+
+    componentDidMount() {
+        this.loadImage();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.screenshotUrl !== this.props.screenshotUrl) {
+            this.setState({
+                imageSrc: this.props.screenshotUrl,
+                retryCount: 0,
+                isLoading: true,
+                hasError: false
+            });
+            this.loadImage();
+        }
+    }
+
+    loadImage = () => {
+        const { imageSrc } = this.state;
+        if (!imageSrc) {
+            this.setState({ isLoading: false, hasError: true });
+            return;
+        }
+
+        const img = new Image();
+        
+        img.onload = () => {
+            console.log('Screenshot loaded successfully:', imageSrc);
+            this.setState({ isLoading: false, hasError: false });
+        };
+
+        img.onerror = () => {
+            console.warn(`Screenshot failed to load (attempt ${this.state.retryCount + 1}):`, imageSrc);
+            this.handleImageError();
+        };
+
+        // Add cache busting parameter to force fresh load
+        const cacheBuster = `?t=${Date.now()}`;
+        const urlWithCacheBuster = imageSrc.includes('?') 
+            ? `${imageSrc}&_cb=${Date.now()}` 
+            : `${imageSrc}${cacheBuster}`;
+        
+        img.src = urlWithCacheBuster;
+    };
+
+    handleImageError = () => {
+        const { retryCount } = this.state;
+        
+        if (retryCount < this.maxRetries) {
+            console.log(`Retrying screenshot load in ${this.retryDelay}ms (attempt ${retryCount + 1}/${this.maxRetries})`);
+            setTimeout(() => {
+                this.setState(prevState => ({ retryCount: prevState.retryCount + 1 }));
+                this.loadImage();
+            }, this.retryDelay * (retryCount + 1)); // Exponential backoff
+        } else {
+            console.error('Screenshot failed to load after all retries:', this.state.imageSrc);
+            this.setState({ isLoading: false, hasError: true });
+        }
+    };
+
+    render() {
+        const { title, screenshotUrl } = this.props;
+        const { isLoading, hasError } = this.state;
+
+        if (!screenshotUrl) {
+            return null;
+        }
+
+        if (hasError) {
+            return (
+                <div style={{ 
+                    width: 310, 
+                    height: 200, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    color: '#666',
+                    fontSize: '12px'
+                }}>
+                    Screenshot unavailable
+                </div>
+            );
+        }
+
+        if (isLoading) {
+            return (
+                <div style={{ 
+                    width: 310, 
+                    height: 200, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    color: '#666',
+                    fontSize: '12px'
+                }}>
+                    Loading screenshot...
+                </div>
+            );
+        }
+
+        return (
+            <Screenshot
+                style={{ width: 310 }} 
+                src={this.state.imageSrc} 
+                alt={title}
+                onError={this.handleImageError}
+            />
+        );
+    }
+}
 
 class AllTags extends Component {
     render() {
@@ -118,6 +246,33 @@ class AllTags extends Component {
     }
 }
 
+// Wrapper component to use config context with class component
+const HomeWithConfig = () => {
+    const { config, loading: configLoading, error: configError } = useConfig();
+    
+    if (configLoading) {
+        return (
+            <PageWrapper>
+                <Title>Loading...</Title>
+                <HomeHeader />
+                <div>Loading configuration...</div>
+            </PageWrapper>
+        );
+    }
+    
+    if (configError) {
+        return (
+            <PageWrapper>
+                <Title>Error</Title>
+                <HomeHeader />
+                <div>Error loading configuration: {configError}</div>
+            </PageWrapper>
+        );
+    }
+    
+    return <Home config={config} />;
+};
+
 class Home extends Component {
     handleTagClick = (tag) => {
         this.setState({ selectedTag: tag });
@@ -125,31 +280,113 @@ class Home extends Component {
     state = {
         uniqueTags: [],
         selectedTag: '',
+        dashboardManifest: {},
+        loading: true,
+        error: null
     };
 
-    componentDidMount() {
-        let tagList = [];
-        Object.keys(dashboardManifest).forEach((k) => {
-            let dashboard = dashboardManifest[k];
-            dashboard.tags.forEach((tag) => {
-                tagList.push(tag);
+    async componentDidMount() {
+        try {
+            // Fetch dashboard manifest from API
+            const response = await fetch('/api/dashboards/manifest');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            // Extract unique tags from dashboard data
+            let tagList = [];
+            Object.keys(data.dashboards).forEach((k) => {
+                let dashboard = data.dashboards[k];
+                dashboard.tags.forEach((tag) => {
+                    tagList.push(tag);
+                });
             });
-        });
-        const uniqueTags = Array.from(new Set(tagList));
-        this.setState({ uniqueTags: uniqueTags });
+            const uniqueTags = Array.from(new Set(tagList));
+            
+            this.setState({ 
+                uniqueTags: uniqueTags,
+                dashboardManifest: data.dashboards,
+                loading: false
+            });
+
+            // Enable screenshots at runtime
+            this.enableScreenshots();
+        } catch (error) {
+            console.error('Failed to load dashboard manifest:', error);
+            this.setState({ 
+                error: error.message,
+                loading: false
+            });
+        }
+    }
+
+    // Method to enable screenshots at runtime
+    enableScreenshots() {
+        const { config } = this.props;
+        // Check if screenshots should be enabled
+        const shouldEnable = config?.screenshots?.enabled || false;
+        
+        if (shouldEnable) {
+            this.setState({ screenshotsEnabled: true });
+            console.log('Screenshots enabled at runtime');
+        } else {
+            console.log('Screenshots disabled at runtime');
+        }
     }
 
     render() {
-        const INSERT_SCREENSHOTS = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS || false;                
+        const { dashboardManifest, loading, error, uniqueTags, selectedTag } = this.state;
+        const { config } = this.props;
+        const INSERT_SCREENSHOTS = config?.screenshots?.enabled || false;    
+        console.log("INSERT_SCREENSHOTS", INSERT_SCREENSHOTS);
+
+        // Handle loading state
+        if (loading) {
+            return (
+                <PageWrapper>
+                    <Title>{config?.title || 'Dashboards'}</Title>
+                    <HomeHeader />
+                    <div>Loading dashboards...</div>
+                </PageWrapper>
+            );
+        }
+
+        // Handle error state
+        if (error) {
+            return (
+                <PageWrapper>
+                    <Title>{config?.title || 'Dashboards'}</Title>
+                    <HomeHeader />
+                    <div>Error loading dashboards: {error}</div>
+                </PageWrapper>
+            );
+        }
+
         const renderScreenshot = (k) => {
-            if (INSERT_SCREENSHOTS) {
+            if (INSERT_SCREENSHOTS && dashboardManifest[k]?.screenshotUrl) {
+                const screenshotUrl = dashboardManifest[k].screenshotUrl;
+                console.log(`Rendering screenshot for ${k}:`, screenshotUrl);
+                
+                // Test if the URL is accessible
+                fetch(screenshotUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log(`Screenshot URL is accessible: ${screenshotUrl}`);
+                        } else {
+                            console.warn(`Screenshot URL returned ${response.status}: ${screenshotUrl}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Screenshot URL test failed: ${screenshotUrl}`, error);
+                    });
+                
                 return (
                     <ClientOnly fallback={null} key={`screenshot-${k}`}>
                         <LazyComponent component={CardBody}>
-                            <Screenshot
-                                style={{ width: 330 }} 
-                                src={getScreenshotUrl(k)} 
-                                alt={dashboardManifest[k]?.title || "Screenshot"}
+                            <ScreenshotComponent 
+                                title={dashboardManifest[k]?.title || "Screenshot"}
+                                screenshotUrl={screenshotUrl}
                             />
                         </LazyComponent>
                     </ClientOnly>
@@ -159,7 +396,7 @@ class Home extends Component {
         };
 
         const renderTags = (k) => {
-            if (this.state.uniqueTags.length > 0) {
+            if (uniqueTags.length > 0) {
                 return (
                     <LazyComponent component={CardFooter}>
                         <TagContainer>
@@ -203,12 +440,12 @@ class Home extends Component {
         
         return (
             <PageWrapper>
-                <Title>{process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}</Title>
+                <Title>{config?.title || 'Dashboards'}</Title>
                 <HomeHeader />
                 <AllTags 
                     tagClick={this.handleTagClick} 
-                    selectedTag={this.state.selectedTag} 
-                    uniqueTags={this.state.uniqueTags} 
+                    selectedTag={selectedTag} 
+                    uniqueTags={uniqueTags} 
                 />
                 <DashWrapper>
                     <LazyComponent
@@ -221,7 +458,7 @@ class Home extends Component {
                             .filter(
                                 (k) =>
                                     !dashboardManifest[k].tags.includes('hidden') &&
-                                    (dashboardManifest[k].tags.includes(this.state.selectedTag) || !this.state.selectedTag)
+                                    (dashboardManifest[k].tags.includes(selectedTag) || !selectedTag)
                             )
                             .map((k) => (
                                 <LazyComponent
@@ -241,4 +478,4 @@ class Home extends Component {
         );
     }
 }
-export default Home;
+export default HomeWithConfig;

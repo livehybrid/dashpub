@@ -1,53 +1,73 @@
 import React from 'react';
-import { SplunkThemeProvider } from '@splunk/themes';
 import Page from '../components/Page';
 import Home from '../components/home.jsx';
 import Link from '@splunk/react-ui/Link';
 import styled from 'styled-components';
 import useSplunkTheme from '@splunk/themes/useSplunkTheme';
+import { useConfig } from '../contexts/ConfigContext';
 import 'bootstrap/dist/css/bootstrap.css';
 
 export default function HomePage() {
   const { focusColor } = useSplunkTheme();
+  const { config, loading: configLoading, error: configError } = useConfig();
   
   const Footer = styled.p`
     color: ${focusColor};
     text-align: center;
+    padding-bottom: 50px;
+    font-size: 120%;
+    font-weight: bold;
   `;
 
-  return (
-    <SplunkThemeProvider>
-      <Page 
-        title={process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}
-        theme={process.env.NEXT_PUBLIC_HOMETHEME || 'light'}
-        baseUrl={process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null}
-      >
-        <Home />
-        {process.env.NEXT_PUBLIC_DASHPUBFOOTER !== "false" ? (
-          <Footer>
-            {process.env.NEXT_PUBLIC_DASHPUBFOOTER || "Hosted Splunk Dashboards"}
-            {process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY ? (
-              <>
-                {" by "}
-                <Link
-                  to={process.env.NEXT_PUBLIC_DASHPUBHOSTEDURL || '#'}
-                  openInNewContext=""
-                >
-                  {process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY}
-                </Link>
-                {" "}
-              </>
-            ) : " "}
-            {"using "}
-            <Link
-              to={process.env.NEXT_PUBLIC_DASHPUBREPO || "https://github.com/splunk/dashpub"}
-              openInNewContext=""
-            >
-              Dashpub
-            </Link>
-          </Footer>
-        ) : null}
+  // Handle loading state
+  if (configLoading) {
+    return (
+      <Page title="Loading..." theme="light">
+        <div>Loading configuration...</div>
       </Page>
-    </SplunkThemeProvider>
+    );
+  }
+
+  // Handle error state
+  if (configError) {
+    return (
+      <Page title="Error" theme="light">
+        <div>Error loading configuration: {configError}</div>
+      </Page>
+    );
+  }
+
+  return (
+    <Page 
+      title={config?.title || 'Dashboards'}
+      baseUrl={config?.baseUrl || null}
+      imageUrl={config?.homeScreenshot || null}
+    >
+      <Home />
+      {config?.footer !== "false" ? (
+        <Footer>
+          {config?.footer || "Hosted Splunk Dashboards"}
+          {config?.hostedBy ? (
+            <>
+              {" by "}
+              <Link
+                to={config?.hostedByUrl || '#'}
+                openInNewContext=""
+              >
+                {config?.hostedBy}
+              </Link>
+              {" "}
+            </>
+          ) : " "}
+          {"using "}
+          <Link
+            to={config?.repo || "https://github.com/splunk/dashpub"}
+            openInNewContext=""
+          >
+            Dashpub
+          </Link>
+        </Footer>
+      ) : null}
+    </Page>
   );
 }

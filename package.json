@@ -1,56 +1,71 @@
 {
-  "_from": "https://github.com/livehybrid/dashpub/tarball/master",
-  "_id": "@splunk/dashpub@0.0.1-alpha5",
-  "_inBundle": false,
-  "_integrity": "sha512-pYwpzldu80uiIaWZkPO4T1fdceY5zFBc9ACfmHrJbSbNEAHBi8j/Bgzvu/d+9kaEvoBiyoy83gaumzUGDjX92g==",
-  "_location": "/@splunk/dashpub",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "remote",
-    "raw": "https://github.com/livehybrid/dashpub/tarball/master",
-    "rawSpec": "https://github.com/livehybrid/dashpub/tarball/master",
-    "saveSpec": "https://github.com/livehybrid/dashpub/tarball/master",
-    "fetchSpec": "https://github.com/livehybrid/dashpub/tarball/master"
-  },
-  "_requiredBy": [
-    "#USER"
-  ],
-  "_resolved": "https://github.com/livehybrid/dashpub/tarball/master",
-  "_shasum": "d3df339f38d5f2763cd644b81ccdcf4330254d73",
-  "_spec": "https://github.com/livehybrid/dashpub/tarball/master",
-  "_where": "/var/lib/cloud/instances/i-063756d8ebead1cff/scripts",
-  "bin": {
-    "dashpub": "cli/cli.js"
-  },
-  "bugs": {
-    "url": "https://github.com/livehybrid/dashpub/issues"
-  },
-  "dependencies": {
-    "@oclif/core": "^4.0.37",
-    "debug": "^4.3.4",
-    "dotenv": "^17.2.1",
-    "execa": "^9.5.2",
-    "fs-extra": "^11.2.0",
-    "inquirer": "^8.2.7",
-    "node-fetch": "^3.3.2",
-    "prettier": "^3.1.1",
-    "sharp": "^0.34.3",
-    "xmldoc": "^2.0.2"
-  },
-  "resolutions": {
-    "cross-spawn": "^7.0.5"
-  },
-  "deprecated": false,
-  "description": "Generate next.js apps to publish Splunk dashboards",
-  "homepage": "https://github.com/livehybrid/dashpub",
-  "license": "Apache-2.0",
-  "name": "@splunk/dashpub",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/livehybrid/dashpub.git"
-  },
-  "scripts": {
-    "update:license-report": "yarn licenses list > license_report.txt"
-  },
-  "version": "0.0.1-alpha5"
+    "_from": "https://github.com/livehybrid/dashpub/tarball/master",
+    "_id": "@splunk/dashpub@0.0.1-alpha5",
+    "_inBundle": false,
+    "_integrity": "sha512-pYwpzldu80uiIaWZkPO4T1fdceY5zFBc9ACfmHrJbSbNEAHBi8j/Bgzvu/d+9kaEvoBiyoy83gaumzUGDjX92g==",
+    "_location": "/@splunk/dashpub",
+    "_phantomChildren": {},
+    "_requested": {
+        "type": "remote",
+        "raw": "https://github.com/livehybrid/dashpub/tarball/master",
+        "rawSpec": "https://github.com/livehybrid/dashpub/tarball/master",
+        "fetchSpec": "https://github.com/livehybrid/dashpub/tarball/master"
+    },
+    "_requiredBy": [
+        "#USER"
+    ],
+    "_resolved": "https://github.com/livehybrid/dashpub/tarball/master",
+    "_shasum": "d3df339f38d5f2763cd644b81ccdcf4330254d73",
+    "_spec": "https://github.com/livehybrid/dashpub/tarball/master",
+    "_where": "/var/lib/cloud/instances/i-063756d8ebead1cff/scripts",
+    "type": "module",
+    "bin": {
+        "dashpub": "cli/cli.js"
+    },
+    "bugs": {
+        "url": "https://github.com/livehybrid/dashpub/issues"
+    },
+    "dependencies": {
+        "@oclif/core": "^4.0.37",
+        "chalk": "^4.1.2",
+        "debug": "^4.3.4",
+        "dotenv": "^17.2.1",
+        "execa": "^9.5.2",
+        "fs-extra": "^11.2.0",
+        "inquirer": "^12.9.4",
+        "node-fetch": "^3.3.2",
+        "prettier": "^3.1.1",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "sharp": "^0.34.3",
+        "xmldoc": "^2.0.2",
+        "@react-google-maps/api": "^2.19.2",
+        "react-icons": "*"
+    },
+    "resolutions": {
+        "cross-spawn": "^7.0.5",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
+    },
+    "deprecated": false,
+    "description": "Generate next.js apps to publish Splunk dashboards",
+    "homepage": "https://github.com/livehybrid/dashpub",
+    "license": "Apache-2.0",
+    "name": "@splunk/dashpub",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/livehybrid/dashpub.git"
+    },
+    "scripts": {
+        "update:license-report": "yarn licenses list > license_report.txt",
+        "test:splunk": "node cli/test-splunk.js",
+        "test:template": "node cli/test-template.js"
+    },
+    "version": "0.0.1-alpha5",
+    "dashpub": {
+        "settings": {
+            "useDataSnapshots": false
+        },
+        "splunkd": {}
+    }
 }

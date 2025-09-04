@@ -8,11 +8,11 @@ function ClientOnly({ children, fallback = null }) {
   }, []);
 
   if (!isClient) {
-    console.log('ClientOnly: Rendering fallback (server-side)');
+    // console.log('ClientOnly: Rendering fallback (server-side)');
     return fallback;
   }
 
-  console.log('ClientOnly: Rendering children (client-side)');
+  // console.log('ClientOnly: Rendering children (client-side)');
   return children;
 }
 

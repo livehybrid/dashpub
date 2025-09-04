@@ -1,0 +1,29 @@
+{
+  "dashpub": {
+    "projectName": "test-app",
+    "app": "search",
+    "dashboards": [
+      "test_dashboard",
+      "sample_dashboard"
+    ],
+    "settings": {
+      "useDataSnapshots": false,
+      "screenshots": true,
+      "screenshotDir": "screenshots",
+      "screenshotExt": "png"
+    }
+  },
+  "name": "test-app",
+  "version": "1.0.0",
+  "description": "Test application for local development",
+  "main": "index.js",
+  "scripts": {
+    "dev:full": "vite & node server.js",
+    "build": "vite build",
+    "server": "node server.js",
+    "start": "npm run build && npm run server"
+  },
+  "keywords": ["splunk", "dashboard", "test"],
+  "author": "DashPub Test",
+  "license": "MIT"
+}

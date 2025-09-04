@@ -159,8 +159,6 @@ export default defineConfig({
   // Global definitions
   define: {
     global: 'globalThis',
-
-
     'process.env': {},
     'process.version': '"v16.0.0"',
     'process.platform': '"browser"',
