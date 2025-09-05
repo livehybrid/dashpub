@@ -1,6 +1,32 @@
 # Splunk Dashboard System
 
-A modern, high-performance dashboard system built with Node.js, Express, React, and Vite, designed to display Splunk data with real-time updates, caching, and comprehensive visualization support.
+A modern, high-performance dashboard system built with Node.js, Express, React, and Vite, designed to display Splunk data with real-time updates, caching, and comprehensive visualization support.  
+5 years on from the original dashpub CLI tool, the project has now been re-written to bring loads of new features and faster more responsive experience, including in-built caching and tab rotations.
+
+## 📊 Feature Comparison
+Recent Splunk Enterprise and Splunk Cloud releases have included the ability to publish dashboards which is amazing news. This project is still being maintained to fill any remaining gaps and provide additional functionality that is not yet in the Splunk core offering.  
+For more information on Splunk's dashboard publishing check out 
+https://help.splunk.com/en/splunk-cloud-platform/create-dashboards-and-reports/dashboard-studio/9.3.2411/share-dashboard-content/publish-dashboards  
+Check out the table below for a feature comparison between in-built vs dashpub. Some use-cases may find the scheduled export within Splunk is sufficient however this provides a different set of features as detailed below.  
+
+| Feature | Splunk Enterprise | This Project | Notes |
+|---------|------------------|--------------|-------|
+| **Compatibility** | ✅ Splunk Enterprise/Cloud | ✅ Splunk Enterprise/Cloud | O11y coming soon |
+| **Dashboard Experience** | ✅ Built-in Dashboard Studio | ✅ Splunk React Frameworks | Uses official Splunk framework |
+| **High Level View** | ❌ No high level overview of all dashboards published | ✅ Homepage containing list of all dashboards available |  |
+| **On-Demand Data** | ❌ Dashboard must be scheduled to run | ✅ On-Demand with caching | Enhanced with intelligent caching |
+| **Authentication** | ❌ Published dashboards are available without auth | ✅ Optional fixed user/pass auth available | More flexible auth options |
+| **Segregation** | ❌ Exposes URL of your Splunk deployment | ✅ Hosted separately to your Splunk Instance| Protects your Splunk Deployment endpoints |
+| **Tab Rotation** | ❌ Not available | ✅ Automatic tab rotation | Unique feature for kiosk/wall displays |
+| **Performance Caching** | ✅ Pre-populated caching | ✅ caching on first-access | TTL set per datasource using refresh option |
+| **Built-in** | ✅ No additional deployment required | ❌ Additional deployment required | Host alongside your Splunk Deployment |
+| **Cost** | ✅ Part of Splunk license | ✅ Open source | No licensing costs |
+| **Custom Visualizations** | ❌ No custom viz suport | ✅ Support for custom viz | Complete customization freedom |
+| **Screenshot Generation** | ❌ Manual API call required | ✅ Automated screenshots using dashpub-plus | For high level thumbnail overview and URL unfurling |
+| **Rate Limiting** | ❌ Basic | ✅ Advanced IP-based limiting | Better protection against abuse |
+| **Scalability** | ❌ User still hit Splunk endpoints | ✅ Caching provides air-gap between dashboards and Splunk infra. | Repeated page requests do not cause concurrent/repeated Splunk calls due to in-built cache - Better for high-traffic or public-facing scenarios |
+
+
 
 ## 🏗️ Architecture Overview
 
@@ -162,6 +188,46 @@ src/
   }
 }
 ```
+
+## 🔄 Tab Rotation System
+
+### Overview
+
+The dashboard system includes an automatic tab rotation feature that cycles through dashboard tabs at configurable intervals. This is particularly useful for displaying dashboards on monitors or in kiosk mode.
+
+### Features
+
+- **Automatic Detection**: Automatically detects dashboards with multiple tabs
+- **Configurable Intervals**: Set rotation speed via environment variable
+- **Multiple Switching Strategies**: Uses various methods to ensure reliable tab switching
+- **User Controls**: Pause/resume and manual navigation controls
+- **Visual Feedback**: Status indicator showing current tab and rotation state
+- **Mobile Optimization**: Auto-collapse after 3 seconds for mobile devices
+
+### Configuration
+
+Set the rotation interval using the `REACT_APP_TAB_ROTATION_INTERVAL` environment variable:
+
+```bash
+# 5 seconds (fast rotation)
+REACT_APP_TAB_ROTATION_INTERVAL=5000
+
+# 15 seconds (default)
+REACT_APP_TAB_ROTATION_INTERVAL=15000
+
+# 30 seconds (slow rotation)
+REACT_APP_TAB_ROTATION_INTERVAL=30000
+```
+
+**Default**: 15000ms (15 seconds)  
+**Minimum**: 1000ms (1 second)  
+**Format**: Integer value in milliseconds
+
+### Usage
+
+The feature automatically activates for dashboards with multiple tabs defined in their `layout.tabs.items` array. No additional configuration is required beyond setting the environment variable.
+
+For detailed documentation, see [TAB_ROTATION_FEATURE.md](docs/TAB_ROTATION_FEATURE.md).
 
 ## 🔄 Caching System
 
@@ -580,17 +646,96 @@ CMD ["npm", "start"]
 
 ### Environment Variables
 
+#### Core Application Settings
 ```bash
-# Production environment
+# Server Configuration
 NODE_ENV=production
 PORT=3000
-SPLUNK_HOST=prod-splunk.company.com
-SPLUNK_PORT=8089
+
+# Splunk Connection
+SPLUNKD_URL=https://your-splunk-instance:8089
+SPLUNKD_USER=admin
+SPLUNKD_PASSWORD=your_password
+SPLUNKD_TOKEN=your_api_token
+
+# Performance & Caching
 CACHE_CLEANUP_INTERVAL=300
 RATE_LIMIT_WINDOW=15
 RATE_LIMIT_MAX_REQUESTS=1000  # Increased default for dashboard reloads
 MAX_RETRIES=3
+SEARCH_JOB_DELAY_MS=250
+MIN_REFRESH_TIME=60
 ```
+
+#### Authentication & Security
+```bash
+# JWT Authentication
+JWT_REQUIRED=false
+JWT_KEY=your-secret-key-here
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=24h
+JWT_USERNAME=admin
+JWT_PASSWORD=your_password
+API_KEY_HEADER=X-API-Key
+```
+
+#### Dashboard Configuration
+```bash
+# Dashboard Display Settings
+NEXT_PUBLIC_DASHPUBTITLE=My Dashboards
+NEXT_PUBLIC_HOMETHEME=light
+NEXT_PUBLIC_DASHPUBFOOTER=Hosted Splunk Dashboards
+NEXT_PUBLIC_DASHPUBHOSTEDBY=Your Company
+NEXT_PUBLIC_DASHPUBHOSTEDURL=https://yourcompany.com
+NEXT_PUBLIC_DASHPUBREPO=https://github.com/yourusername/dashpub
+
+# Tab Rotation Settings (Runtime Configuration)
+REACT_APP_TAB_ROTATION_INTERVAL=15000  # Rotation interval in milliseconds
+REACT_APP_TAB_ROTATION_ENABLED=true    # Enable/disable tab rotation
+```
+
+#### Logging & Monitoring
+```bash
+# Logging Configuration
+LOG_MAX_SIZE=10m
+LOG_MAX_FILES=5
+LOG_DIR=./logs
+LOG_RETENTION_DAYS=30
+
+# Splunk HEC (HTTP Event Collector)
+SPLUNK_HEC_ENABLED=false
+SPLUNK_HEC_URL=https://your-splunk-instance:8088/services/collector
+SPLUNK_HEC_TOKEN=your-hec-token-here
+SPLUNK_HEC_INDEX=main
+SPLUNK_HEC_SOURCE=dashpub
+SPLUNK_HEC_SOURCETYPE=dashpub:app:logs
+SPLUNK_HEC_HOST=your-hostname
+SPLUNK_HEC_BATCH_SIZE=100
+SPLUNK_HEC_BATCH_TIMEOUT=5000
+SPLUNK_HEC_MAX_RETRIES=3
+SPLUNK_HEC_RETRY_DELAY=1000
+```
+
+#### Development & Build
+```bash
+# Build Configuration
+DASHPUB_BUILD_ID=dev  # Version identifier for browser caching
+USE_DATA_SNAPSHOTS=false  # Use snapshot data for development
+
+# Vercel Deployment (auto-set by Vercel)
+VERCEL_URL=your-app.vercel.app
+```
+
+#### Deprecated Variables
+The following variables are deprecated and should not be used in new deployments:
+- `SPLUNK_USERNAME` → Use `SPLUNKD_USER` instead
+- `SPLUNK_PASSWORD` → Use `SPLUNKD_PASSWORD` instead
+- `SPLUNK_APP` → Configure via dashboard definitions instead
+
+#### Unused Variables
+The following variables are documented in some examples but are not actually used by the application:
+- `SPLUNK_HOST` → Use `SPLUNKD_URL` instead (includes host and port)
+- `SPLUNK_PORT` → Use `SPLUNKD_URL` instead (includes host and port)
 
 ## 🔍 Troubleshooting
 

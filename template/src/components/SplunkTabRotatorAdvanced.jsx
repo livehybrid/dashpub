@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { getTabRotationInterval, formatInterval } from '../utils/tabRotationConfig';
+import { useConfig } from '../contexts/ConfigContext';
 
 /**
  * SplunkTabRotatorAdvanced - Advanced tab rotation component that works directly with Splunk Dashboard framework
@@ -8,17 +9,32 @@ import { getTabRotationInterval, formatInterval } from '../utils/tabRotationConf
 const SplunkTabRotatorAdvanced = ({ 
   definition, 
   enabled = true, 
-  rotationInterval = getTabRotationInterval(),
+  rotationInterval = null, // Will be set from config
   showControls = true 
 }) => {
+  const { config } = useConfig();
   const intervalRef = useRef(null);
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
   const [tabs, setTabs] = useState([]);
   const [isDashboardLoaded, setIsDashboardLoaded] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [rotationStatus, setRotationStatus] = useState('initializing');
   const dashboardRef = useRef(null);
   const tabElementsRef = useRef([]);
+  const collapseTimerRef = useRef(null);
+
+  // Get rotation interval from config or use fallback (memoized to prevent constant recalculation)
+  const effectiveRotationInterval = useMemo(() => {
+    return rotationInterval || getTabRotationInterval(config);
+  }, [rotationInterval, config?.tabRotation?.interval]);
+  
+  const effectiveEnabled = useMemo(() => {
+    return config?.tabRotation?.enabled !== undefined 
+      ? config.tabRotation.enabled && enabled 
+      : enabled;
+  }, [config?.tabRotation?.enabled, enabled]);
 
   // Check if dashboard has multiple tabs
   const hasMultipleTabs = definition?.layout?.tabs?.items?.length > 1;
@@ -278,9 +294,9 @@ const SplunkTabRotatorAdvanced = ({
         switchToTab(nextIndex);
         return nextIndex;
       });
-    }, rotationInterval);
+    }, effectiveRotationInterval);
 
-    console.log(`🚀 SplunkTabRotatorAdvanced: Started rotation every ${rotationInterval}ms`);
+    console.log(`🚀 SplunkTabRotatorAdvanced: Started rotation every ${effectiveRotationInterval}ms`);
   };
 
   const stopRotation = () => {
@@ -295,7 +311,7 @@ const SplunkTabRotatorAdvanced = ({
 
   // Initialize rotation when dashboard is loaded and enabled
   useEffect(() => {
-    if (hasMultipleTabs && enabled && isDashboardLoaded && tabs.length > 0) {
+    if (hasMultipleTabs && effectiveEnabled && isDashboardLoaded && tabs.length > 0) {
       // Wait a bit for the dashboard to fully render
       setTimeout(() => {
         startRotation();
@@ -305,17 +321,71 @@ const SplunkTabRotatorAdvanced = ({
     return () => {
       stopRotation();
     };
-  }, [hasMultipleTabs, enabled, isDashboardLoaded, tabs.length, rotationInterval]);
+  }, [hasMultipleTabs, effectiveEnabled, isDashboardLoaded, tabs.length, effectiveRotationInterval]);
+
+  // Auto-collapse after 3 seconds
+  useEffect(() => {
+    if (hasMultipleTabs && isDashboardLoaded && !isHovered) {
+      // Clear existing timer
+      if (collapseTimerRef.current) {
+        clearTimeout(collapseTimerRef.current);
+      }
+      
+      // Set new timer to collapse after 3 seconds
+      collapseTimerRef.current = setTimeout(() => {
+        setIsCollapsed(true);
+      }, 3000);
+    }
+    
+    return () => {
+      if (collapseTimerRef.current) {
+        clearTimeout(collapseTimerRef.current);
+      }
+    };
+  }, [hasMultipleTabs, isDashboardLoaded, isHovered]);
+
+  // Handle hover events
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    setIsCollapsed(false);
+    if (collapseTimerRef.current) {
+      clearTimeout(collapseTimerRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    // Restart the collapse timer
+    if (hasMultipleTabs && isDashboardLoaded) {
+      collapseTimerRef.current = setTimeout(() => {
+        setIsCollapsed(true);
+      }, 3000);
+    }
+  };
+
+  const handleClick = () => {
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      setIsHovered(true);
+      // Clear any existing timer
+      if (collapseTimerRef.current) {
+        clearTimeout(collapseTimerRef.current);
+      }
+    }
+  };
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopRotation();
+      if (collapseTimerRef.current) {
+        clearTimeout(collapseTimerRef.current);
+      }
     };
   }, []);
 
   // Don't render anything if no multiple tabs or disabled
-  if (!hasMultipleTabs || !enabled) {
+  if (!hasMultipleTabs || !effectiveEnabled) {
     return null;
   }
 
@@ -340,100 +410,122 @@ const SplunkTabRotatorAdvanced = ({
   };
 
   return (
-    <div className="splunk-tab-rotator-advanced" style={{
-      position: 'fixed',
-      top: '10px',
-      right: '10px',
-      zIndex: 1000,
-      background: 'rgba(0, 0, 0, 0.9)',
-      color: 'white',
-      padding: '12px 16px',
-      borderRadius: '8px',
-      fontSize: '13px',
-      fontFamily: 'Arial, sans-serif',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-      border: '1px solid rgba(255, 255, 255, 0.3)',
-      minWidth: '300px'
-    }}>
-      <div className="rotator-status" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{
-          width: '12px',
-          height: '12px',
-          borderRadius: '50%',
-          backgroundColor: getStatusColor(),
-          animation: rotationStatus === 'rotating' ? 'pulse 1s infinite' : 'none'
-        }} />
-        <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
-          {getStatusText()}
-        </span>
-      </div>
-      
-      <div className="rotator-info" style={{ 
-        color: '#ccc',
+    <div 
+      className="splunk-tab-rotator-advanced" 
+      style={{
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        zIndex: 1000,
+        background: 'rgba(0, 0, 0, 0.9)',
+        color: 'white',
+        padding: isCollapsed ? '8px' : '12px 16px',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontFamily: 'Arial, sans-serif',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        flexDirection: 'column',
-        alignItems: 'flex-start'
+        gap: isCollapsed ? '0' : '12px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        minWidth: isCollapsed ? 'auto' : '300px',
+        transition: 'all 0.3s ease',
+        cursor: isCollapsed ? 'pointer' : 'default'
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+      title={isCollapsed ? `Tab Rotator - ${getStatusText()} - Tab ${currentTabIndex + 1}/${tabs.length}: ${tabs[currentTabIndex]?.label}` : undefined}
+    >
+      {/* Status indicator - always visible */}
+      <div className="rotator-status" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: isCollapsed ? '0' : '8px',
+        minWidth: isCollapsed ? 'auto' : 'auto'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>Tab {currentTabIndex + 1}/{tabs.length}:</span>
-          <span style={{ fontWeight: 'bold' }}>
-            {tabs[currentTabIndex]?.label}
+        <div style={{
+          width: isCollapsed ? '16px' : '12px',
+          height: isCollapsed ? '16px' : '12px',
+          borderRadius: '50%',
+          backgroundColor: getStatusColor(),
+          animation: rotationStatus === 'rotating' ? 'pulse 1s infinite' : 'none',
+          transition: 'all 0.3s ease'
+        }} />
+        {!isCollapsed && (
+          <span style={{ fontWeight: 'bold', fontSize: '14px' }}>
+            {getStatusText()}
           </span>
-        </div>
-        <div style={{ fontSize: '11px', color: '#999' }}>
-          Interval: {formatInterval(rotationInterval)}
-        </div>
+        )}
       </div>
+      
+      {/* Collapsible content */}
+      {!isCollapsed && (
+        <>
+          <div className="rotator-info" style={{ 
+            color: '#ccc',
+            display: 'flex',
+            gap: '8px',
+            flexDirection: 'column',
+            alignItems: 'flex-start'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>Tab {currentTabIndex + 1}/{tabs.length}:</span>
+              <span style={{ fontWeight: 'bold' }}>
+                {tabs[currentTabIndex]?.label}
+              </span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#999' }}>
+              Interval: {formatInterval(effectiveRotationInterval)}
+            </div>
+          </div>
 
-      {showControls && (
-        <div className="rotator-controls" style={{ display: 'flex', gap: '6px' }}>
-          <button
-            onClick={isRotating ? stopRotation : startRotation}
-            style={{
-              background: isRotating ? '#e74c3c' : '#27ae60',
-              border: 'none',
-              color: 'white',
-              padding: '6px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => e.target.style.opacity = '0.8'}
-            onMouseOut={(e) => e.target.style.opacity = '1'}
-          >
-            {isRotating ? 'Pause' : 'Start'}
-          </button>
-          
-          <button
-            onClick={() => {
-              const nextIndex = (currentTabIndex + 1) % tabs.length;
-              setCurrentTabIndex(nextIndex);
-              switchToTab(nextIndex);
-            }}
-            style={{
-              background: '#3498db',
-              border: 'none',
-              color: 'white',
-              padding: '6px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => e.target.style.opacity = '0.8'}
-            onMouseOut={(e) => e.target.style.opacity = '1'}
-          >
-            Next
-          </button>
-        </div>
+          {showControls && (
+            <div className="rotator-controls" style={{ display: 'flex', gap: '6px' }}>
+              <button
+                onClick={isRotating ? stopRotation : startRotation}
+                style={{
+                  background: isRotating ? '#e74c3c' : '#27ae60',
+                  border: 'none',
+                  color: 'white',
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.opacity = '0.8'}
+                onMouseOut={(e) => e.target.style.opacity = '1'}
+              >
+                {isRotating ? 'Pause' : 'Start'}
+              </button>
+              
+              <button
+                onClick={() => {
+                  const nextIndex = (currentTabIndex + 1) % tabs.length;
+                  setCurrentTabIndex(nextIndex);
+                  switchToTab(nextIndex);
+                }}
+                style={{
+                  background: '#3498db',
+                  border: 'none',
+                  color: 'white',
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => e.target.style.opacity = '0.8'}
+                onMouseOut={(e) => e.target.style.opacity = '1'}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <style jsx>{`

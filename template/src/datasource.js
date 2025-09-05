@@ -76,7 +76,6 @@ function createNextPayload({ data, vizOptions, requestParams }) {
             offset: requestParams == null ? void 0 : requestParams.offset,
         })
         .toJSONCols();
-        console.log(pagedData);
     return {
         data: pagedData,
         meta: {

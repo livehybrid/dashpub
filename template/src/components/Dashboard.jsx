@@ -1,12 +1,12 @@
 import React, { useMemo, useEffect, Suspense } from 'react';
 import { DashboardContextProvider } from '@splunk/dashboard-context';
-import Loading from './loading';
+import Loading from './Loading';
 import DashboardCore from '@splunk/dashboard-core';
 import { GeoRegistry, GeoJsonProvider } from '@splunk/dashboard-context';
 import { registerScreenshotReadinessDep, SayCheese } from '../ready';
 import ClientOnly from './clientOnly';
 import SplunkTabRotatorAdvanced from './SplunkTabRotatorAdvanced';
-import { getTabRotationInterval } from '../utils/tabRotationConfig';
+import { useConfig } from '../contexts/ConfigContext';
 
 // Handle maplibre-gl script property error gracefully
 let testTileConfig = null;
@@ -82,6 +82,7 @@ function PreloadImages(images) {
 }
 
 function DashboardComponent({ definition, preset, width = '100vw', height = '100vh' }) {
+  const { config } = useConfig();
     const [processedDef, images] = useMemo(() => updateAssetUrls(definition), [definition]);
     PreloadImages(images);
     
@@ -155,7 +156,6 @@ function DashboardComponent({ definition, preset, width = '100vw', height = '100
                     <SplunkTabRotatorAdvanced 
                         definition={processedDef || definition}
                         enabled={true}
-                        rotationInterval={getTabRotationInterval()}
                         showControls={true}
                     />
                 </Suspense>

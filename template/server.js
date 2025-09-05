@@ -897,13 +897,19 @@ app.get('/api/config', (req, res) => {
       baseUrl: baseUrl,
       homeScreenshot: homeScreenshot,
       jwtRequired: process.env.JWT_REQUIRED === 'true',
-      timezone: process.env.DASHPUB_TZ || process.env.NEXT_PUBLIC_TZ || 'UTC'
+      timezone: process.env.DASHPUB_TZ || process.env.NEXT_PUBLIC_TZ || 'UTC',
+      tabRotation: {
+        interval: parseInt(process.env.REACT_APP_TAB_ROTATION_INTERVAL) || 15000,
+        enabled: process.env.REACT_APP_TAB_ROTATION_ENABLED !== 'false'
+      }
     };
 
     logger.info('Served client configuration', { 
       title: config.title,
       theme: config.theme,
-      screenshotsEnabled: config.screenshots.enabled
+      screenshotsEnabled: config.screenshots.enabled,
+      tabRotationInterval: config.tabRotation.interval,
+      tabRotationEnabled: config.tabRotation.enabled
     });
 
     res.json(config);
