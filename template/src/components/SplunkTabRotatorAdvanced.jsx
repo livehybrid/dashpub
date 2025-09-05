@@ -27,13 +27,17 @@ const SplunkTabRotatorAdvanced = ({
 
   // Get rotation interval from config or use fallback (memoized to prevent constant recalculation)
   const effectiveRotationInterval = useMemo(() => {
-    return rotationInterval || getTabRotationInterval(config);
+    if (rotationInterval && typeof rotationInterval === 'number') {
+      return rotationInterval;
+    }
+    return getTabRotationInterval(config);
   }, [rotationInterval, config?.tabRotation?.interval]);
   
   const effectiveEnabled = useMemo(() => {
-    return config?.tabRotation?.enabled !== undefined 
-      ? config.tabRotation.enabled && enabled 
-      : enabled;
+    if (config?.tabRotation?.enabled !== undefined) {
+      return config.tabRotation.enabled && enabled;
+    }
+    return enabled;
   }, [config?.tabRotation?.enabled, enabled]);
 
   // Check if dashboard has multiple tabs
@@ -284,6 +288,9 @@ const SplunkTabRotatorAdvanced = ({
       clearInterval(intervalRef.current);
     }
 
+    // Ensure we have a valid interval
+    const interval = typeof effectiveRotationInterval === 'number' ? effectiveRotationInterval : 15000;
+    
     setIsRotating(true);
     setCurrentTabIndex(0);
     setRotationStatus('rotating');
@@ -294,9 +301,9 @@ const SplunkTabRotatorAdvanced = ({
         switchToTab(nextIndex);
         return nextIndex;
       });
-    }, effectiveRotationInterval);
+    }, interval);
 
-    console.log(`🚀 SplunkTabRotatorAdvanced: Started rotation every ${effectiveRotationInterval}ms`);
+    console.log(`🚀 SplunkTabRotatorAdvanced: Started rotation every ${interval}ms`);
   };
 
   const stopRotation = () => {
@@ -313,15 +320,20 @@ const SplunkTabRotatorAdvanced = ({
   useEffect(() => {
     if (hasMultipleTabs && effectiveEnabled && isDashboardLoaded && tabs.length > 0) {
       // Wait a bit for the dashboard to fully render
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         startRotation();
       }, 2000);
+      
+      return () => {
+        clearTimeout(timer);
+        stopRotation();
+      };
     }
 
     return () => {
       stopRotation();
     };
-  }, [hasMultipleTabs, effectiveEnabled, isDashboardLoaded, tabs.length, effectiveRotationInterval]);
+  }, [hasMultipleTabs, effectiveEnabled, isDashboardLoaded, tabs.length]);
 
   // Auto-collapse after 3 seconds
   useEffect(() => {

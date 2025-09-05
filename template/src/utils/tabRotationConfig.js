@@ -4,11 +4,41 @@
  */
 
 /**
- * Get the tab rotation interval from environment variables
+ * Get the tab rotation interval from config or fallback to environment variables
+ * @param {Object} config - Configuration object from API
  * @param {number} defaultInterval - Default interval in milliseconds (default: 15000)
  * @returns {number} Rotation interval in milliseconds
  */
-export const getTabRotationInterval = (defaultInterval = 15000) => {
+export const getTabRotationInterval = (config = null, defaultInterval = 15000) => {
+  // Try to get from config first (runtime configuration)
+  if (config?.tabRotation?.interval) {
+    const configValue = config.tabRotation.interval;
+    
+    // Validate the config value
+    if (typeof configValue === 'number' && configValue > 0) {
+      // Ensure minimum interval of 1 second
+      if (configValue < 1000) {
+        console.warn(
+          `⚠️ Tab rotation interval from config too low: ${configValue}ms. ` +
+          `Using minimum: 1000ms`
+        );
+        return 1000;
+      }
+      
+      // Warn if interval is very long (more than 5 minutes)
+      if (configValue > 300000) {
+        console.warn(
+          `⚠️ Tab rotation interval from config very long: ${configValue}ms (${configValue / 1000}s). ` +
+          `Consider using a shorter interval for better user experience.`
+        );
+      }
+      
+      console.log(`✅ Tab rotation interval from config: ${configValue}ms (${configValue / 1000}s)`);
+      return configValue;
+    }
+  }
+  
+  // Fallback to environment variable (build-time configuration)
   const envValue = process.env.REACT_APP_TAB_ROTATION_INTERVAL;
   
   if (!envValue) {
@@ -43,13 +73,14 @@ export const getTabRotationInterval = (defaultInterval = 15000) => {
     );
   }
   
-  console.log(`✅ Tab rotation interval set to: ${parsedValue}ms (${parsedValue / 1000}s)`);
+  console.log(`✅ Tab rotation interval from env: ${parsedValue}ms (${parsedValue / 1000}s)`);
   return parsedValue;
 };
 
 /**
  * Get tab rotation configuration object
  * @param {Object} options - Configuration options
+ * @param {Object} options.config - Configuration object from API
  * @param {boolean} options.enabled - Whether rotation is enabled (default: true)
  * @param {number} options.defaultInterval - Default interval in milliseconds (default: 15000)
  * @param {boolean} options.showControls - Whether to show control panel (default: true)
@@ -57,14 +88,20 @@ export const getTabRotationInterval = (defaultInterval = 15000) => {
  */
 export const getTabRotationConfig = (options = {}) => {
   const {
+    config = null,
     enabled = true,
     defaultInterval = 15000,
     showControls = true
   } = options;
   
+  // Get enabled state from config if available
+  const isEnabled = config?.tabRotation?.enabled !== undefined 
+    ? config.tabRotation.enabled 
+    : enabled;
+  
   return {
-    enabled,
-    rotationInterval: getTabRotationInterval(defaultInterval),
+    enabled: isEnabled,
+    rotationInterval: getTabRotationInterval(config, defaultInterval),
     showControls
   };
 };
