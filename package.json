@@ -35,7 +35,7 @@
         "inquirer": "^12.9.4",
         "node-fetch": "^3.3.2",
         "prettier": "^3.1.1",
-        "react": "^18.3.1",
+        "react": "^19.2.0",
         "react-dom": "^18.3.1",
         "sharp": "^0.34.3",
         "xmldoc": "^2.0.2",
