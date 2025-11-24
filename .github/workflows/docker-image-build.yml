@@ -19,7 +19,7 @@ jobs:
       id-token: write
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Log in to Docker Hub
         uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
@@ -60,7 +60,7 @@ jobs:
         id: set-tag
         run: echo "image_tag=${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || github.ref_name }}" >> $GITHUB_ENV
       - name: Check out the repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
