@@ -14,22 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const fs = require('fs');
-const path = require('path');
-const qs = require('querystring');
+import fs from 'fs';
+import path from 'path';
+import qs from 'querystring';
 const fetch = global.fetch;
-const debug = require('debug')('datasnapshot');
-const { ux } = require('@oclif/core');
-require('dotenv').config();
+import debug from 'debug';
+import { ux } from '@oclif/core';
+import 'dotenv/config';
 
 const qualifiedSearchString = query => (query.trim().startsWith('|') ? query : `search ${query}`);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function fetchData(search, { id, app, refresh, splunkdUrl, splunkUser, splunkPassword }) {
-    const log = require('debug')(`ds:${id}`);
+    const log = debug(`ds:${id}`);
 
     const agent = splunkdUrl.startsWith('https')
-        ? new (require('https').Agent)({
+        ? new (await import('https')).Agent({
               rejectUnauthorized: false,
           })
         : undefined;
@@ -171,7 +171,4 @@ async function clearSnapshot(projectRoot) {
     fs.writeFileSync(path.join(projectRoot, 'src/pages/api/data/_snapshot.json'), '{}', { encoding: 'utf-8' });
 }
 
-module.exports = {
-    clearSnapshot,
-    takeDataSnapshot,
-};
+export { clearSnapshot, takeDataSnapshot };

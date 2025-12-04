@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const fs = require('fs-extra');
-const path = require('path');
+import fs from 'fs-extra';
+import path from 'path';
 
 async function writeDotenv({ splunkdUrl, splunkdUser, splunkdPassword, splunkdToken }, { destFolder = process.cwd() } = {}) {
     console.log('Writing splunkd credentials to .env');
@@ -35,6 +35,4 @@ async function writeDotenv({ splunkdUrl, splunkdUser, splunkdPassword, splunkdTo
     );
 }
 
-module.exports = {
-    writeDotenv,
-};
+export { writeDotenv };

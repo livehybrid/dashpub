@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const { splunkd } = require('./splunkd');
-const { constants } = require('./constants');
-const { writeFile } = require('fs-extra');
-const sharp = require('sharp');
-const crypto = require('crypto');
-const path = require('path');
+import { splunkd } from './splunkd.js';
+
+import fs from 'fs-extra';
+const { writeFile } = fs;
+import sharp from 'sharp';
+import crypto from 'crypto';
+import path from 'path';
 const fetch = global.fetch;
-require('dotenv').config();
+import 'dotenv/config';
 
 function shortHash(buffer) {
     const h = crypto.createHash('sha256');
@@ -187,6 +188,4 @@ async function downloadImage(src, assetType, splunkdInfo, projectDir) {
     throw new Error(`Unexpected image type: ${type}`);
 }
 
-module.exports = {
-    downloadImage,
-};
+export { downloadImage };

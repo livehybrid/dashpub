@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 const makeId = ds => {
     const h = crypto.createHash('sha256');
@@ -153,6 +153,4 @@ async function generateCdnDataSources(def, app, projectDir) {
     ];
 }
 
-module.exports = {
-    generateCdnDataSources,
-};
+export { generateCdnDataSources };

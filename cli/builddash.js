@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const { loadDashboard } = require('./splunkd');
-const { downloadImage } = require('./assets');
-const { generateCdnDataSources } = require('./datafns');
-const { writeFile, mkdirp, remove } = require('fs-extra');
-const { ux } = require('@oclif/core');
-const path = require('path');
+import { loadDashboard } from './splunkd.js';
+import { downloadImage } from './assets.js';
+import { generateCdnDataSources } from './datafns.js';
+import fs from 'fs-extra';
+const { writeFile, mkdirp, remove } = fs;
+import { ux } from '@oclif/core';
+import path from 'path';
 
 const COMPONENT_CODE = `\
 import React, { lazy, Suspense } from 'react';
@@ -81,8 +82,7 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
             console.error(`Failed to download image ${viz.options.icon || viz.options.src}`, e);
         }
     }
-
-    if (newDash.layout.options.backgroundImage) {
+    if (newDash.layout && newDash.layout.options && newDash.layout.options.backgroundImage) {
         if (newDash.layout.options.backgroundImage.src.match(/\$.*\$/g) )
              console.log(`Skipping image download due to token ${viz.options.src}`)
         else if (newDash.layout.options.backgroundImage.src.startsWith("data:image")) {
@@ -96,7 +96,6 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
             );
        }
     }
-
     const dir = path.join(projectFolder, 'src/dashboards', targetName);
     await mkdirp(dir);
     await writeFile(path.join(dir, 'definition.json'), Buffer.from(JSON.stringify(newDash, null, 2), 'utf-8'));
@@ -156,6 +155,4 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
     ux.action.stop();
 }
 
-module.exports = {
-    generate,
-};
+export { generate };

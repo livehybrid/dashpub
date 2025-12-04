@@ -16,6 +16,4 @@ limitations under the License.
 
 const SPLUNK_DASHBOARDS_APP = 'search';
 
-module.exports = {
-    SPLUNK_DASHBOARDS_APP,
-};
+export { SPLUNK_DASHBOARDS_APP };

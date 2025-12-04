@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const { ux } = require('@oclif/core');
-const chalk = require('chalk');
+import { ux } from '@oclif/core';
+import chalk from 'chalk';
 
 class ExecError extends Error {
     constructor(message, code, stdout, stderr) {
@@ -51,7 +51,4 @@ const exec = async (cmd, args, options) => {
     }
 };
 
-module.exports = {
-    exec,
-    Secret,
-};
+export { exec, Secret };
