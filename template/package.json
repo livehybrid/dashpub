@@ -17,7 +17,7 @@
         "@splunk/visualization-context": "28.1.0",
         "bootstrap": "5.3.8",
         "cookie-parser": "^1.4.7",
-        "cookies-next": "5.1.0",
+        "cookies-next": "6.1.1",
         "cors": "^2.8.5",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
