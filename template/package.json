@@ -41,7 +41,7 @@
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
-        "@babel/preset-react": "^7.23.3",
+        "@babel/preset-react": "^7.28.5",
         "@vitejs/plugin-react": "^5.0.2",
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^9.2.0",
