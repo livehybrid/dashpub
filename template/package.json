@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "license": "UNLICENSED",
     "dependencies": {
-        "@babel/runtime": "^7.27.0",
+        "@babel/runtime": "^7.28.4",
         "@react-google-maps/api": "^2.19.2",
         "@splunk/dashboard": "29.1.0",
         "@splunk/dashboard-context": "29.1.0",
