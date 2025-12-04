@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-alpine AS builder
+FROM node:25-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git vips-dev python3 make g++
@@ -30,7 +30,7 @@ RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
 # Runtime stage
-FROM node:24-alpine
+FROM node:25-alpine
 
 # Install runtime dependencies
 RUN apk add --no-cache git vips-dev dumb-init
