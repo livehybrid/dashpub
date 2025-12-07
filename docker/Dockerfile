@@ -4,6 +4,9 @@ FROM node:25-alpine AS builder
 # Install build dependencies
 RUN apk add --no-cache git vips-dev python3 make g++
 
+# Update npm to latest to fix vulnerabilities (e.g. glob)
+RUN npm install -g npm@latest && npm --version
+
 # Copy source
 COPY . /build
 

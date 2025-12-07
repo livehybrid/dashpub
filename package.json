@@ -40,12 +40,18 @@
         "sharp": "^0.34.3",
         "xmldoc": "^2.0.2",
         "@react-google-maps/api": "^2.19.2",
+        "node-addon-api": "^8.0.0",
+        "node-gyp": "^11.0.0",
         "react-icons": "*"
     },
     "resolutions": {
         "cross-spawn": "^7.0.5",
         "react": "^18.3.1",
-        "react-dom": "^18.3.1"
+        "react-dom": "^18.3.1",
+        "glob": "^10.5.0"
+    },
+    "overrides": {
+        "glob": "^10.5.0"
     },
     "deprecated": false,
     "description": "Generate next.js apps to publish Splunk dashboards",
