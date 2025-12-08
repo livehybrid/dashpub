@@ -10,7 +10,7 @@ RUN npm install -g npm@latest && \
     npm install -u -g glob
 
 RUN cd /usr/local/lib/node_modules/npm/node_modules/node-gyp/ && \
-    npm install -u -g glob
+    npm install -u glob
 
 # Copy source
 COPY . /build
