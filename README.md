@@ -1,3 +1,5 @@
+[![GitHub Release](https://img.shields.io/github/release/livehybrid/dashpub.svg?logo=github)](https://github.com/livehybrid/dashpub/releases)
+[![Docker Downloads](https://img.shields.io/docker/pulls/livehybrid/splunk-dashpub?logo=docker&label=docker%20pulls%20%2F%20livehybrid/splunk-dashpub)](https://hub.docker.com/r/livehybrid/splunk-dashpub)
 # Splunk Dashboard System
 
 A modern, high-performance dashboard system built with Node.js, Express, React, and Vite, designed to display Splunk data with real-time updates, caching, and comprehensive visualization support.  
