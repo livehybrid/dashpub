@@ -1915,7 +1915,7 @@ app.get('/api/dashboards/:slug/definition', (req, res) => {
 });
 
 // Catch-all route for SPA (must be last)
-app.get('*', (req, res) => {
+app.get(new RegExp('.*'), (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 

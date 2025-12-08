@@ -27,8 +27,8 @@ export DASHPUB_BUILD_ID=$DASHPUB_BUILD_ID
 export DASHPUB_DEFAULT_TTL=$DASHPUB_DEFAULT_TTL
 export DASHPUB_FQDN=$DASHPUB_FQDN
 
-ENV_MODE="${ENV_MODE:-production}"
-NODE_ENV="${NODE_ENV:-production}"
+export ENV_MODE="${ENV_MODE:-production}"
+export NODE_ENV="${NODE_ENV:-production}"
 
 git config --global user.email "dashpub@yourdomain.com"
 git config --global user.name "Splunk DashPub"
@@ -49,11 +49,11 @@ if [ "${DASHPUB_BRANCH}" ]; then
   if [ "$(id -u)" = "0" ]; then
     # Running as root, install globally
     echo "Installing dashpub globally as root..."
-    npm i -g https://github.com/livehybrid/dashpub/tarball/$DASHPUB_BRANCH --unsafe-perm
+    npm i -g https://github.com/livehybrid/dashpub/tarball/$DASHPUB_BRANCH  
   else
     # Not running as root, install to user directory
     echo "Installing dashpub to user directory..."
-    npm i -g https://github.com/livehybrid/dashpub/tarball/$DASHPUB_BRANCH --unsafe-perm --prefix /home/nodejs/.npm-global
+    npm i -g https://github.com/livehybrid/dashpub/tarball/$DASHPUB_BRANCH --prefix /home/nodejs/.npm-global
     export PATH="/home/nodejs/.npm-global/bin:$PATH"
     echo "Updated PATH: $PATH"
   fi
@@ -118,9 +118,9 @@ then
       then
       cp $DASHPUB_CUSTOM_HOME_PATH src/components/home_header.js
     fi
-    yarn add typescript
-    yarn add --dev typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin @next/eslint-plugin-next
-    yarn build
+    # yarn add typescript
+    # yarn add --dev typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin @next/eslint-plugin-next
+    # yarn build
     touch /tmp/hasBuilt
   elif [ -z "${DASHPUB_CONFIGFILE}" ];
   then
@@ -138,6 +138,7 @@ do
   sleep 5
 done
 cd /home/nodejs/app
+npm install
 NODE_OPTIONS="--max-old-space-size=4096" npm run build
 if [ "$ENV_MODE" = "dev" ]; then
   echo "Starting in development mode..."

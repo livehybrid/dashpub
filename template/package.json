@@ -37,22 +37,22 @@
         "react-router-dom": "^7.10.1",
         "rxjs": "^7.8.2",
         "styled-components": "5.3.11",
-        "tinyglobby": "*"
+        "tinyglobby": "*",
+        "@vitejs/plugin-react": "^5.1.2",
+        "vite": "^7.2.7",
+        "vite-plugin-commonjs": "^0.10.4",
+        "vite-plugin-node-polyfills": "^0.24.0"
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
         "@babel/preset-react": "^7.28.5",
-        "@vitejs/plugin-react": "^5.1.2",
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^9.2.0",
         "css-loader": "^7.1.2",
         "eslint": "^9.39.1",
         "postcss-loader": "^8.2.0",
         "puppeteer": "^24.32.1",
-        "style-loader": "^4.0.0",
-        "vite": "^7.2.7",
-        "vite-plugin-commonjs": "^0.10.4",
-        "vite-plugin-node-polyfills": "^0.24.0"
+        "style-loader": "^4.0.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "29.0.0",
@@ -73,9 +73,9 @@
         "**/dompurify": "^3.2.4"
     },
     "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview",
+        "dev": "node node_modules/vite/bin/vite.js",
+        "build": "node node_modules/vite/bin/vite.js build",
+        "preview": "node node_modules/vite/bin/vite.js preview",
         "setup": "npm install",
         "server": "node server.js",
         "dev:full": "concurrently \"npm run server\" \"npm run dev\"",

@@ -18,8 +18,8 @@
   "description": "Test application for local development",
   "main": "index.js",
   "scripts": {
-    "dev:full": "vite & node server.js",
-    "build": "vite build",
+    "dev:full": "node node_modules/vite/bin/vite.js & node server.js",
+    "build": "node node_modules/vite/bin/vite.js build",
     "server": "node server.js",
     "start": "npm run build && npm run server"
   },

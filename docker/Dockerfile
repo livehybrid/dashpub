@@ -1,23 +1,29 @@
 # Build stage
-FROM node:25-alpine AS builder
+FROM node:24-alpine3.20 AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git vips-dev python3 make g++
 
 
-# Update npm to latest and manually patch glob to fix vulnerabilities
-RUN npm install -g npm@latest && \
-    npm install -u -g glob
-
-RUN cd /usr/local/lib/node_modules/npm/node_modules/node-gyp/ && \
-    npm install -u glob
+# Manually patch glob in system npm to fix vulnerabilities
+RUN mkdir -p /tmp/glob-fix && \
+    cd /tmp/glob-fix && \
+    npm init -y && \
+    npm install glob@^10.5.0 && \
+    rm -rf /usr/local/lib/node_modules/npm/node_modules/glob && \
+    cp -r node_modules/glob /usr/local/lib/node_modules/npm/node_modules/ && \
+    if [ -d "/usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/glob" ]; then \
+      rm -rf /usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/glob && \
+      cp -r node_modules/glob /usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/; \
+    fi && \
+    rm -rf /tmp/glob-fix
 
 # Copy source
 COPY . /build
 
 # Install dependencies first, then install global package
 RUN cd /build && npm install
-RUN npm i -g /build --unsafe-perm
+RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
 
@@ -38,11 +44,14 @@ RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
 # Runtime stage
-FROM node:25-alpine
+FROM node:24-alpine3.20
 
 # Install runtime dependencies
-RUN apk add --no-cache git vips-dev dumb-init
+RUN apk add --no-cache git vips-dev dumb-init python3 make g++ chromium
 
+# Environment variables for Puppeteer
+ENV PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
