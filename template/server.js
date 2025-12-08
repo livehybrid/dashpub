@@ -1392,15 +1392,15 @@ app.get('/api/data/:dsid', rateLimit, async (req, res) => {
       datasource: {
         id: datasource.id,
         app: datasource.app,
-        query: datasource.search.query,
-        parameters: datasource.search.queryParameters || {}
+        // query: datasource.search.query,
+        // parameters: datasource.search.queryParameters || {}
       },
-      environment: {
-        splunkdUrl: process.env.SPLUNKD_URL,
-        splunkdUser: process.env.SPLUNKD_USER || 'admin',
-        hasToken: !!process.env.SPLUNKD_TOKEN,
-        hasPassword: !!process.env.SPLUNKD_PASSWORD
-      }
+      // environment: {
+      //   splunkdUrl: process.env.SPLUNKD_URL,
+      //   splunkdUser: process.env.SPLUNKD_USER || 'admin',
+      //   hasToken: !!process.env.SPLUNKD_TOKEN,
+      //   hasPassword: !!process.env.SPLUNKD_PASSWORD
+      // }
     };
     
     logger.error('Error executing Splunk search', errorContext);
@@ -1456,14 +1456,14 @@ app.get('/api/data/:dsid', rateLimit, async (req, res) => {
         errorCode: error.code,
         datasource: {
           app: datasource.app,
-          query: datasource.search.query,
-          parameters: datasource.search.queryParameters || {}
+          // query: datasource.search.query,
+          // parameters: datasource.search.queryParameters || {}
         },
-        environment: {
-          splunkdUrl: process.env.SPLUNKD_URL,
-          hasToken: !!process.env.SPLUNKD_TOKEN,
-          hasPassword: !!process.env.SPLUNKD_PASSWORD
-        }
+        // environment: {
+        //   splunkdUrl: process.env.SPLUNKD_URL,
+        //   hasToken: !!process.env.SPLUNKD_TOKEN,
+        //   hasPassword: !!process.env.SPLUNKD_PASSWORD
+        // }
       },
       suggestions: [
         'Check if Splunk is accessible and running',
