@@ -5,34 +5,12 @@ FROM node:25-alpine AS builder
 RUN apk add --no-cache git vips-dev python3 make g++
 
 
-
-# Update npm to latest and manually patch glob to fix vulnerabilities
-
-# Update npm to latest and manually patch glob to fix vulnerabilities
-
 # Update npm to latest and manually patch glob to fix vulnerabilities
 RUN npm install -g npm@latest && \
-    # Install safe glob in a temp directory
-    mkdir -p /tmp/glob-fix && \
-    cd /tmp/glob-fix && \
-    npm init -y && \
-    npm install glob@10.5.0 && \
-    # Replace glob in npm
-    rm -rf /usr/local/lib/node_modules/npm/node_modules/glob && \
-    cp -r node_modules/glob /usr/local/lib/node_modules/npm/node_modules/ && \
-    # Replace glob in node-gyp if it exists
-    if [ -d "/usr/local/lib/node_modules/npm/node_modules/node-gyp" ]; then \
-        rm -rf /usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/glob && \
-        cp -r node_modules/glob /usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/; \
-    fi && \
-    # Cleanup
-    cd / && \
-    rm -rf /tmp/glob-fix && \
-    npm --version
+    npm install -u -g glob
 
-
-
-
+RUN cd /usr/local/lib/node_modules/npm/node_modules/node-gyp/ && \
+    npm install -u glob
 
 # Copy source
 COPY . /build
