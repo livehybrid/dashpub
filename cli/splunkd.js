@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 const fetch = global.fetch;
-const { XmlDocument } = require('xmldoc');
+import { XmlDocument } from 'xmldoc';
 
 const qs = obj =>
     Object.entries(obj)
@@ -68,14 +68,19 @@ const loadDashboard = (
     name,
     app,
     { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token=process.env.SPLUNKD_TOKEN } = {}
-) =>
-    splunkd('GET', `/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`, {
-        url,
+) => {
+    console.log(`/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`);    
+    return splunkd('GET', `/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`, {
+        url,    
         username,
         password,
         token,
-    }).then(data => extractDashboardDefinition(data.entry[0].content['eai:data']));
-
+    }).then(
+        data => {
+            return extractDashboardDefinition(data.entry[0].content['eai:data']);
+        }
+    );
+}
 const listDashboards = async (
     app,
     { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN } = {}
@@ -95,7 +100,6 @@ const listDashboards = async (
             token,
         }
     );
-
     return res.entry
         .filter(entry => entry.acl.app === app)
         .map(entry => ({
@@ -157,12 +161,23 @@ async function validateAuth({ url, user, password }) {
     }
 }
 
-module.exports = {
+async function getSplunkdInfo() {
+    // Return splunkd connection info from environment variables
+    return {
+        url: process.env.SPLUNKD_URL,
+        username: process.env.SPLUNKD_USER,
+        password: process.env.SPLUNKD_PASSWORD,
+        token: process.env.SPLUNKD_TOKEN
+    };
+}
+
+export {
     splunkd,
     loadDashboard,
     listApps,
     listDashboards,
     validateAuth,
     getUsername,
+    getSplunkdInfo,
     qs,
 };

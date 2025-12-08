@@ -1,65 +1,73 @@
 import React from 'react';
-import Homepage from '../components/home';
-import Page from '../components/page';
+import Page from '../components/Page';
+import Home from '../components/home.jsx';
 import Link from '@splunk/react-ui/Link';
 import styled from 'styled-components';
 import useSplunkTheme from '@splunk/themes/useSplunkTheme';
+import { useConfig } from '../contexts/ConfigContext';
 import 'bootstrap/dist/css/bootstrap.css';
-import getScreenshotUrl from '../components/getScreenshotUrl';
 
-export async function getStaticProps() {
-    const screenshotUrl = getScreenshotUrl("index");
-    return {
-        props: {
-            screenshotUrl,
-        },
-    };
-}
+export default function HomePage() {
+  const { focusColor } = useSplunkTheme();
+  const { config, loading: configLoading, error: configError } = useConfig();
+  
+  const Footer = styled.p`
+    color: ${focusColor};
+    text-align: center;
+    padding-bottom: 50px;
+    font-size: 120%;
+    font-weight: bold;
+  `;
 
-export default function Home({ screenshotUrl }) {
-    const { focusColor } = useSplunkTheme();
-    const Footer = styled.p`
-        color: ${focusColor};
-        text-align: center;
-    `;
-
+  // Handle loading state
+  if (configLoading) {
     return (
-        <Page
-            title={process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards'}
-            theme={process.env.NEXT_PUBLIC_HOMETHEME || 'light'}
-            imageUrl={screenshotUrl}
-            baseUrl={process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null}>
-            <Homepage key="home" />
-            {process.env.NEXT_PUBLIC_DASHPUBFOOTER !== "false" ? (
-                <Footer>
-                    {process.env.NEXT_PUBLIC_DASHPUBFOOTER || "Hosted Splunk Dashboards"}
-                    {process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY ? (
-                        <>
-                            {" by "}
-                            <Link
-                                to={process.env.NEXT_PUBLIC_DASHPUBHOSTEDURL || '#'}
-                                openInNewContext=""
-                            >
-                                {process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY}
-                            </Link>{" "}
-                        </>
-                    ) : (
-                        " "
-                    )}
-                    using{" "}
-                    <Link
-                        to={
-                            process.env.NEXT_PUBLIC_DASHPUBREPO ||
-                            "https://github.com/splunk/dashpub"
-                        }
-                        openInNewContext=""
-                    >
-                        Dashpub
-                    </Link>
-                </Footer>
-            ) : (
-                ""
-            )}
-        </Page>
+      <Page title="Loading..." theme="light">
+        <div>Loading configuration...</div>
+      </Page>
     );
+  }
+
+  // Handle error state
+  if (configError) {
+    return (
+      <Page title="Error" theme="light">
+        <div>Error loading configuration: {configError}</div>
+      </Page>
+    );
+  }
+
+  return (
+    <Page 
+      title={config?.title || 'Dashboards'}
+      baseUrl={config?.baseUrl || null}
+      imageUrl={config?.homeScreenshot || null}
+    >
+      <Home />
+      {config?.footer !== "false" ? (
+        <Footer>
+          {config?.footer || "Hosted Splunk Dashboards"}
+          {config?.hostedBy ? (
+            <>
+              {" by "}
+              <Link
+                to={config?.hostedByUrl || '#'}
+                openInNewContext=""
+              >
+                {config?.hostedBy}
+              </Link>
+              {" "}
+            </>
+          ) : " "}
+          {"using "}
+          <Link
+            to={config?.repo || "https://github.com/splunk/dashpub"}
+            openInNewContext=""
+          >
+            Dashpub
+          </Link>
+        </Footer>
+      ) : null}
+    </Page>
+  );
 }

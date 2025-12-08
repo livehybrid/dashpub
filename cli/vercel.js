@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const prompts = require('./prompts');
-const { exec, Secret } = require('./exec');
-const fs = require('fs-extra');
-const path = require('path');
-const chalk = require('chalk');
-const { ux } = require('@oclif/core');
+import * as prompts from './prompts.js';
+import { exec, Secret } from './exec.js';
+import fs from 'fs-extra';
+import path from 'path';
+import chalk from 'chalk';
+import { ux } from '@oclif/core';
 
 const postInitInstructions = ({ folderName }) => chalk`
 
@@ -80,6 +80,4 @@ async function initVercelProject({ folderName, destFolder, splunkdUrl, splunkdUs
     console.log(postInitInstructions({ folderName }));
 }
 
-module.exports = {
-    initVercelProject,
-};
+export { initVercelProject };

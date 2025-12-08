@@ -11,3 +11,11 @@ services:
       DASHPUB_FOLDERNAME: "app"
       SPLUNKD_URL: "https://localhost:8089"
       SPLUNKD_TOKEN: **TopSecret**
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

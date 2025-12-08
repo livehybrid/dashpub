@@ -1,46 +1,64 @@
 {
-    "name": "package-name",
+    "name": "app",
     "private": true,
     "version": "1.0.0",
     "license": "UNLICENSED",
     "dependencies": {
-        "@babel/runtime": "^7.27.0",
-        "@splunk/dashboard-context": "29.0.0",
-        "@splunk/dashboard-core": "29.0.0",
-        "@splunk/dashboard-presets": "29.0.0",
-        "@splunk/datasource-utils": "29.0.0",
-        "@splunk/datasources": "29.0.0",
+        "@babel/runtime": "^7.28.4",
+        "@react-google-maps/api": "^2.19.2",
+        "@splunk/dashboard": "29.1.0",
+        "@splunk/dashboard-context": "29.1.0",
+        "@splunk/dashboard-core": "29.1.0",
+        "@splunk/dashboard-presets": "29.1.0",
+        "@splunk/datasource-utils": "29.1.0",
+        "@splunk/datasources": "29.1.0",
         "@splunk/react-icons": "5.2.0",
         "@splunk/react-ui": "5.2.0",
-        "@splunk/visualization-context": "28.0.0",
-        "bootstrap": "5.3.7",
-        "cookies-next": "5.1.0",
+        "@splunk/visualization-context": "28.1.0",
+        "bootstrap": "5.3.8",
+        "cookie-parser": "^1.4.7",
+        "cookies-next": "6.1.1",
+        "cors": "^2.8.5",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
-        "eslint-config-next": "15.4.6",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
         "fast-text-encoding": "1.0.6",
-        "jsonwebtoken": "9.0.2",
-        "next": "^15.4.6",
-        "next-transpile-modules": "^10.0.1",
+        "jsonwebtoken": "9.0.3",
         "null-loader": "^4.0.1",
-        "postcss": "8.5.3",
-        "query-string": "9.1.1",
+        "postcss": "8.5.6",
+        "query-string": "9.3.1",
         "querystring": "0.2.1",
         "react": "18.3.1",
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "18.3.1",
+        "react-icons": "*",
+        "react-resize-detector": "^12.3.0",
+        "react-router-dom": "^7.10.1",
+        "rxjs": "^7.8.2",
         "styled-components": "5.3.11",
-        "typescript": "^5.9.2"
+        "tinyglobby": "*",
+        "@vitejs/plugin-react": "^5.1.2",
+        "vite": "^7.2.7",
+        "vite-plugin-commonjs": "^0.10.4",
+        "vite-plugin-node-polyfills": "^0.24.0"
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
-        "eslint": "^9.33.0"
+        "@babel/preset-react": "^7.28.5",
+        "babel-plugin-styled-components": "^2.1.4",
+        "concurrently": "^9.2.0",
+        "css-loader": "^7.1.2",
+        "eslint": "^9.39.1",
+        "postcss-loader": "^8.2.0",
+        "puppeteer": "^24.32.1",
+        "style-loader": "^4.0.0"
     },
     "resolutions": {
         "@splunk/datasource-utils": "29.0.0",
         "@splunk/react-icons": "5.2.0",
         "decode-uri-component": "0.4.1",
-        "query-string": "9.1.1",
+        "query-string": "9.3.1",
         "regenerator-runtime": "0.14.0",
         "tslib": "2.6.2",
         "react-is": "16.13.1",
@@ -55,9 +73,13 @@
         "**/dompurify": "^3.2.4"
     },
     "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start"
+        "dev": "node node_modules/vite/bin/vite.js",
+        "build": "node node_modules/vite/bin/vite.js build",
+        "preview": "node node_modules/vite/bin/vite.js preview",
+        "setup": "npm install",
+        "server": "node server.js",
+        "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+        "start": "npm run build && npm run server"
     },
     "eslintConfig": {
         "env": {
@@ -67,8 +89,7 @@
             "src/node_modules"
         ],
         "extends": [
-            "eslint:recommended",
-            "next"
+            "eslint:recommended"
         ],
         "rules": {
             "react/display-name": "warn",

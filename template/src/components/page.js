@@ -15,20 +15,14 @@ limitations under the License.
 */
 
 import React, { useEffect } from 'react';
-import { createGlobalStyle } from 'styled-components';
-import Head from 'next/head';
 import { startAutoUpdateCheck } from '../autoupdate';
-import { SplunkThemeProvider, variables } from '@splunk/themes';
 import 'bootstrap/dist/css/bootstrap.css';
+import ClientOnly from './clientOnly';
 const TITLE_SUFFIX = 'Splunk Dashboard';
 
-const GlobalBackgroundStyle = createGlobalStyle`
-    html, body {
-        background-color: ${(props) => props.backgroundColor || variables.backgroundColor(props)};
-    }
-`;
-
 const fullUrl = (baseUrl, path) => {
+    console.log("baseUrl", baseUrl);
+    console.log("path", path);
     try {
         // Check if the path is already an absolute URL
         const url = new URL(path);
@@ -47,8 +41,6 @@ const fullUrl = (baseUrl, path) => {
 export default function Page({
     title,
     description,
-    theme = 'light',
-    backgroundColor,
     imageUrl,
     imageSize = { width: 700, height: 340 },
     baseUrl,
@@ -58,35 +50,47 @@ export default function Page({
         startAutoUpdateCheck();
     }, []);
 
-    return (
-        <>
-            <Head>
-                <title>{`${title} - ${TITLE_SUFFIX}`}</title>
-                {description && <meta name="description" content={description} />}
-                <meta name="author" content="Splunk" />
-                <meta property="og:title" content={`${title} - ${TITLE_SUFFIX}`} />
-                {description && <meta property="og:description" content={description} />}
-                {imageUrl != null && baseUrl != null && (
-                    <>
-                        <meta property="og:image" content={fullUrl(baseUrl, imageUrl)} />
-                        <meta property="og:image:width" content={imageSize.width} />
-                        <meta property="og:image:height" content={imageSize.height} />
-                    </>
-                )}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={`${title} - ${TITLE_SUFFIX}`} />
-                <meta name="twitter:creator" content="@Splunk" />
-                {imageUrl != null && baseUrl != null && (
-                    <>
-                        <meta property="twitter:image" content={fullUrl(baseUrl, imageUrl)} />
-                    </>
-                )}
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-            </Head>
-            <SplunkThemeProvider family="enterprise" colorScheme={theme}>
-                <GlobalBackgroundStyle backgroundColor={backgroundColor} />
-                {children}
-            </SplunkThemeProvider>
-        </>
-    );
+    // Update document head
+    useEffect(() => {
+        // Update title
+        document.title = `${title} - ${TITLE_SUFFIX}`;
+        
+        // Helper function to update or create meta tag
+        const updateMetaTag = (name, content, property = false) => {
+            const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+            let meta = document.querySelector(selector);
+            if (!meta) {
+                meta = document.createElement('meta');
+                if (property) {
+                    meta.setAttribute('property', name);
+                } else {
+                    meta.setAttribute('name', name);
+                }
+                document.head.appendChild(meta);
+            }
+            meta.setAttribute('content', content);
+        };
+
+        // Update meta tags
+        if (description) {
+            updateMetaTag('description', description);
+            updateMetaTag('og:description', description, true);
+        }
+        
+        updateMetaTag('author', 'Splunk');
+        updateMetaTag('og:title', `${title} - ${TITLE_SUFFIX}`, true);
+        updateMetaTag('twitter:card', 'summary_large_image');
+        updateMetaTag('twitter:title', `${title} - ${TITLE_SUFFIX}`);
+        updateMetaTag('twitter:creator', '@Splunk');
+        updateMetaTag('viewport', 'width=device-width, initial-scale=1');
+        // Handle image meta tags
+        if (imageUrl ) {
+            updateMetaTag('og:image', imageUrl, true);
+            updateMetaTag('og:image:width', imageSize.width, true);
+            updateMetaTag('og:image:height', imageSize.height, true);
+            updateMetaTag('twitter:image', imageUrl);
+        }
+    }, [title, description, imageUrl, imageSize, baseUrl]);
+
+    return children;
 }

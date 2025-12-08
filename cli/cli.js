@@ -16,12 +16,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const { initNewProject, generateDashboards } = require('./init');
-const { getPackageJson } = require('./pkgjson');
-const { ensureAuth, updatePassword } = require('./auth');
-const { takeDataSnapshot, clearSnapshot } = require('./snapshot');
+import { initNewProject, generateDashboards } from './init.js';
+import { getPackageJson } from './pkgjson.js';
+import { ensureAuth, updatePassword } from './auth.js';
+import { takeDataSnapshot, clearSnapshot } from './snapshot.js';
+import dotenv from 'dotenv';
 
-require('dotenv').config();
+dotenv.config();
 
 const usage = () => {
     console.error(`Usage: dashpub (init|update|auth|snapshot) [...options]`);
