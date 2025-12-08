@@ -41,7 +41,7 @@
         "xmldoc": "^2.0.2",
         "@react-google-maps/api": "^2.19.2",
         "node-addon-api": "^8.0.0",
-        "node-gyp": "^11.0.0",
+        "node-gyp": "^12.1.0",
         "react-icons": "*"
     },
     "resolutions": {
