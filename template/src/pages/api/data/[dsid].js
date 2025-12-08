@@ -68,7 +68,7 @@ const dataResp = async (req, res) => {
         }
 
         log('Executing search for data fn', id);
-        const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(process.env.SPLUNKD_USER)}/${encodeURIComponent(app)}`;
+        const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(process.env.SPLUNKD_USER || 'nobody')}/${encodeURIComponent(app)}`;
         const AUTH_HEADER = process.env.SPLUNKD_TOKEN
             ? `Bearer ${process.env.SPLUNKD_TOKEN}`
             : `Basic ${Buffer.from([process.env.SPLUNKD_USER, process.env.SPLUNKD_PASSWORD].join(':')).toString('base64')}`;

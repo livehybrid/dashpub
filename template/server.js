@@ -741,9 +741,44 @@ async function enhancedFetch(url, options = {}) {
   }
 }
 
+// Global variable to store the current Splunk user
+let CURRENT_SPLUNK_USER = process.env.SPLUNKD_USER || 'nobody';
+
+// Function to fetch current Splunk user
+async function fetchSplunkUser() {
+  try {
+    const AUTH_HEADER = process.env.SPLUNKD_TOKEN
+      ? `Bearer ${process.env.SPLUNKD_TOKEN}`
+      : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
+
+    const response = await enhancedFetch(`${process.env.SPLUNKD_URL}/services/authentication/current-context?output_mode=json`, {
+      headers: {
+        Authorization: AUTH_HEADER
+      },
+      agent: agent
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.entry && data.entry.length > 0) {
+        CURRENT_SPLUNK_USER = data.entry[0].content.username;
+        logger.info('Successfully fetched Splunk user', { user: CURRENT_SPLUNK_USER });
+      }
+    } else {
+      logger.warn('Failed to fetch Splunk user, using default', { status: response.status });
+    }
+  } catch (error) {
+    logger.warn('Error fetching Splunk user, using default', { error: error.message });
+  }
+}
+
+// Fetch user on startup
+fetchSplunkUser();
+
 // Function to execute Splunk search
 async function executeSplunkSearch(datasource) {
-  const { search, app } = datasource;
+  const { search } = datasource;
+  const app = datasource.app || process.env.DASHPUB_APP || 'search';
   let query = search.query;
   const refresh = Math.max(parseInt(process.env.MIN_REFRESH_TIME, 10) || 60, search.refresh || 60);
   
@@ -751,7 +786,7 @@ async function executeSplunkSearch(datasource) {
   const searchStartTime = Date.now();
   
   // Build service prefix and auth header
-  const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(process.env.SPLUNKD_USER || 'admin')}/${encodeURIComponent(app)}`;
+  const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(CURRENT_SPLUNK_USER)}/${encodeURIComponent(app)}`;
   const AUTH_HEADER = process.env.SPLUNKD_TOKEN
     ? `Bearer ${process.env.SPLUNKD_TOKEN}`
     : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
