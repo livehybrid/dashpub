@@ -20,7 +20,7 @@
         "eslint-config-next": "15.4.6",
         "fast-text-encoding": "1.0.6",
         "jsonwebtoken": "9.0.2",
-        "next": "^15.4.6",
+        "next": "15.4.8",
         "next-transpile-modules": "^10.0.1",
         "null-loader": "^4.0.1",
         "postcss": "8.5.3",
@@ -51,8 +51,10 @@
         "extend-shallow": "2.0.1",
         "**/d3-color": "^3.1.0",
         "**/postcss": "^8.4.31",
-        "**/jspdf": "^3.0.1",
-        "**/dompurify": "^3.2.4"
+        "**/jspdf": "3.0.2",
+        "**/dompurify": "^3.2.4",
+        "brace-expansion": "1.1.12",
+        "jws": "3.2.3"
     },
     "scripts": {
         "dev": "next dev",

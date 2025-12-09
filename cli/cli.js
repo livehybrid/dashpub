@@ -62,6 +62,6 @@ async function loadProject() {
 }
 
 main(process.argv.slice(2)).catch(e => {
-    console.error(e);
+    console.error("DEBUG: Main caught error:", e);
     process.exit(1);
 });
