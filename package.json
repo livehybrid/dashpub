@@ -64,7 +64,8 @@
     "scripts": {
         "update:license-report": "yarn licenses list > license_report.txt",
         "test:splunk": "node cli/test-splunk.js",
-        "test:template": "node cli/test-template.js"
+        "test:template": "node cli/test-template.js",
+        "test:e2e": "./scripts/run-e2e.sh"
     },
     "version": "0.0.1-alpha5",
     "dashpub": {

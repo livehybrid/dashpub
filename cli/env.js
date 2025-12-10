@@ -17,15 +17,33 @@ limitations under the License.
 import fs from 'fs-extra';
 import path from 'path';
 
-async function writeDotenv({ splunkdUrl, splunkdUser, splunkdPassword, splunkdToken }, { destFolder = process.cwd() } = {}) {
+async function writeDotenv({ url, username, password, token }, { destFolder = process.cwd() } = {}) {
     console.log('Writing splunkd credentials to .env');
+    
+    // Extract host and port from URL if available
+    let host = process.env.SPLUNKD_HOST || '';
+    let port = process.env.SPLUNKD_PORT || '8089';
+    
+    if (url) {
+        try {
+            const urlObj = new URL(url);
+            host = urlObj.hostname;
+            port = urlObj.port || '8089';
+        } catch (e) {
+            console.warn('Could not parse SPLUNKD_URL:', e.message);
+        }
+    }
+    
     await fs.writeFile(
         path.join(destFolder, '.env'),
         [
-            `SPLUNKD_URL=${splunkdUrl}`,
-            `SPLUNKD_USER=${splunkdUser}`,
-            `SPLUNKD_PASSWORD=${splunkdPassword}`,
-            `SPLUNKD_TOKEN=${splunkdToken}`,
+            `SPLUNKD_URL=${url || ''}`,
+            `SPLUNKD_HOST=${host}`,
+            `SPLUNKD_PORT=${port}`,
+            `SPLUNKD_USER=${username || ''}`,
+            `SPLUNKD_PASSWORD=${password || ''}`,
+            `SPLUNKD_TOKEN=${token || ''}`,
+            `NODE_TLS_REJECT_UNAUTHORIZED=${process.env.NODE_TLS_REJECT_UNAUTHORIZED || '1'}`,
             'BROWSER=none',
             '',
         ].join('\n'),

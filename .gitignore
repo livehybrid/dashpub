@@ -7,6 +7,9 @@
 
 # testing
 /coverage
+template/test-results
+template/playwright-report
+template/playwright/.cache
 
 # production
 /build

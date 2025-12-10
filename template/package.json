@@ -46,6 +46,7 @@
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
         "@babel/preset-react": "^7.28.5",
+        "@playwright/test": "^1.48.0",
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^9.2.0",
         "css-loader": "^7.1.2",
@@ -79,7 +80,10 @@
         "setup": "npm install",
         "server": "node server.js",
         "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
-        "start": "npm run build && npm run server"
+        "start": "npm run build && npm run server",
+        "test:e2e": "npx playwright test",
+        "test:e2e:ui": "npx playwright test --ui",
+        "test:e2e:debug": "npx playwright test --debug"
     },
     "eslintConfig": {
         "env": {
