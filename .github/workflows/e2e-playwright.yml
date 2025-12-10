@@ -85,6 +85,7 @@ jobs:
             fi
             attempt=$((attempt + 1))
             echo "Attempt $attempt/$max_attempts: Application not ready yet, waiting 5 seconds..."
+            docker logs --tail 10 dashpub-e2e
             sleep 5
           done
           echo "Application failed to become ready after $max_attempts attempts"
@@ -131,7 +132,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dashboard-screenshots
-          path: app/test-results/**/*.png
+          path: test-results/**/*.png
           retention-days: 30
 
       # Cleanup
