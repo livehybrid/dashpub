@@ -104,6 +104,7 @@ jobs:
           SPLUNKD_PORT: ${{ secrets.SPLUNKD_PORT }}
           SPLUNKD_TOKEN: ${{ secrets.SPLUNKD_TOKEN }}
           SPLUNKD_URL: ${{ secrets.SPLUNKD_URL }}
+          SPLUNKD_APP: ${{ secrets.DASHPUB_APP || 'search' }}
           TEST_DASHBOARD_ID: ${{ secrets.TEST_DASHBOARD_ID || 'highlevel' }}
 
       # Upload test artifacts (screenshots, videos, HTML report)
