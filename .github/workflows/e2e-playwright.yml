@@ -1,10 +1,13 @@
 name: E2E Playwright Tests
 
 on:
-  pull_request:
-    branches: [main, master]
   push:
-    branches: [main, master]
+    branches:
+      - develop
+      - ws-*
+      - main
+      - master
+      - dependabot/*
   workflow_dispatch: # Allow manual triggering
 
 jobs:
@@ -47,7 +50,7 @@ jobs:
           # Additional environment variables for dashpub
           DASHPUB_VERCEL: "n"
           DASHPUB_APP: ${{ secrets.DASHPUB_APP || 'search' }}
-          DASHPUB_DASHBOARDS: ${{ secrets.DASHPUB_DASHBOARDS || 'splunk_answers' }}
+          DASHPUB_DASHBOARDS: ${{ secrets.DASHPUB_DASHBOARDS || 'highlevel' }}
           DASHPUB_PROJECTNAME: "app"
           DASHPUB_FOLDERNAME: "app"
         run: |
@@ -103,7 +106,8 @@ jobs:
           SPLUNKD_URL: ${{ secrets.SPLUNKD_URL }}
           TEST_DASHBOARD_ID: ${{ secrets.TEST_DASHBOARD_ID || 'highlevel' }}
 
-      - name: Upload Playwright test results
+      # Upload test artifacts (screenshots, videos, HTML report)
+      - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -112,16 +116,18 @@ jobs:
             template/playwright-report/
             template/test-results/
           retention-days: 30
-
-      - name: Upload Playwright traces
-        if: failure()
+          
+      # Upload specific screenshots for easy access
+      - name: Upload Dashboard Screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces
-          path: template/test-results/
-          retention-days: 7
+          name: dashboard-screenshots
+          path: template/test-results/**/*.png
+          retention-days: 30
 
-      - name: Stop and remove Docker container
+      # Cleanup
+      - name: Stop and Remove Container
         if: always()
         run: |
           docker stop dashpub-e2e || true
@@ -131,4 +137,3 @@ jobs:
         if: always()
         run: |
           docker rmi dashpub-e2e || true
-
