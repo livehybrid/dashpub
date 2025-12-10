@@ -29,7 +29,7 @@ export default defineConfig({
   
   // Shared settings for all projects
   use: {
-    baseURL: 'http://127.0.0.1:3001',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:3001',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -56,8 +56,8 @@ export default defineConfig({
     }]),
   ],
 
-  // Web server configuration
-  webServer: {
+  // Web server configuration - disabled in CI when testing against Docker
+  webServer: process.env.CI && process.env.PLAYWRIGHT_SKIP_WEBSERVER ? undefined : {
     command: 'npm run start',
     url: 'http://127.0.0.1:3001',
     reuseExistingServer: !process.env.CI,
