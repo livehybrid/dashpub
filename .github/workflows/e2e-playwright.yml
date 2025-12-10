@@ -1,0 +1,152 @@
+name: E2E Playwright Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - ws-*
+      - main
+      - master
+      - dependabot/*
+  pull_request:
+    branches:
+      - develop
+      - main
+      - master
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  e2e-tests:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: ./template
+        run: npm ci
+
+      - name: Build Vite application
+        working-directory: ./template
+        run: npm run build
+        env:
+          # Non-sensitive build-time variables
+          NODE_ENV: production
+
+      - name: Build Docker image
+        run: |
+          docker build -t dashpub-e2e -f docker/Dockerfile .
+
+      - name: Start Docker container
+        env:
+          SPLUNKD_HOST: ${{ secrets.SPLUNKD_HOST }}
+          SPLUNKD_PORT: ${{ vars.SPLUNKD_PORT || '8089' }}
+          SPLUNKD_TOKEN: ${{ secrets.SPLUNKD_TOKEN }}
+          SPLUNKD_URL: ${{ secrets.SPLUNKD_URL }}
+          # Additional environment variables for dashpub
+          DASHPUB_VERCEL: "n"
+          DASHPUB_APP: ${{ vars.DASHPUB_APP || 'search' }}
+          DASHPUB_DASHBOARDS: ${{ vars.DASHPUB_DASHBOARDS || 'highlevel' }}
+          DASHPUB_PROJECTNAME: "app"
+          DASHPUB_FOLDERNAME: "app"
+        run: |
+          # Construct SPLUNKD_URL if not provided
+          if [ -z "$SPLUNKD_URL" ] && [ -n "$SPLUNKD_HOST" ] && [ -n "$SPLUNKD_PORT" ]; then
+            SPLUNKD_URL="https://${SPLUNKD_HOST}:${SPLUNKD_PORT}"
+          fi
+          
+          docker run -d \
+            --name dashpub-e2e \
+            -p 3000:3000 \
+            -e SPLUNKD_HOST="$SPLUNKD_HOST" \
+            -e SPLUNKD_PORT="$SPLUNKD_PORT" \
+            -e SPLUNKD_TOKEN="$SPLUNKD_TOKEN" \
+            -e SPLUNKD_URL="$SPLUNKD_URL" \
+            -e DASHPUB_VERCEL="$DASHPUB_VERCEL" \
+            -e DASHPUB_APP="$DASHPUB_APP" \
+            -e DASHPUB_DASHBOARDS="$DASHPUB_DASHBOARDS" \
+            -e DASHPUB_PROJECTNAME="$DASHPUB_PROJECTNAME" \
+            -e DASHPUB_FOLDERNAME="$DASHPUB_FOLDERNAME" \
+            dashpub-e2e
+
+      - name: Wait for container to be healthy
+        run: |
+          echo "Waiting for application to be ready..."
+          max_attempts=60
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f http://127.0.0.1:3000/health > /dev/null 2>&1; then
+              echo "Application is ready!"
+              exit 0
+            fi
+            attempt=$((attempt + 1))
+            echo "Attempt $attempt/$max_attempts: Application not ready yet, waiting 5 seconds..."
+            docker logs --tail 10 dashpub-e2e
+            sleep 5
+          done
+          echo "Application failed to become ready after $max_attempts attempts"
+          echo "=== Container Logs ==="
+          docker logs dashpub-e2e
+          exit 1
+
+
+      - name: Install Playwright browsers
+        working-directory: ./template
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests against Docker container
+        working-directory: ./template
+        run: npx playwright test
+        env:
+          CI: true
+          # Disable webServer and point to Docker container
+          PLAYWRIGHT_SKIP_WEBSERVER: "true"
+          # Override baseURL to point to Docker container on port 3000
+          BASE_URL: http://127.0.0.1:3000
+          # Pass Splunk config to tests via environment
+          SPLUNKD_HOST: ${{ secrets.SPLUNKD_HOST }}
+          SPLUNKD_PORT: ${{ vars.SPLUNKD_PORT }}
+          SPLUNKD_TOKEN: ${{ secrets.SPLUNKD_TOKEN }}
+          SPLUNKD_URL: ${{ secrets.SPLUNKD_URL }}
+          TEST_DASHBOARD_ID: ${{ vars.TEST_DASHBOARD_ID || 'highlevel' }}
+
+      # Upload test artifacts (screenshots, videos, HTML report)
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            template/playwright-report/
+            template/test-results/
+          retention-days: 30
+          
+      # Upload specific screenshots for easy access
+      - name: Upload Dashboard Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-screenshots
+          path: template/test-results/**/*.png
+          retention-days: 30
+
+      # Cleanup
+      - name: Stop and Remove Container
+        if: always()
+        run: |
+          docker stop dashpub-e2e || true
+          docker rm dashpub-e2e || true
+
+      - name: Clean up Docker image
+        if: always()
+        run: |
+          docker rmi dashpub-e2e || true

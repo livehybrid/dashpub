@@ -7,6 +7,9 @@
 
 # testing
 /coverage
+template/test-results
+template/playwright-report
+template/playwright/.cache
 
 # production
 /build
@@ -27,3 +30,9 @@ yarn-error.log*
 custom_components
 TODO.md
 template/node_modules
+template/.env.test
+template/.github/
+template/dist/
+template/logs/
+test-app-e2e/
+app/
