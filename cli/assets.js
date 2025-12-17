@@ -24,6 +24,27 @@ import path from 'path';
 const fetch = global.fetch;
 import 'dotenv/config';
 
+/**
+ * Builds the Splunk UI URL from the REST API URL
+ * Static assets are served on the UI port (default 8000, or from SPLUNKD_UI_PORT env var)
+ */
+function getSplunkUIUrl(splunkdInfo) {
+    const uiPort = process.env.SPLUNKD_UI_PORT || '8000';
+    
+    if (!splunkdInfo.url) {
+        throw new Error('SPLUNKD_URL is required to fetch static assets');
+    }
+    
+    try {
+        const urlObj = new URL(splunkdInfo.url);
+        // Replace the port with the UI port
+        urlObj.port = uiPort;
+        return urlObj.toString();
+    } catch (e) {
+        throw new Error(`Invalid SPLUNKD_URL format: ${splunkdInfo.url}`);
+    }
+}
+
 function shortHash(buffer) {
     const h = crypto.createHash('sha256');
     h.write(buffer);
@@ -125,6 +146,64 @@ async function downloadImage(src, assetType, splunkdInfo, projectDir) {
         seenImages[src] = newUri;
         return newUri;
     }
+    
+    // Handle static paths (e.g., /static/app/...)
+    // Static assets are served on the UI port, not the REST API port
+    if (src.startsWith('/static/') || (src.startsWith('/') && !src.includes('://'))) {
+        const uiUrl = getSplunkUIUrl(splunkdInfo);
+        // Ensure no double slashes (remove trailing slash from uiUrl if present)
+        const baseUrl = uiUrl.replace(/\/$/, '');
+        const fullUrl = `${baseUrl}${src}`;
+        
+        // Build auth header for UI requests
+        const AUTH_HEADER = splunkdInfo.token 
+            ? `Bearer ${splunkdInfo.token}` 
+            : `Basic ${Buffer.from([splunkdInfo.username, splunkdInfo.password].join(':')).toString('base64')}`;
+        
+        const res = await fetch(fullUrl, {
+            method: 'GET',
+            headers: {
+                Authorization: AUTH_HEADER
+            }
+        });
+        
+        if (res.status > 299) {
+            throw new Error(`Failed to fetch static asset ${src}: HTTP ${res.status}`);
+        }
+        
+        const data = await streamToBuffer(res.body);
+        
+        // Determine MIME type from Content-Type header or file extension
+        let mimeType = res.headers.get('Content-Type');
+        if (!mimeType) {
+            const ext = path.extname(src).toLowerCase();
+            const mimeMap = {
+                '.png': 'image/png',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.gif': 'image/gif',
+                '.svg': 'image/svg+xml',
+                '.webp': 'image/webp'
+            };
+            mimeType = mimeMap[ext] || 'image/png';
+        }
+        
+        const orig_filename = path.basename(src);
+        const filename = await nameAndStoreImage(data, mimeType, { name: orig_filename.replace(/\.[^/.]+$/, ''), projectDir });
+        
+        // If the DASHPUB_FQDN env is set and its an SVG then return the link with FQDN prepended
+        if (process.env.DASHPUB_FQDN && mimeType === 'image/svg+xml') {
+            var newUri = `${process.env.DASHPUB_FQDN}/assets/${filename}`;
+        } else if (mimeType === 'image/svg+xml') {
+            const base64SVG = data.toString('base64');
+            var newUri = `data:image/svg+xml;base64,${base64SVG}`;
+        } else {
+            var newUri = `/assets/${filename}`;
+        }
+        seenImages[src] = newUri;
+        return newUri;
+    }
+    
     const [type, id] = src.split('://');
 
     if (type === 'https' || type === 'http') {

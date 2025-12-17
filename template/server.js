@@ -520,6 +520,18 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Serve assets directory
+const assetsPath = path.join(__dirname, 'public', 'assets');
+if (fs.existsSync(assetsPath)) {
+  app.use('/assets', express.static(assetsPath));
+  logger.info(`Serving assets from: ${assetsPath} at /assets`);
+} else {
+  // Create assets directory if it doesn't exist
+  fs.mkdirSync(assetsPath, { recursive: true });
+  app.use('/assets', express.static(assetsPath));
+  logger.info(`Created and serving assets directory: ${assetsPath} at /assets`);
+}
+
 // Serve screenshots directory if screenshots are enabled
 if (process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS) {
   const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'screenshots';
@@ -880,20 +892,25 @@ async function executeSplunkSearch(datasource) {
   const resultsTime = Date.now() - resultsStartTime;
   const totalSearchTime = Date.now() - searchStartTime;
   
+  // Handle empty results gracefully
+  const fields = resultsResponse.fields || [];
+  const columns = resultsResponse.columns || [];
+  const recordCount = columns.length > 0 && columns[0] ? columns[0].length : 0;
+  
   logger.info('Search results retrieved successfully', { 
     datasourceId: datasource.id, 
-    recordCount: resultsResponse.columns ? resultsResponse.columns[0].length : 0,
+    recordCount: recordCount,
     timing: { dispatch: dispatchTime, wait: waitTime, results: resultsTime, total: totalSearchTime }
   });
   
   return {
-    fields: resultsResponse.fields || [],
-    columns: resultsResponse.columns || [],
+    fields: fields,
+    columns: columns,
     meta: {
       sid: sid,
       percentComplete: 100,
       status: 'done',
-      totalCount: resultsResponse.columns ? resultsResponse.columns[0].length : 0,
+      totalCount: recordCount,
       lastUpdated: new Date().toISOString(),
       timing: {
         dispatch: dispatchTime,
