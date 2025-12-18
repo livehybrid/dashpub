@@ -103,7 +103,6 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
             );
        }
     }
-
     const dir = path.join(projectFolder, 'src/dashboards', targetName);
     await mkdirp(dir);
     await writeFile(path.join(dir, 'definition.json'), Buffer.from(JSON.stringify(newDash, null, 2), 'utf-8'));
