@@ -7,6 +7,33 @@ const cookieParser = require('cookie-parser');
 // Load environment variables from .env file
 require('dotenv').config();
 
+// Normalize environment variables: map Docker-style DASHPUB_* to NEXT_PUBLIC_* if not already set
+// This allows the same .env file to work for both Docker and local development
+function normalizeEnvVars() {
+  const mappings = {
+    'DASHPUB_TITLE': 'NEXT_PUBLIC_DASHPUBTITLE',
+    'DASHPUB_SCREENSHOT_DIR': 'NEXT_PUBLIC_DASHPUBSCREENSHOTDIR',
+    'DASHPUB_SCREENSHOT_EXT': 'NEXT_PUBLIC_DASHPUBSCREENSHOTEXT',
+    'DASHPUB_SCREENSHOTS': 'NEXT_PUBLIC_DASHPUBSCREENSHOTS',
+    'DASHPUB_THEME': 'NEXT_PUBLIC_HOMETHEME',
+    'DASHPUB_HOSTEDBY_NAME': 'NEXT_PUBLIC_DASHPUBHOSTEDBY',
+    'DASHPUB_HOSTEDBY_URL': 'NEXT_PUBLIC_DASHPUBHOSTEDURL',
+    'DASHPUB_FOOTER': 'NEXT_PUBLIC_DASHPUBFOOTER',
+    'DASHPUB_REPO': 'NEXT_PUBLIC_DASHPUBREPO',
+    'VERCEL_URL': 'NEXT_PUBLIC_URL',
+    'DASHPUB_BASE_SCREENSHOT_URL': 'NEXT_PUBLIC_BASE_SCREENSHOT_URL'
+  };
+  
+  for (const [dockerVar, nextPublicVar] of Object.entries(mappings)) {
+    if (process.env[dockerVar] && !process.env[nextPublicVar]) {
+      process.env[nextPublicVar] = process.env[dockerVar];
+    }
+  }
+}
+
+// Apply normalization
+normalizeEnvVars();
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -533,8 +560,13 @@ if (fs.existsSync(assetsPath)) {
 }
 
 // Serve screenshots directory if screenshots are enabled
-if (process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS) {
-  const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'screenshots';
+// Check both Docker-style and NEXT_PUBLIC_* variables
+const screenshotsEnabled = process.env.DASHPUB_SCREENSHOTS === 'true' || 
+                          process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS === 'true';
+if (screenshotsEnabled) {
+  const screenshotDir = process.env.DASHPUB_SCREENSHOT_DIR || 
+                       process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 
+                       'screenshots';
   const screenshotPath = path.join(__dirname, screenshotDir);
   
   // Create screenshots directory if it doesn't exist
@@ -925,26 +957,37 @@ async function executeSplunkSearch(datasource) {
 // Configuration endpoint for client-side settings
 app.get('/api/config', (req, res) => {
   try {
-    const baseUrl = process.env.DASHPUB_URL || process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost';
-    const screenshotBaseUrl = process.env.DASHPUB_BASE_SCREENSHOT_URL || process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || '';
+    const baseUrl = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 
+                    process.env.DASHPUB_URL || 
+                    'http://localhost';
     
-    // Generate home screenshot hash from baseUrl
-    const homeScreenshotHash = require('crypto').createHash("sha256").update(baseUrl).digest("hex").substring(0, 32);
+    // Determine if screenshots are enabled (check for 'true' string or boolean)
+    const screenshotsEnabled = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS === 'true' || 
+                                process.env.DASHPUB_SCREENSHOTS === 'true';
+    
+    // Use explicit baseUrl if provided, otherwise leave empty (will use dashboard names instead of hashes)
+    const screenshotBaseUrl = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || 
+                              process.env.DASHPUB_BASE_SCREENSHOT_URL || 
+                              '';
+    
+    // Generate home screenshot - use 'home' instead of hash
+    // If screenshotBaseUrl is empty, use relative path with 'home' name
     const homeScreenshot = screenshotBaseUrl ? 
-      `${screenshotBaseUrl}/screenshots/${homeScreenshotHash}.jpg` : null;
+      `${screenshotBaseUrl}/screenshots/home.jpg` : 
+      (screenshotsEnabled ? '/screenshots/home.jpg' : null);
     
     const config = {
-      title: process.env.DASHPUB_TITLE || process.env.NEXT_PUBLIC_DASHPUBTITLE || 'Dashboards',
-      theme: process.env.DASHPUB_THEME || process.env.NEXT_PUBLIC_HOMETHEME || 'light',
-      footer: process.env.DASHPUB_FOOTER || process.env.NEXT_PUBLIC_DASHPUBFOOTER || 'Hosted Splunk Dashboards',
-      hostedBy: process.env.DASHPUB_HOSTEDBY_NAME || process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY || '',
-      hostedByUrl: process.env.DASHPUB_HOSTEDBY_URL || process.env.NEXT_PUBLIC_DASHPUBHOSTEDURL || '#',
-      repo: process.env.DASHPUB_REPO || process.env.NEXT_PUBLIC_DASHPUBREPO || '',
+      title: process.env.NEXT_PUBLIC_DASHPUBTITLE || process.env.DASHPUB_TITLE || 'Dashboards',
+      theme: process.env.NEXT_PUBLIC_HOMETHEME || process.env.DASHPUB_THEME || 'light',
+      footer: process.env.NEXT_PUBLIC_DASHPUBFOOTER || process.env.DASHPUB_FOOTER || 'Hosted Splunk Dashboards',
+      hostedBy: process.env.NEXT_PUBLIC_DASHPUBHOSTEDBY || process.env.DASHPUB_HOSTEDBY_NAME || '',
+      hostedByUrl: process.env.NEXT_PUBLIC_DASHPUBHOSTEDURL || process.env.DASHPUB_HOSTEDBY_URL || '#',
+      repo: process.env.NEXT_PUBLIC_DASHPUBREPO || process.env.DASHPUB_REPO || '',
       screenshots: {
-        enabled: process.env.DASHPUB_SCREENSHOTS || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS  || 'false',
+        enabled: screenshotsEnabled,
         baseUrl: screenshotBaseUrl,
-        dir: process.env.DASHPUB_SCREENSHOTDIR || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 'screenshots',
-        ext: process.env.DASHPUB_SCREENSHOTEXT || process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 'png'
+        dir: process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || process.env.DASHPUB_SCREENSHOT_DIR || 'screenshots',
+        ext: process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || process.env.DASHPUB_SCREENSHOT_EXT || 'png'
       },
       baseUrl: baseUrl,
       homeScreenshot: homeScreenshot,
@@ -1135,6 +1178,20 @@ app.get('/api/dashboards/manifest', rateLimit, async (req, res) => {
     
     // Generate screenshot hashes for each dashboard
     const baseUrl = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 'http://localhost';
+    
+    // Determine if screenshots are enabled and get baseUrl
+    const screenshotsEnabled = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS === 'true' || 
+                                process.env.DASHPUB_SCREENSHOTS === 'true';
+    const screenshotBaseUrl = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || 
+                              process.env.DASHPUB_BASE_SCREENSHOT_URL || 
+                              '';
+    const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 
+                         process.env.DASHPUB_SCREENSHOT_DIR || 
+                         'screenshots';
+    const screenshotExt = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 
+                         process.env.DASHPUB_SCREENSHOT_EXT || 
+                         'png';
+    
     const enhancedManifest = {};
     
     for (const [dashboardId, dashboardData] of Object.entries(dashboardManifest)) {
@@ -1142,11 +1199,33 @@ app.get('/api/dashboards/manifest', rateLimit, async (req, res) => {
       const dashboardURL = `${baseUrl}/${adjustedDashboardKey}`;
       const hash = require('crypto').createHash("sha256").update(dashboardURL).digest("hex").substring(0, 32);
       
+      // Determine screenshot filename:
+      // - If screenshotBaseUrl is empty, use dashboard name (or 'home' for index)
+      // - If screenshotBaseUrl is set, use hash for consistency
+      let screenshotFilename;
+      if (!screenshotBaseUrl || screenshotBaseUrl === '') {
+        // Use dashboard name when baseUrl is empty
+        screenshotFilename = dashboardId === "index" ? "home" : dashboardId;
+      } else {
+        // Use hash when baseUrl is set
+        screenshotFilename = hash;
+      }
+      
+      // Build screenshot URL
+      let screenshotUrl = null;
+      if (screenshotsEnabled) {
+        if (screenshotBaseUrl && screenshotBaseUrl !== '') {
+          screenshotUrl = `${screenshotBaseUrl}/${screenshotDir}/${screenshotFilename}.${screenshotExt}`;
+        } else {
+          // Relative path when baseUrl is empty
+          screenshotUrl = `/${screenshotDir}/${screenshotFilename}.${screenshotExt}`;
+        }
+      }
+      
       enhancedManifest[dashboardId] = {
         ...dashboardData,
         screenshotHash: hash,
-        screenshotUrl: process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL ? 
-          `${process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL}/screenshots/${hash}.jpg` : null
+        screenshotUrl: screenshotUrl
       };
     }
     
@@ -1161,7 +1240,7 @@ app.get('/api/dashboards/manifest', rateLimit, async (req, res) => {
         lastUpdated: new Date().toISOString(),
         version: '1.0.0',
         baseUrl: baseUrl,
-        screenshotBaseUrl: process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL
+        screenshotBaseUrl: screenshotBaseUrl
       }
     });
     
@@ -1931,12 +2010,45 @@ app.get('/api/dashboards/:slug/definition', (req, res) => {
     const dashboardURL = `${baseUrl}/${slug}`;
     const screenshotHash = require('crypto').createHash("sha256").update(dashboardURL).digest("hex").substring(0, 32);
     
+    // Determine if screenshots are enabled and get baseUrl
+    const screenshotsEnabled = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS === 'true' || 
+                                process.env.DASHPUB_SCREENSHOTS === 'true';
+    const screenshotBaseUrl = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || 
+                              process.env.DASHPUB_BASE_SCREENSHOT_URL || 
+                              '';
+    const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 
+                         process.env.DASHPUB_SCREENSHOT_DIR || 
+                         'screenshots';
+    const screenshotExt = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 
+                         process.env.DASHPUB_SCREENSHOT_EXT || 
+                         'png';
+    
+    // Determine screenshot filename:
+    // - If screenshotBaseUrl is empty, use dashboard slug
+    // - If screenshotBaseUrl is set, use hash for consistency
+    let screenshotFilename;
+    if (!screenshotBaseUrl || screenshotBaseUrl === '') {
+      screenshotFilename = slug || 'home';
+    } else {
+      screenshotFilename = screenshotHash;
+    }
+    
+    // Build screenshot URL
+    let screenshotUrl = null;
+    if (screenshotsEnabled) {
+      if (screenshotBaseUrl && screenshotBaseUrl !== '') {
+        screenshotUrl = `${screenshotBaseUrl}/${screenshotDir}/${screenshotFilename}.${screenshotExt}`;
+      } else {
+        // Relative path when baseUrl is empty
+        screenshotUrl = `/${screenshotDir}/${screenshotFilename}.${screenshotExt}`;
+      }
+    }
+    
     // Add metadata for API response
     const enhancedDefinition = {
       ...dashboardDefinition,
       screenshotHash,
-      screenshotUrl: process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL ? 
-        `${process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL}/screenshots/${screenshotHash}.jpg` : null,
+      screenshotUrl: screenshotUrl,
       _metadata: {
         slug,
         lastModified: fs.statSync(dashboardPath).mtime.toISOString(),
