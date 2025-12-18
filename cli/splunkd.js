@@ -28,6 +28,7 @@ const splunkd = (
     { body, url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token= process.env.SPLUNKD_TOKEN } = {},
     returnJson = true
 ) => {
+    console.log(`${url}${path}`);
     const AUTH_HEADER = token ? `Bearer ${token}` : `Basic ${Buffer.from([username, password].join(':')).toString('base64')}`;
     return fetch(`${url}${path}`, {
         method,
@@ -162,12 +163,36 @@ async function validateAuth({ url, user, password }) {
 }
 
 async function getSplunkdInfo() {
-    // Return splunkd connection info from environment variables
+    // Build SPLUNKD_URL if not provided
+    let url = process.env.SPLUNKD_URL;
+    if (!url && process.env.SPLUNKD_HOST) {
+        const host = process.env.SPLUNKD_HOST;
+        const port = process.env.SPLUNKD_PORT || '8089';
+        const protocol = process.env.SPLUNKD_PROTOCOL || 'https';
+        url = `${protocol}://${host}:${port}`;
+        console.log(`Constructed SPLUNKD_URL from components: ${url}`);
+    }
+
+    // Get username - either from env or fetch from API using token
+    let username = process.env.SPLUNKD_USER;
+    const token = process.env.SPLUNKD_TOKEN;
+    
+    if (!username && token && url) {
+        console.log('SPLUNKD_USER not provided, fetching from Splunk API...');
+        try {
+            username = await getUsername({ url, token });
+            console.log(`Fetched username from Splunk: ${username}`);
+        } catch (error) {
+            console.warn('Failed to fetch username from Splunk API:', error.message);
+            // username remains undefined
+        }
+    }
+
     return {
-        url: process.env.SPLUNKD_URL,
-        username: process.env.SPLUNKD_USER,
+        url,
+        username,
         password: process.env.SPLUNKD_PASSWORD,
-        token: process.env.SPLUNKD_TOKEN
+        token
     };
 }
 

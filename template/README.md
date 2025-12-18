@@ -657,6 +657,8 @@ SPLUNKD_URL=https://your-splunk-instance:8089
 SPLUNKD_USER=admin
 SPLUNKD_PASSWORD=your_password
 SPLUNKD_TOKEN=your_api_token
+SPLUNKD_UI_PORT=8000  # Port for Splunk UI (default: 8000). Used when building dashboards to fetch static assets.
+SPLUNKD_LOCALE=en-US  # Locale for Splunk UI (default: en-US). Used when constructing URLs for static assets (e.g., /en-US/static/...). Only needed if your Splunk instance uses a different locale.
 
 # Performance & Caching
 CACHE_CLEANUP_INTERVAL=300

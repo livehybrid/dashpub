@@ -1,3 +1,5 @@
+[![GitHub Release](https://img.shields.io/github/release/livehybrid/dashpub.svg?logo=github)](https://github.com/livehybrid/dashpub/releases)
+[![Docker Downloads](https://img.shields.io/docker/pulls/livehybrid/splunk-dashpub?logo=docker&label=docker%20pulls%20%2F%20livehybrid/splunk-dashpub)](https://hub.docker.com/r/livehybrid/splunk-dashpub)
 # Splunk Dashboard System
 
 A modern, high-performance dashboard system built with Node.js, Express, React, and Vite, designed to display Splunk data with real-time updates, caching, and comprehensive visualization support.  
@@ -657,6 +659,8 @@ SPLUNKD_URL=https://your-splunk-instance:8089
 SPLUNKD_USER=admin
 SPLUNKD_PASSWORD=your_password
 SPLUNKD_TOKEN=your_api_token
+SPLUNKD_UI_PORT=8000  # Port for Splunk UI (default: 8000). Used when building dashboards to fetch static assets.
+SPLUNKD_LOCALE=en-US  # Locale for Splunk UI (default: en-US). Used when constructing URLs for static assets (e.g., /en-US/static/...). Only needed if your Splunk instance uses a different locale.
 
 # Performance & Caching
 CACHE_CLEANUP_INTERVAL=300

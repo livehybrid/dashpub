@@ -56,12 +56,22 @@ export default function DashboardPage({ baseUrl }) {
                 }
                 
                 // Second priority: construct URL from config if screenshots are enabled
-                if (config?.screenshots?.enabled && config?.screenshots?.baseUrl) {
-                    const baseUrl = config.screenshots.baseUrl;
+                if (config?.screenshots?.enabled) {
+                    const baseUrl = config.screenshots.baseUrl || '';
                     const dir = config.screenshots.dir || 'screenshots';
                     const ext = config.screenshots.ext || 'jpg';
-                    const hash = definition?.screenshotHash || dashboard; // Use actual hash from definition
-                    return `${baseUrl}/${dir}/${hash}.${ext}`;
+                    
+                    // If baseUrl is empty, use dashboard name; otherwise use hash
+                    const filename = (!baseUrl || baseUrl === '') 
+                        ? dashboard 
+                        : (definition?.screenshotHash || dashboard);
+                    
+                    if (baseUrl && baseUrl !== '') {
+                        return `${baseUrl}/${dir}/${filename}.${ext}`;
+                    } else {
+                        // Relative path when baseUrl is empty
+                        return `/${dir}/${filename}.${ext}`;
+                    }
                 }
                 
                 // Fallback: hardcoded path

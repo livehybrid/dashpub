@@ -42,9 +42,15 @@ export default function DashboardContainer() {
 `;
 
 async function generateDashboard({ name, targetName = name, app, projectFolder, dashboardTags=[] }, splunkdInfo) {
-    const dash = await loadDashboard(name, app, splunkdInfo);
-    const [dsManifest, newDash] = await generateCdnDataSources(dash, app, projectFolder);
+    console.log("GenerateDashboard " + name);
+    try {
+        const dash = await loadDashboard(name, app, splunkdInfo);
+        console.log("Loaded dashboard " + name);
+        console.log("Generating CDN data sources for " + name);
+        const [dsManifest, newDash] = await generateCdnDataSources(dash, app, projectFolder);
+        console.log("Generated data sources for dashboard " + name);
     for (const viz of Object.values(newDash.visualizations || {})) {
+        console.log("Processing visualization: " + (viz.id || viz.type));
         try {
             if (viz.type === 'viz.singlevalueicon') {
                 viz.options.icon = await downloadImage(viz.options.icon, 'icons', splunkdInfo, projectFolder);
@@ -82,9 +88,10 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
             console.error(`Failed to download image ${viz.options.icon || viz.options.src}`, e);
         }
     }
+
     if (newDash.layout && newDash.layout.options && newDash.layout.options.backgroundImage) {
         if (newDash.layout.options.backgroundImage.src.match(/\$.*\$/g) )
-             console.log(`Skipping image download due to token ${viz.options.src}`)
+             console.log(`Skipping image download due to token ${newDash.layout.options.backgroundImage.src}`)
         else if (newDash.layout.options.backgroundImage.src.startsWith("data:image")) {
             console.log("Skipping because image is embedded as string")
         } else {
@@ -102,15 +109,22 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
     await writeFile(path.join(dir, 'index.js'), COMPONENT_CODE, 'utf-8');
 
     return [dsManifest, { [name]: {"title": newDash.title, "tags":dashboardTags} }];
+    } catch (error) {
+        console.error(`Error in generateDashboard for ${name}:`, error);
+        throw error;
+    }
 }
 
 async function generate(app, dashboards, splunkdInfo, projectFolder) {
+    console.error("DEBUG: Entering generate function");
     // cleanup
+    console.error("DEBUG: Cleaning up directories");
     await remove(path.join(projectFolder, 'public/assets'));
     await remove(path.join(projectFolder, 'src/pages/api/data/_datasources.json'));
     await remove(path.join(projectFolder, 'src/dashboards'));
 
     // create required dirs
+    console.error("DEBUG: Creating directories");
     await mkdirp(path.join(projectFolder, 'public/assets'));
     await mkdirp(path.join(projectFolder, 'src/pages/api/data'));
 
@@ -122,37 +136,49 @@ async function generate(app, dashboards, splunkdInfo, projectFolder) {
 
     for (const dashboard in dashboards) {
         const targetName = dashboard;
-        ux.action.start(`Generating dashboard ${dashboard}`);
+        // ux.action.start(`Generating dashboard ${dashboard}`);
+        console.error(`DEBUG: START Generating dashboard ${dashboard}`);
+        console.log("LOG:Generating dashboard " + dashboard);
         let dashboardTags=[];
         if (Object.keys(dashboards[dashboard]).includes("tags")) {
             console.log("Found tags: " + dashboards[dashboard]['tags'].join(", "));
             dashboardTags = dashboards[dashboard]['tags'];
         }
 
-        const [dsManifest, dashboardInfo] = await generateDashboard(
-            {
-                name: dashboard,
-                targetName,
-                app,
-                projectFolder,
-                dashboardTags
-            },
-            splunkdInfo
-        );
+        try {
+            console.error(`DEBUG: Calling generateDashboard for ${dashboard}`);
+            const [dsManifest, dashboardInfo] = await generateDashboard(
+                {
+                    name: dashboard,
+                    targetName,
+                    app,
+                    projectFolder,
+                    dashboardTags
+                },
+                splunkdInfo
+            );
+            console.error(`DEBUG: Finished generateDashboard for ${dashboard}`);
 
-        datasourcesManifest = Object.assign(datasourcesManifest, dsManifest);
-        Object.assign(dashboardsManifest, dashboardInfo);
-        ux.action.stop();
+            datasourcesManifest = Object.assign(datasourcesManifest, dsManifest);
+            Object.assign(dashboardsManifest, dashboardInfo);
+        } catch (e) {
+            console.error(`Error generating dashboard ${dashboard}:`, e);
+            throw e; 
+        }
+        // ux.action.stop();
+        console.error(`DEBUG: STOP Generating dashboard ${dashboard}`);
     }
 
-    ux.action.start('Writing manifest files...');
+    console.error('DEBUG: Writing manifest files...');
+    // ux.action.start('Writing manifest files...');
     await writeFile(path.join(projectFolder, 'src/pages/api/data/_datasources.json'), JSON.stringify(datasourcesManifest, null, 4), {
         encoding: 'utf-8',
     });
     await writeFile(path.join(projectFolder, 'src/_dashboards.json'), JSON.stringify(dashboardsManifest, null, 4), {
         encoding: 'utf-8',
     });
-    ux.action.stop();
+    // ux.action.stop();
+    console.error('DEBUG: Manifest files written');
 }
 
 export { generate };
