@@ -21,8 +21,6 @@ import ClientOnly from './clientOnly';
 const TITLE_SUFFIX = 'Splunk Dashboard';
 
 const fullUrl = (baseUrl, path) => {
-    console.log("baseUrl", baseUrl);
-    console.log("path", path);
     try {
         // Check if the path is already an absolute URL
         const url = new URL(path);
@@ -44,6 +42,7 @@ export default function Page({
     imageUrl,
     imageSize = { width: 700, height: 340 },
     baseUrl,
+    path,
     children,
 }) {
     useEffect(() => {
@@ -57,6 +56,7 @@ export default function Page({
         
         // Helper function to update or create meta tag
         const updateMetaTag = (name, content, property = false) => {
+            if (!content) return; // Skip if content is empty/null
             const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
             let meta = document.querySelector(selector);
             if (!meta) {
@@ -71,6 +71,28 @@ export default function Page({
             meta.setAttribute('content', content);
         };
 
+        // Get current page URL for og:url
+        const currentPath = path || window.location.pathname;
+        const pageUrl = baseUrl ? fullUrl(baseUrl, currentPath) : window.location.href;
+        
+        // Convert imageUrl to absolute URL if it's relative
+        let absoluteImageUrl = imageUrl;
+        if (imageUrl) {
+            try {
+                // Check if already absolute
+                new URL(imageUrl);
+                absoluteImageUrl = imageUrl;
+            } catch (e) {
+                // Relative URL - convert to absolute
+                if (baseUrl) {
+                    absoluteImageUrl = fullUrl(baseUrl, imageUrl);
+                } else {
+                    // Fallback to using current origin
+                    absoluteImageUrl = new URL(imageUrl, window.location.origin).href;
+                }
+            }
+        }
+
         // Update meta tags
         if (description) {
             updateMetaTag('description', description);
@@ -79,18 +101,22 @@ export default function Page({
         
         updateMetaTag('author', 'Splunk');
         updateMetaTag('og:title', `${title} - ${TITLE_SUFFIX}`, true);
+        updateMetaTag('og:type', 'website', true);
+        updateMetaTag('og:url', pageUrl, true);
+        updateMetaTag('og:site_name', title, true);
         updateMetaTag('twitter:card', 'summary_large_image');
         updateMetaTag('twitter:title', `${title} - ${TITLE_SUFFIX}`);
         updateMetaTag('twitter:creator', '@Splunk');
         updateMetaTag('viewport', 'width=device-width, initial-scale=1');
+        
         // Handle image meta tags
-        if (imageUrl ) {
-            updateMetaTag('og:image', imageUrl, true);
-            updateMetaTag('og:image:width', imageSize.width, true);
-            updateMetaTag('og:image:height', imageSize.height, true);
-            updateMetaTag('twitter:image', imageUrl);
+        if (absoluteImageUrl) {
+            updateMetaTag('og:image', absoluteImageUrl, true);
+            updateMetaTag('og:image:width', imageSize.width.toString(), true);
+            updateMetaTag('og:image:height', imageSize.height.toString(), true);
+            updateMetaTag('twitter:image', absoluteImageUrl);
         }
-    }, [title, description, imageUrl, imageSize, baseUrl]);
+    }, [title, description, imageUrl, imageSize, baseUrl, path]);
 
     return children;
 }
