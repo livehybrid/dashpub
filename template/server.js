@@ -2088,9 +2088,201 @@ app.get('/api/dashboards/:slug/definition', (req, res) => {
   }
 });
 
+// Helper function to generate meta tags HTML
+function generateMetaTags({ title, description, imageUrl, imageSize = { width: 700, height: 340 }, baseUrl, path }) {
+  const metaTags = [];
+  
+  // Get current page URL for og:url
+  const currentPath = path || '/';
+  const pageUrl = baseUrl ? `${baseUrl}${currentPath}` : `http://localhost:${PORT}${currentPath}`;
+  
+  // Convert imageUrl to absolute URL if it's relative
+  let absoluteImageUrl = imageUrl;
+  if (imageUrl) {
+    try {
+      // Check if already absolute
+      new URL(imageUrl);
+      absoluteImageUrl = imageUrl;
+    } catch (e) {
+      // Relative URL - convert to absolute
+      if (baseUrl) {
+        absoluteImageUrl = `${baseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+      } else {
+        // Fallback to using current origin
+        absoluteImageUrl = `http://localhost:${PORT}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+      }
+    }
+  }
+  
+  const fullTitle = `${title} - Splunk Dashboard`;
+  
+  // Basic meta tags
+  if (description) {
+    metaTags.push(`<meta name="description" content="${escapeHtml(description)}">`);
+    metaTags.push(`<meta property="og:description" content="${escapeHtml(description)}">`);
+  }
+  
+  metaTags.push(`<meta name="author" content="Splunk">`);
+  metaTags.push(`<meta property="og:title" content="${escapeHtml(fullTitle)}">`);
+  metaTags.push(`<meta property="og:type" content="website">`);
+  metaTags.push(`<meta property="og:url" content="${escapeHtml(pageUrl)}">`);
+  metaTags.push(`<meta property="og:site_name" content="${escapeHtml(title)}">`);
+  metaTags.push(`<meta name="twitter:card" content="summary_large_image">`);
+  metaTags.push(`<meta name="twitter:title" content="${escapeHtml(fullTitle)}">`);
+  metaTags.push(`<meta name="twitter:creator" content="@Splunk">`);
+  
+  // Image meta tags
+  if (absoluteImageUrl) {
+    metaTags.push(`<meta property="og:image" content="${escapeHtml(absoluteImageUrl)}">`);
+    metaTags.push(`<meta property="og:image:width" content="${imageSize.width}">`);
+    metaTags.push(`<meta property="og:image:height" content="${imageSize.height}">`);
+    metaTags.push(`<meta name="twitter:image" content="${escapeHtml(absoluteImageUrl)}">`);
+  }
+  
+  return metaTags.join('\n    ');
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
 // Catch-all route for SPA (must be last)
-app.get(new RegExp('.*'), (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+app.get(new RegExp('.*'), async (req, res) => {
+  try {
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    let html = fs.readFileSync(indexPath, 'utf8');
+    
+    // Skip API routes and static assets
+    if (req.path.startsWith('/api/') || req.path.startsWith('/assets/') || req.path.startsWith('/fonts/') || req.path.startsWith('/screenshots/')) {
+      return res.sendFile(indexPath);
+    }
+    
+    // Get base URL
+    const baseUrl = process.env.NEXT_PUBLIC_URL ? `https://${process.env.NEXT_PUBLIC_URL}` : 
+                    process.env.DASHPUB_URL || 
+                    `http://localhost:${PORT}`;
+    
+    // Determine if screenshots are enabled
+    const screenshotsEnabled = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTS === 'true' || 
+                              process.env.DASHPUB_SCREENSHOTS === 'true';
+    const screenshotBaseUrl = process.env.NEXT_PUBLIC_BASE_SCREENSHOT_URL || 
+                              process.env.DASHPUB_BASE_SCREENSHOT_URL || 
+                              '';
+    const screenshotDir = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || 
+                         process.env.DASHPUB_SCREENSHOT_DIR || 
+                         'screenshots';
+    const screenshotExt = process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || 
+                         process.env.DASHPUB_SCREENSHOT_EXT || 
+                         'png';
+    
+    let metaTags = '';
+    let pageTitle = 'Splunk Dashboard';
+    
+    // Check if this is a dashboard page (not home page)
+    // Remove query string and hash for slug extraction
+    const cleanPath = req.path.split('?')[0].split('#')[0];
+    const dashboardSlug = cleanPath !== '/' && cleanPath !== '' ? cleanPath.replace(/^\//, '') : null;
+    
+    if (dashboardSlug) {
+      // Dashboard page - fetch dashboard definition
+      try {
+        // Try the new path structure first: src/dashboards/{slug}/definition.json
+        let dashboardPath = path.join(__dirname, 'src', 'dashboards', dashboardSlug, 'definition.json');
+        let dashboardDefinition = null;
+        
+        if (fs.existsSync(dashboardPath)) {
+          dashboardDefinition = JSON.parse(fs.readFileSync(dashboardPath, 'utf8'));
+        } else {
+          // Fallback to old structure: src/dashboards/{slug}.json
+          dashboardPath = path.join(__dirname, 'src', 'dashboards', `${dashboardSlug}.json`);
+          if (fs.existsSync(dashboardPath)) {
+            dashboardDefinition = JSON.parse(fs.readFileSync(dashboardPath, 'utf8'));
+          }
+        }
+        
+        if (dashboardDefinition) {
+          // Generate screenshot URL
+          const dashboardURL = `${baseUrl}/${dashboardSlug}`;
+          const screenshotHash = require('crypto').createHash("sha256").update(dashboardURL).digest("hex").substring(0, 32);
+          
+          let screenshotFilename;
+          if (!screenshotBaseUrl || screenshotBaseUrl === '') {
+            screenshotFilename = dashboardSlug;
+          } else {
+            screenshotFilename = screenshotHash;
+          }
+          
+          let screenshotUrl = null;
+          if (screenshotsEnabled) {
+            if (screenshotBaseUrl && screenshotBaseUrl !== '') {
+              screenshotUrl = `${screenshotBaseUrl}/${screenshotDir}/${screenshotFilename}.${screenshotExt}`;
+            } else {
+              screenshotUrl = `/${screenshotDir}/${screenshotFilename}.${screenshotExt}`;
+            }
+          }
+          
+          pageTitle = dashboardDefinition.title || 'Dashboard';
+          const description = dashboardDefinition.description || '';
+          
+          metaTags = generateMetaTags({
+            title: pageTitle,
+            description: description,
+            imageUrl: screenshotUrl,
+            baseUrl: baseUrl,
+            path: `/${dashboardSlug}`
+          });
+        }
+      } catch (error) {
+        logger.warn('Failed to generate meta tags for dashboard', { 
+          slug: dashboardSlug, 
+          error: error.message 
+        });
+      }
+    } else {
+      // Home page
+      const title = process.env.NEXT_PUBLIC_DASHPUBTITLE || process.env.DASHPUB_TITLE || 'Dashboards';
+      const homeScreenshot = screenshotBaseUrl ? 
+        `${screenshotBaseUrl}/${screenshotDir}/home.${screenshotExt}` : 
+        (screenshotsEnabled ? `/${screenshotDir}/home.${screenshotExt}` : null);
+      
+      pageTitle = title;
+      metaTags = generateMetaTags({
+        title: title,
+        description: 'Hosted Splunk Dashboards',
+        imageUrl: homeScreenshot,
+        baseUrl: baseUrl,
+        path: '/'
+      });
+    }
+    
+    // Inject meta tags before closing </head> tag
+    if (metaTags) {
+      html = html.replace('</head>', `    ${metaTags}\n  </head>`);
+    }
+    
+    // Update page title
+    html = html.replace(/<title>.*?<\/title>/, `<title>${escapeHtml(pageTitle)} - Splunk Dashboard</title>`);
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (error) {
+    logger.error('Failed to serve HTML with meta tags', { 
+      path: req.path, 
+      error: error.message, 
+      stack: error.stack 
+    });
+    // Fallback to sending file directly
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  }
 });
 
 const server = app.listen(PORT, () => {
