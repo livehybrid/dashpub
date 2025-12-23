@@ -976,6 +976,12 @@ app.get('/api/config', (req, res) => {
       `${screenshotBaseUrl}/screenshots/home.jpg` : 
       (screenshotsEnabled ? '/screenshots/home.jpg' : null);
     
+    // Breadcrumb configuration
+    const breadcrumbsEnabled = process.env.NEXT_PUBLIC_DASHPUBBREADCRUMBS !== 'false' && 
+                               process.env.DASHPUB_BREADCRUMBS !== 'false'; // Default to true
+    const breadcrumbsShowBackButton = process.env.NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON !== 'false' && 
+                                      process.env.DASHPUB_BREADCRUMBS_BACK_BUTTON !== 'false'; // Default to true
+    
     const config = {
       title: process.env.NEXT_PUBLIC_DASHPUBTITLE || process.env.DASHPUB_TITLE || 'Dashboards',
       theme: process.env.NEXT_PUBLIC_HOMETHEME || process.env.DASHPUB_THEME || 'light',
@@ -988,6 +994,10 @@ app.get('/api/config', (req, res) => {
         baseUrl: screenshotBaseUrl,
         dir: process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTDIR || process.env.DASHPUB_SCREENSHOT_DIR || 'screenshots',
         ext: process.env.NEXT_PUBLIC_DASHPUBSCREENSHOTEXT || process.env.DASHPUB_SCREENSHOT_EXT || 'png'
+      },
+      breadcrumbs: {
+        enabled: breadcrumbsEnabled,
+        showBackButton: breadcrumbsShowBackButton
       },
       baseUrl: baseUrl,
       homeScreenshot: homeScreenshot,

@@ -1,3 +1,10 @@
+---
+layout: default
+title: Developer Quick Reference
+parent: Development
+nav_order: 2
+---
+
 # Developer Quick Reference Guide
 
 ## 🚀 Quick Start Commands
