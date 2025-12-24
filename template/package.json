@@ -6,7 +6,7 @@
     "dependencies": {
         "@babel/runtime": "^7.28.4",
         "@react-google-maps/api": "^2.20.8",
-        "@splunk/dashboard": "29.3.3",
+        "@splunk/dashboard": "29.3.4",
         "@splunk/dashboard-context": "29.3.3",
         "@splunk/dashboard-core": "29.3.3",
         "@splunk/dashboard-presets": "29.3.3",
