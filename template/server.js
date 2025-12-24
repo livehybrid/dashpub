@@ -2159,6 +2159,19 @@ function escapeHtml(text) {
 app.get(new RegExp('.*'), async (req, res) => {
   try {
     const indexPath = path.join(__dirname, 'dist', 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      return res.status(500).send(`
+        <html>
+          <body>
+            <h1>Build Required</h1>
+            <p>The dist/ folder is missing. Please run:</p>
+            <pre>npm run build</pre>
+            <p>Or for development with hot reload, access Vite directly at:</p>
+            <pre>http://localhost:5173</pre>
+          </body>
+        </html>
+      `);
+    }
     let html = fs.readFileSync(indexPath, 'utf8');
     
     // Skip API routes and static assets
@@ -2323,32 +2336,58 @@ const server = app.listen(PORT, () => {
 });
 
 // Graceful shutdown handling
-process.on('SIGTERM', async () => {
-  console.log('🔄 SIGTERM received, shutting down gracefully...');
-  
-  // Flush any remaining HEC logs
-  if (SPLUNK_HEC_CONFIG.enabled) {
-    console.log('📤 Flushing remaining HEC logs...');
-    await hecClient.flush();
-  }
-  
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
-});
+let isShuttingDown = false;
 
-process.on('SIGINT', async () => {
-  console.log('🔄 SIGINT received, shutting down gracefully...');
-  
-  // Flush any remaining HEC logs
-  if (SPLUNK_HEC_CONFIG.enabled) {
-    console.log('📤 Flushing remaining HEC logs...');
-    await hecClient.flush();
+const gracefulShutdown = async (signal) => {
+  if (isShuttingDown) {
+    console.log(`⚠️  ${signal} received again, forcing exit...`);
+    process.exit(1);
+    return;
   }
   
-  server.close(() => {
-    console.log('✅ Server closed');
-    process.exit(0);
-  });
-});
+  isShuttingDown = true;
+  console.log(`🔄 ${signal} received, shutting down gracefully...`);
+  
+  // Set a timeout to force exit if graceful shutdown takes too long
+  const forceExitTimeout = setTimeout(() => {
+    console.log('⚠️  Graceful shutdown timeout, forcing exit...');
+    process.exit(1);
+  }, 5000); // 5 second timeout
+  
+  try {
+    // Flush any remaining HEC logs
+    if (SPLUNK_HEC_CONFIG.enabled && hecClient) {
+      console.log('📤 Flushing remaining HEC logs...');
+      await Promise.race([
+        hecClient.flush(),
+        new Promise((resolve) => setTimeout(resolve, 2000)) // 2 second timeout for flush
+      ]);
+    }
+    
+    // Close server with timeout
+    server.close(() => {
+      clearTimeout(forceExitTimeout);
+      console.log('✅ Server closed');
+      process.exit(0);
+    });
+    
+    // Force close if server.close() doesn't complete quickly
+    setTimeout(() => {
+      if (!server.listening) return;
+      console.log('⚠️  Forcing server close...');
+      if (typeof server.closeAllConnections === 'function') {
+        server.closeAllConnections();
+      }
+      clearTimeout(forceExitTimeout);
+      process.exit(0);
+    }, 3000);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    clearTimeout(forceExitTimeout);
+    process.exit(1);
+  }
+};
+
+// Register shutdown handlers (only once)
+process.once('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.once('SIGINT', () => gracefulShutdown('SIGINT'));
