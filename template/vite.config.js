@@ -3,27 +3,46 @@ import react from '@vitejs/plugin-react';
 import viteCommonjs from 'vite-plugin-commonjs';
 import path from 'path';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { transform } from 'esbuild';
 
-// Custom plugin to handle problematic CSS imports
-const cssMockPlugin = () => ({
-  name: 'css-mock',
-  resolveId(id) {
-    if (id.endsWith('.css') && id.includes('maplibre-gl')) {
-      return id; // Return the id to mark it as resolved
+// Removed CSS mock plugin - Vite handles CSS imports natively
+
+// Custom plugin to transform .js files with JSX before Rollup parses them
+const jsxInJsPlugin = () => ({
+  name: 'jsx-in-js',
+  enforce: 'pre',
+  async transform(code, id) {
+    // Only transform .js files in src/components that contain JSX syntax
+    if (id.endsWith('.js') && id.includes('src/components') && /<[A-Za-z]/.test(code)) {
+      try {
+        const result = await transform(code, {
+          loader: 'jsx',
+          jsx: 'automatic',
+          format: 'esm',
+          target: 'es2015',
+        });
+        return {
+          code: result.code,
+          map: result.map || null,
+        };
+      } catch (error) {
+        console.warn(`Failed to transform ${id}:`, error);
+        return null;
+      }
     }
     return null;
   },
-  load(id) {
-    if (id.endsWith('.css') && id.includes('maplibre-gl')) {
-      return '/* Mock CSS file for maplibre-gl */'; // Return empty CSS comment
-    }
-    return null;
-  }
 });
 
 export default defineConfig({
   plugins: [
-    react(),
+    // Transform .js files with JSX before React plugin
+    jsxInJsPlugin(),
+    react({
+      // Include .jsx files (jsxInJsPlugin handles .js files)
+      include: /\.jsx$/,
+      jsxRuntime: 'automatic',
+    }),
     viteCommonjs({
       // Handle CommonJS packages that don't work well with Vite
       include: [
@@ -54,8 +73,7 @@ export default defineConfig({
       },
       // Whether to polyfill specific modules
       protocolImports: true,
-    }),
-    cssMockPlugin()
+    })
   ],
   
   // Optimize dependencies for better performance
@@ -66,7 +84,7 @@ export default defineConfig({
       '@splunk/dashboard-context',
       '@splunk/dashboard-presets', 
       '@splunk/dashboard-utils',
-      'maplibre-gl', 'jspdf', 'fflate', 'react-resize-detector'
+      'jspdf', 'fflate', 'react-resize-detector'
     ],
     exclude: [
       // No packages to exclude
@@ -75,16 +93,18 @@ export default defineConfig({
       // Node.js global to browser global mapping
       define: {
         global: 'globalThis'
-      }
+      },
+      // Handle JSX in .js files
+      loader: {
+        '.js': 'jsx',
+      },
     }
   },
 
   // Handle module resolution
   resolve: {
     alias: {
-      // Mock maplibre-gl CSS import to prevent module loading issues
-      'maplibre-gl/dist/maplibre-gl.css': path.resolve(__dirname, 'src/maplibre-css-mock.js'),
-
+      // Vite handles CSS imports natively, no need to mock maplibre-gl CSS
     },
     // Force CommonJS resolution for problematic packages
     mainFields: ['module', 'main'],
@@ -94,27 +114,18 @@ export default defineConfig({
   // Build configuration
   build: {
     target: 'es2015',
+    // Configure esbuild to handle JSX in .js files
+    esbuild: {
+      loader: 'jsx',
+      include: /\.(jsx|js)$/,
+    },
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true
     },
     rollupOptions: {
       plugins: [
-        {
-          name: 'css-import-resolver',
-          resolveId(id) {
-            if (id.endsWith('.css') && id.includes('maplibre-gl')) {
-              return id;
-            }
-            return null;
-          },
-          load(id) {
-            if (id.endsWith('.css') && id.includes('maplibre-gl')) {
-              return '/* Mock CSS file for maplibre-gl */';
-            }
-            return null;
-          }
-        }
+        // Removed CSS mock plugin - Vite handles CSS imports natively
       ],
       output: {
         manualChunks: {
