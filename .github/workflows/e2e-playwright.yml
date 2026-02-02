@@ -16,6 +16,10 @@ on:
       - dependabot/*
   workflow_dispatch: # Allow manual triggering
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e-tests:
     name: Playwright E2E Tests
