@@ -23,19 +23,15 @@
         "dotenv": "^17.2.3",
         "express": "^5.2.1",
         "fast-text-encoding": "1.0.6",
-        "http-proxy-middleware": "^3.0.3",
         "jsonwebtoken": "9.0.3",
-        "null-loader": "^4.0.1",
         "postcss": "8.5.6",
         "query-string": "9.3.1",
         "querystring": "0.2.1",
         "react": "18.3.1",
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "18.3.1",
-        "react-icons": "*",
         "react-resize-detector": "^12.3.0",
         "react-router-dom": "^7.13.0",
-        "rxjs": "^7.8.2",
         "styled-components": "5.3.11",
         "tinyglobby": "*",
         "@vitejs/plugin-react": "^5.1.2",
@@ -49,11 +45,8 @@
         "@playwright/test": "^1.58.0",
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^9.2.0",
-        "css-loader": "^7.1.2",
         "eslint": "^9.39.2",
-        "postcss-loader": "^8.2.0",
-        "puppeteer": "^24.36.1",
-        "style-loader": "^4.0.0"
+        "puppeteer": "^24.36.1"
     },
     "overrides": {
         "tar": "^7.5.7"

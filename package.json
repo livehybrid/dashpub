@@ -35,18 +35,14 @@
         "fs-extra": "^11.2.0",
         "inquirer": "^13.0.2",
         "node-addon-api": "^8.0.0",
-        "node-fetch": "^3.3.2",
-        "prettier": "^3.1.1",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.1",
-        "react-icons": "*",
         "sharp": "^0.34.3",
         "xmldoc": "^2.0.2"
     },
+    "devDependencies": {
+        "prettier": "^3.1.1"
+    },
     "resolutions": {
         "cross-spawn": "^7.0.5",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
         "glob": "^10.5.0",
         "tar": "^7.5.7"
     },
