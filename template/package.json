@@ -20,7 +20,7 @@
         "cors": "^2.8.6",
         "crypto-js": "4.2.0",
         "decode-uri-component": "0.4.1",
-        "dotenv": "^17.2.3",
+        "dotenv": "^17.2.4",
         "express": "^5.2.1",
         "fast-text-encoding": "1.0.6",
         "jsonwebtoken": "9.0.3",
