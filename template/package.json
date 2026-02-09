@@ -46,7 +46,7 @@
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^9.2.0",
         "eslint": "^9.39.2",
-        "puppeteer": "^24.36.1"
+        "puppeteer": "^24.37.2"
     },
     "overrides": {
         "tar": "^7.5.7"
