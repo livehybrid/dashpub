@@ -36,8 +36,8 @@ RUN mkdir -p /tmp/glob-fix && \
 COPY . /build
 
 # Install dependencies first, then install global package
-# `sharp` may compile native bindings in CI; keep `node-gyp` available globally *and* install
-# devDependencies (where tooling like `node-gyp` may be declared) so install scripts can resolve it.
+# `sharp` may compile native bindings; when building from source it expects `node-gyp` in the
+# project's production `dependencies` (see package.json). Global install is extra convenience.
 RUN npm install -g node-gyp@^11.5.0
 RUN cd /build && npm install --include=dev --no-audit --no-fund
 RUN npm i -g /build
