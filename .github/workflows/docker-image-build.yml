@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - develop
+      # Exercise multi-arch Docker builds on stacked feature branches (tags are sanitised).
+      - 'feat/**'
       - ws-*
       - v*
     tags:
@@ -137,12 +139,12 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
-          # `docker buildx imagetools inspect` can exit 255 while still printing the summary;
-          # a plain pipeline under `pipefail` would fail. Disable pipefail for this capture only.
+          # Compute the index digest from the raw manifest bytes. This avoids fragile parsing of the
+          # human-readable `imagetools inspect` table (and avoids SIGPIPE/`pipefail` issues when the
+          # consumer exits before Docker finishes writing output).
           DIGEST="$(
-            set +o pipefail
-            docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" \
-              | awk '/^Digest:/ {print $2; exit}'
+            docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw \
+              | python3 -c 'import hashlib,sys; data=sys.stdin.buffer.read(); print("sha256:"+hashlib.sha256(data).hexdigest())'
           )"
           if [[ -z "${DIGEST}" ]]; then
             echo "Could not resolve digest for livehybrid/splunk-dashpub:${TAG}" >&2
