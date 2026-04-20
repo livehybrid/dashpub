@@ -139,7 +139,7 @@ jobs:
           TAG="${{ steps.tag.outputs.image_tag }}"
           DIGEST="$(
             docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" \
-              | awk '/^Digest:/ {print $2; exit}'
+              --format '{{.Manifest.Digest}}'
           )"
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
 
