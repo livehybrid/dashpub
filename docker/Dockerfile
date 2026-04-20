@@ -38,8 +38,9 @@ COPY . /build
 # Install dependencies first, then install global package
 # `sharp` may compile native bindings in CI; `node-gyp` is a direct dependency and also installed
 # globally so install scripts can resolve the package and invoke the CLI.
-RUN npm install -g node-gyp@^11.5.0
-RUN cd /build && npm install --no-audit --no-fund
+RUN npm install -g node-gyp@^11.5.0 \
+  && cd /build \
+  && npm ci --no-audit --no-fund
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
@@ -138,7 +139,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=300s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+  CMD node -e "require('http').get('http://127.0.0.1:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
