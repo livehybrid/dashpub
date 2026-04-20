@@ -24,7 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # ubuntu-latest is amd64: build amd64 natively; use QEMU only when targeting a non-native arch.
+          # `ubuntu-latest` is usually x86_64; only install QEMU/binfmt when the target platform
+          # does not match the runner architecture (covers rare arm64-hosted runners too).
           - platform: linux/amd64
             tag_suffix: linux-amd64
           - platform: linux/arm64
@@ -43,9 +44,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up QEMU
-        # GitHub-hosted linux runners are typically x86_64; building linux/arm64 requires binfmt/qemu.
-        # On rare arm64-hosted runners, the inverse applies for linux/amd64.
-        if: (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64'))
+        if: ${{ (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64')) }}
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
