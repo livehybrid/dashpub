@@ -14,8 +14,7 @@ RUN apt-get update \
     curl \
     git \
     python3 \
-    make \
-    g++ \
+    build-essential \
     pkg-config \
     libvips-dev \
   && rm -rf /var/lib/apt/lists/*
@@ -40,7 +39,7 @@ COPY . /build
 # `sharp` may compile native bindings in CI; keep `node-gyp` available globally *and* install
 # devDependencies (where `node-gyp` is declared) so the sharp installer can resolve it reliably.
 RUN npm install -g node-gyp@^11.5.0
-RUN cd /build && npm install --include=dev
+RUN cd /build && npm install --include=dev --no-audit --no-fund
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
@@ -73,12 +72,29 @@ RUN apt-get update \
     dumb-init \
     git \
     python3 \
-    make \
-    g++ \
+    build-essential \
+    pkg-config \
     chromium \
     libvips42 \
     fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnss3 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
   && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g node-gyp@^11.5.0
 
 # Environment variables for Puppeteer
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
