@@ -2,7 +2,7 @@
 #
 # Debian (glibc) is used instead of Alpine (musl) because native dependency installs
 # (notably sharp/libvips) are much more reliable across amd64 + arm64 in CI multi-arch builds.
-FROM node:24-bookworm-slim AS builder
+FROM public.ecr.aws/docker/library/node:24-bookworm-slim AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -65,7 +65,7 @@ RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
 # Runtime stage
-FROM node:24-bookworm-slim
+FROM public.ecr.aws/docker/library/node:24-bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
