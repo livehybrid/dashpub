@@ -25,6 +25,17 @@ const qualifiedSearchString = (query) => (query.trim().startsWith('|') ? query :
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const MIN_REFRESH_TIME = parseInt(process.env.MIN_REFRESH_TIME, 10) || 60;
+
+function splunkManagementAuthHeader(token) {
+  const t = String(token || '').trim();
+  if (!t) {
+    return null;
+  }
+
+  const looksLikeJwt = t.split('.').length === 3 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(t);
+  return looksLikeJwt ? `Bearer ${t}` : `Splunk ${t}`;
+}
+
 const agent = process.env.SPLUNKD_URL.startsWith('https')
     ? new (require('https').Agent)({
           rejectUnauthorized: false,
@@ -70,7 +81,7 @@ const dataResp = async (req, res) => {
         log('Executing search for data fn', id);
         const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(process.env.SPLUNKD_USER || 'nobody')}/${encodeURIComponent(app)}`;
         const AUTH_HEADER = process.env.SPLUNKD_TOKEN
-            ? `Bearer ${process.env.SPLUNKD_TOKEN}`
+            ? splunkManagementAuthHeader(process.env.SPLUNKD_TOKEN)
             : `Basic ${Buffer.from([process.env.SPLUNKD_USER, process.env.SPLUNKD_PASSWORD].join(':')).toString('base64')}`;
 
         const bodyParams = new URLSearchParams({
