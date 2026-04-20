@@ -1,26 +1,19 @@
-# Build stage
-#
-# Debian (glibc) is used instead of Alpine (musl) because native dependency installs
-# (notably sharp/libvips) are much more reliable across amd64 + arm64 in CI multi-arch builds.
-FROM public.ecr.aws/docker/library/node:24-bookworm-slim AS builder
+# Build and runtime use Alpine (musl) — project preference.
+# `sharp` may compile from source under musl/arm64; builder installs vips-dev + a native toolchain.
+# Base images are pulled via AWS Public ECR mirror of Docker Hub `library/*` to reduce Hub rate limits in CI.
+FROM public.ecr.aws/docker/library/node:24-alpine AS builder
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install build dependencies
-RUN apt-get update \
-  && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends \
+RUN apk update && apk upgrade -a && apk add --no-cache \
     ca-certificates \
     curl \
     git \
     python3 \
-    build-essential \
-    pkg-config \
-    libvips-dev \
-  && rm -rf /var/lib/apt/lists/*
+    make \
+    g++ \
+    pkgconf \
+    vips-dev \
+  && rm -rf /var/cache/apk/*
 
-# Keep the bundled npm reasonably current — Trivy flags HIGH findings in npm's own dependency tree
-# (e.g. `minimatch`, `picomatch`) which are not controlled by this repo's `package-lock.json`.
 RUN npm install -g npm@11.12.1
 
 # Manually patch glob in system npm to fix vulnerabilities
@@ -36,19 +29,14 @@ RUN mkdir -p /tmp/glob-fix && \
     fi && \
     rm -rf /tmp/glob-fix
 
-# Copy source
 COPY . /build
 
-# Install dependencies first, then install global package
-# `sharp` may compile native bindings; when building from source it expects `node-gyp` in the
-# project's production `dependencies` (see package.json). Global install is extra convenience.
 RUN npm install -g node-gyp@^11.5.0
 RUN cd /build && npm install --include=dev --no-audit --no-fund
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
 
-# Manually create dashpub binary if npm didn't create it
 RUN if [ ! -f /usr/local/bin/dashpub ]; then \
       echo "Creating dashpub binary manually..."; \
       echo '#!/usr/bin/env node' > /usr/local/bin/dashpub; \
@@ -60,49 +48,30 @@ RUN if [ ! -f /usr/local/bin/dashpub ]; then \
       echo "dashpub binary already exists"; \
     fi
 
-# Verify dependencies are available
 RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
-# Runtime stage
-FROM public.ecr.aws/docker/library/node:24-bookworm-slim
+FROM public.ecr.aws/docker/library/node:24-alpine
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Runtime dependencies (Chromium + libvips runtime bits for sharp)
-RUN apt-get update \
-  && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends \
+RUN apk update && apk upgrade -a && apk add --no-cache \
     ca-certificates \
     curl \
     dumb-init \
     git \
     python3 \
-    build-essential \
-    pkg-config \
+    make \
+    g++ \
+    pkgconf \
     chromium \
-    libvips42 \
-    fonts-liberation \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libatk1.0-0 \
-    libcups2 \
-    libdbus-1-3 \
-    libdrm2 \
-    libgbm1 \
-    libgtk-3-0 \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxkbcommon0 \
-    libxrandr2 \
-  && rm -rf /var/lib/apt/lists/*
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    vips \
+  && rm -rf /var/cache/apk/*
 
 RUN npm install -g npm@11.12.1
 
-# npm bundles a nested picomatch used by tinyglobby; bump it explicitly for scanners/audits.
 RUN mkdir -p /tmp/picomatch-fix && \
     cd /tmp/picomatch-fix && \
     npm init -y >/dev/null 2>&1 && \
@@ -116,52 +85,37 @@ RUN mkdir -p /tmp/picomatch-fix && \
 
 RUN npm install -g node-gyp@^11.5.0
 
-# Environment variables for Puppeteer
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Create app user for security
-RUN groupadd --gid 1001 nodejs \
-  && useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nodejs
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S -u 1001 -G nodejs nodejs
 
-# Create npm global directory for user
 RUN mkdir -p /home/nodejs/.npm-global && \
     chown -R nodejs:nodejs /home/nodejs/.npm-global
 
-# Copy global package from builder stage (both modules and binaries)
 COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=builder /usr/local/bin /usr/local/bin
-
-# Copy build directory for CLI access (including node_modules)
 COPY --from=builder /build /build
 
-# Verify the dashpub binary is available
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in runtime stage"
 RUN echo "Available binaries:" && ls -la /usr/local/bin/
 
-# Copy entrypoint and config
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY docker/config /usr/local/bin/config
 
-# Set working directory
 WORKDIR /home/nodejs
 
-# Set git config
 RUN git config --global user.email "dashpub@yourdomain.com" && \
     git config --global user.name "Splunk DashPub"
 
-# Switch to non-root user
 USER nodejs
 
-# Expose port
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=300s --retries=3 \
   CMD node -e "require('http').get('http://127.0.0.1:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start the server
 CMD ["/usr/local/bin/docker-entrypoint.sh"]
