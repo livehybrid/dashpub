@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - develop
-      # Validates multi-arch Docker builds on feature branches (Docker tag is sanitised ref name).
-      - 'feat/**'
       - ws-*
       - v*
     tags:
