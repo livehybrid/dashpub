@@ -144,10 +144,33 @@ jobs:
           # Compute the index digest from the raw manifest bytes. This avoids fragile parsing of the
           # human-readable `imagetools inspect` table (and avoids SIGPIPE/`pipefail` issues when the
           # consumer exits before Docker finishes writing output).
-          DIGEST="$(
-            docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw \
-              | python3 -c 'import hashlib,sys; data=sys.stdin.buffer.read(); print("sha256:"+hashlib.sha256(data).hexdigest())'
-          )"
+          DIGEST=""
+          for attempt in $(seq 1 12); do
+            tmp="$(mktemp)"
+            set +e
+            docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>stderr.log
+            rc=$?
+            set -e
+
+            if [[ "${rc}" -eq 0 ]]; then
+              DIGEST="$(python3 -c 'import hashlib,sys; data=open(sys.argv[1],"rb").read(); print("sha256:"+hashlib.sha256(data).hexdigest())' "${tmp}")"
+              rm -f "${tmp}" stderr.log
+              break
+            fi
+
+            err="$(cat stderr.log || true)"
+            rm -f "${tmp}" stderr.log
+
+            if echo "${err}" | grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit'; then
+              sleep_seconds="$(( attempt * 10 ))"
+              echo "Docker Hub rate-limited imagetools inspect (attempt ${attempt}/12). Sleeping ${sleep_seconds}s..." >&2
+              sleep "${sleep_seconds}"
+              continue
+            fi
+
+            echo "${err}" >&2
+            exit "${rc}"
+          done
           if [[ -z "${DIGEST}" ]]; then
             echo "Could not resolve digest for livehybrid/splunk-dashpub:${TAG}" >&2
             exit 1
