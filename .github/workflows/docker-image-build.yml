@@ -135,9 +135,29 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
-          docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
-            "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
-            "livehybrid/splunk-dashpub:${TAG}-linux-arm64"
+          for attempt in $(seq 1 12); do
+            set +e
+            out="$(docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
+              "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
+              "livehybrid/splunk-dashpub:${TAG}-linux-arm64" 2>&1)"
+            rc=$?
+            set -e
+
+            if [[ "${rc}" -eq 0 ]]; then
+              echo "${out}"
+              break
+            fi
+
+            if echo "${out}" | grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit'; then
+              sleep_seconds="$(( attempt * 10 ))"
+              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/12). Sleeping ${sleep_seconds}s..." >&2
+              sleep "${sleep_seconds}"
+              continue
+            fi
+
+            echo "${out}" >&2
+            exit "${rc}"
+          done
 
       - name: Resolve merged manifest digest
         id: merged
