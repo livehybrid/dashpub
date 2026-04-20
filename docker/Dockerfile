@@ -36,10 +36,10 @@ RUN mkdir -p /tmp/glob-fix && \
 COPY . /build
 
 # Install dependencies first, then install global package
-# `sharp` may compile native bindings in CI; keep `node-gyp` available globally *and* install
-# devDependencies (where `node-gyp` is declared) so the sharp installer can resolve it reliably.
+# `sharp` may compile native bindings in CI; `node-gyp` is a direct dependency and also installed
+# globally so install scripts can resolve the package and invoke the CLI.
 RUN npm install -g node-gyp@^11.5.0
-RUN cd /build && npm install --include=dev --no-audit --no-fund
+RUN cd /build && npm install --no-audit --no-fund
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
