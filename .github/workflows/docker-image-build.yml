@@ -16,7 +16,9 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # This workflow can be triggered in quick succession on feature branches; cancelling in-flight
+  # builds often produces confusing "failures" (SIGPIPE/cancelled jobs) without surfacing the real error.
+  cancel-in-progress: false
 
 jobs:
   build_platform:
