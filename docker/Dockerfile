@@ -19,6 +19,10 @@ RUN apt-get update \
     libvips-dev \
   && rm -rf /var/lib/apt/lists/*
 
+# Keep the bundled npm reasonably current — Trivy flags HIGH findings in npm's own dependency tree
+# (e.g. `minimatch`, `picomatch`) which are not controlled by this repo's `package-lock.json`.
+RUN npm install -g npm@11.12.1
+
 # Manually patch glob in system npm to fix vulnerabilities
 RUN mkdir -p /tmp/glob-fix && \
     cd /tmp/glob-fix && \
@@ -95,6 +99,20 @@ RUN apt-get update \
     libxkbcommon0 \
     libxrandr2 \
   && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g npm@11.12.1
+
+# npm bundles a nested picomatch used by tinyglobby; bump it explicitly for scanners/audits.
+RUN mkdir -p /tmp/picomatch-fix && \
+    cd /tmp/picomatch-fix && \
+    npm init -y >/dev/null 2>&1 && \
+    npm install picomatch@^4.0.4 >/dev/null 2>&1 && \
+    target="/usr/local/lib/node_modules/npm/node_modules/tinyglobby/node_modules/picomatch" && \
+    if [ -d "$target" ]; then \
+      rm -rf "$target" && \
+      cp -r node_modules/picomatch "$target"; \
+    fi && \
+    rm -rf /tmp/picomatch-fix
 
 RUN npm install -g node-gyp@^11.5.0
 
