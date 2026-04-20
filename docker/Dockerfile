@@ -1,9 +1,24 @@
-# Build stage (use latest Alpine for OpenSSL/security fixes)
-FROM node:24-alpine AS builder
+# Build stage
+#
+# Debian (glibc) is used instead of Alpine (musl) because native dependency installs
+# (notably sharp/libvips) are much more reliable across amd64 + arm64 in CI multi-arch builds.
+FROM node:24-bookworm-slim AS builder
 
-# Install build dependencies and upgrade packages for security (OpenSSL etc.)
-RUN apk update && apk upgrade -a && apk add --no-cache git vips-dev python3 make g++ pkgconf
+ENV DEBIAN_FRONTEND=noninteractive
 
+# Install build dependencies
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    python3 \
+    make \
+    g++ \
+    pkg-config \
+    libvips-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 # Manually patch glob in system npm to fix vulnerabilities
 RUN mkdir -p /tmp/glob-fix && \
@@ -46,18 +61,32 @@ RUN if [ ! -f /usr/local/bin/dashpub ]; then \
 RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
-# Runtime stage (use latest Alpine for OpenSSL/security fixes)
-FROM node:24-alpine
+# Runtime stage
+FROM node:24-bookworm-slim
 
-# Upgrade packages for security (OpenSSL etc.) and install runtime dependencies
-RUN apk update && apk upgrade -a && apk add --no-cache git vips-dev dumb-init python3 make g++ chromium
+# Runtime dependencies (Chromium + libvips runtime bits for sharp)
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    dumb-init \
+    git \
+    python3 \
+    make \
+    g++ \
+    chromium \
+    libvips42 \
+    fonts-liberation \
+  && rm -rf /var/lib/apt/lists/*
 
 # Environment variables for Puppeteer
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
 # Create app user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+RUN groupadd --gid 1001 nodejs \
+  && useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nodejs
 
 # Create npm global directory for user
 RUN mkdir -p /home/nodejs/.npm-global && \
