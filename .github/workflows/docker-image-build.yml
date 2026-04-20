@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - develop
+      # Validates multi-arch Docker builds on feature branches (Docker tag is sanitised ref name).
+      - 'feat/**'
       - ws-*
       - v*
     tags:
@@ -14,7 +16,9 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # This workflow can be triggered in quick succession on feature branches; cancelling in-flight
+  # builds often produces confusing "failures" (SIGPIPE/cancelled jobs) without surfacing the real error.
+  cancel-in-progress: false
 
 jobs:
   build_platform:
@@ -44,7 +48,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up QEMU
-        if: ${{ (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64')) }}
+        # GitHub-hosted linux runners are typically x86_64; building linux/arm64 requires binfmt/qemu.
+        # On rare arm64-hosted runners, the inverse applies for linux/amd64.
+        if: (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64'))
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
