@@ -25,8 +25,10 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
+            tag_suffix: linux-amd64
             qemu: "true"
           - platform: linux/arm64
+            tag_suffix: linux-arm64
             qemu: "false"
     permissions:
       packages: write
@@ -64,7 +66,7 @@ jobs:
         with:
           images: livehybrid/splunk-dashpub
           tags: |
-            type=raw,value=${{ steps.tag.outputs.image_tag }}-${{ matrix.platform }}
+            type=raw,value=${{ steps.tag.outputs.image_tag }}-${{ matrix.tag_suffix }}
 
       - name: Build and push per-platform image
         id: push
@@ -112,8 +114,8 @@ jobs:
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
           docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
-            "livehybrid/splunk-dashpub:${TAG}-linux/amd64" \
-            "livehybrid/splunk-dashpub:${TAG}-linux/arm64"
+            "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
+            "livehybrid/splunk-dashpub:${TAG}-linux-arm64"
 
       - name: Resolve merged manifest digest
         id: merged
