@@ -35,6 +35,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e8
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51d41767ddf1fc24bc3023a0a254f1891e8
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
@@ -48,6 +54,7 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
