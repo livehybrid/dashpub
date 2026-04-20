@@ -37,10 +37,10 @@ RUN mkdir -p /tmp/glob-fix && \
 COPY . /build
 
 # Install dependencies first, then install global package
-# sharp sometimes falls back to a source build on arm64; its installer expects `node-gyp` to exist
-# in the project tree (not only globally), so install it into /build before `npm install`.
-RUN cd /build && npm install --no-save node-gyp@^11.5.0
-RUN cd /build && npm install
+# `sharp` may compile native bindings in CI; keep `node-gyp` available globally *and* install
+# devDependencies (where `node-gyp` is declared) so the sharp installer can resolve it reliably.
+RUN npm install -g node-gyp@^11.5.0
+RUN cd /build && npm install --include=dev
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
