@@ -1,7 +1,6 @@
 name: npm ci
 
-# Ensures the root package-lock.json stays in sync with package.json (same install path as
-# `docker/Dockerfile` builder `npm ci`).
+# Ensures the root package-lock.json stays in sync with package.json before merge.
 
 on:
   pull_request:
