@@ -23,17 +23,19 @@ concurrency:
 jobs:
   build_platform:
     name: Build and push (${{ matrix.platform }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # `ubuntu-latest` is usually x86_64; only install QEMU/binfmt when the target platform
-          # does not match the runner architecture (covers rare arm64-hosted runners too).
+          # Build each architecture on a native GitHub-hosted runner to avoid QEMU/binfmt pulls
+          # from Docker Hub (which are easy to rate-limit on busy accounts).
           - platform: linux/amd64
             tag_suffix: linux-amd64
+            runner: ubuntu-24.04
           - platform: linux/arm64
             tag_suffix: linux-arm64
+            runner: ubuntu-24.04-arm
     permissions:
       packages: write
       contents: read
@@ -48,8 +50,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Set up QEMU
-        # GitHub-hosted linux runners are typically x86_64; building linux/arm64 requires binfmt/qemu.
-        # On rare arm64-hosted runners, the inverse applies for linux/amd64.
+        # QEMU should not be needed when `runs-on` matches the target architecture, but keep this
+        # as a safety valve for unexpected hosted runner migrations.
         if: (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64'))
         uses: docker/setup-qemu-action@v3
 
