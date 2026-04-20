@@ -24,12 +24,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # ubuntu-latest is amd64: build amd64 natively; use QEMU only for arm64.
           - platform: linux/amd64
             tag_suffix: linux-amd64
-            qemu: "true"
+            qemu: "false"
           - platform: linux/arm64
             tag_suffix: linux-arm64
-            qemu: "false"
+            qemu: "true"
     permissions:
       packages: write
       contents: read
@@ -57,10 +58,13 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" && "${{ github.event.action }}" == "published" ]]; then
             echo "image_tag=latest" >> "$GITHUB_OUTPUT"
           else
-            # Docker tags cannot contain '/' (common in branch names like feat/foo).
-            # Keep this deterministic so per-platform tags + manifest merge agree.
-            raw="${GITHUB_REF_NAME}"
-            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9._-]+#-#g; s#^-+##; s#-+$##')"
+            raw="${GITHUB_REF_NAME//$'\r'/}"
+            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+            safe="${safe:0:120}"
+            if [[ -z "${safe}" ]]; then
+              short_sha="${GITHUB_SHA::12}"
+              safe="git-${short_sha}"
+            fi
             echo "image_tag=${safe}" >> "$GITHUB_OUTPUT"
           fi
 
@@ -109,8 +113,13 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" && "${{ github.event.action }}" == "published" ]]; then
             echo "image_tag=latest" >> "$GITHUB_OUTPUT"
           else
-            raw="${GITHUB_REF_NAME}"
-            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9._-]+#-#g; s#^-+##; s#-+$##')"
+            raw="${GITHUB_REF_NAME//$'\r'/}"
+            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+            safe="${safe:0:120}"
+            if [[ -z "${safe}" ]]; then
+              short_sha="${GITHUB_SHA::12}"
+              safe="git-${short_sha}"
+            fi
             echo "image_tag=${safe}" >> "$GITHUB_OUTPUT"
           fi
 
@@ -154,8 +163,13 @@ jobs:
           if [[ "${{ github.event_name }}" == "release" && "${{ github.event.action }}" == "published" ]]; then
             echo "image_tag=latest" >> "$GITHUB_ENV"
           else
-            raw="${GITHUB_REF_NAME}"
-            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9._-]+#-#g; s#^-+##; s#-+$##')"
+            raw="${GITHUB_REF_NAME//$'\r'/}"
+            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+            safe="${safe:0:120}"
+            if [[ -z "${safe}" ]]; then
+              short_sha="${GITHUB_SHA::12}"
+              safe="git-${short_sha}"
+            fi
             echo "image_tag=${safe}" >> "$GITHUB_ENV"
           fi
       - name: Check out the repo
