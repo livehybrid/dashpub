@@ -1,28 +1,50 @@
-# Build and runtime use Alpine (musl) per project preference. sharp may compile from source under
-# musl or arm64; the builder installs vips-dev + a full native toolchain and npm devDependencies
-# (node-gyp). The runtime image keeps the same toolchain because the entrypoint runs `npm install`
-# and `npm run build` inside the generated Next.js app.
-FROM node:24-alpine AS builder
+# Build stage
+#
+# Debian (glibc) is used instead of Alpine (musl) because native dependency installs
+# (notably sharp/libvips) are much more reliable across amd64 + arm64 in CI multi-arch builds.
+FROM node:24-bookworm-slim AS builder
 
-RUN apk update && apk upgrade -a && apk add --no-cache \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     git \
     python3 \
-    make \
-    g++ \
-    pkgconf \
-    vips-dev
+    build-essential \
+    pkg-config \
+    libvips-dev \
+  && rm -rf /var/lib/apt/lists/*
 
+# Manually patch glob in system npm to fix vulnerabilities
+RUN mkdir -p /tmp/glob-fix && \
+    cd /tmp/glob-fix && \
+    npm init -y && \
+    npm install glob@^10.5.0 && \
+    rm -rf /usr/local/lib/node_modules/npm/node_modules/glob && \
+    cp -r node_modules/glob /usr/local/lib/node_modules/npm/node_modules/ && \
+    if [ -d "/usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/glob" ]; then \
+      rm -rf /usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/glob && \
+      cp -r node_modules/glob /usr/local/lib/node_modules/npm/node_modules/node-gyp/node_modules/; \
+    fi && \
+    rm -rf /tmp/glob-fix
+
+# Copy source
 COPY . /build
 
-RUN npm install -g node-gyp@^11.5.0 \
-  && cd /build \
-  && npm install --include=dev --no-audit --no-fund
-
+# Install dependencies first, then install global package
+# `sharp` may compile native bindings in CI; keep `node-gyp` available globally *and* install
+# devDependencies (where tooling like `node-gyp` may be declared) so install scripts can resolve it.
+RUN npm install -g node-gyp@^11.5.0
+RUN cd /build && npm install --include=dev --no-audit --no-fund
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
 RUN npm list -g --depth=0
 
+# Manually create dashpub binary if npm didn't create it
 RUN if [ ! -f /usr/local/bin/dashpub ]; then \
       echo "Creating dashpub binary manually..."; \
       echo '#!/usr/bin/env node' > /usr/local/bin/dashpub; \
@@ -34,55 +56,94 @@ RUN if [ ! -f /usr/local/bin/dashpub ]; then \
       echo "dashpub binary already exists"; \
     fi
 
+# Verify dependencies are available
 RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
-FROM node:24-alpine
+# Runtime stage
+FROM node:24-bookworm-slim
 
-RUN apk update && apk upgrade -a && apk add --no-cache \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Runtime dependencies (Chromium + libvips runtime bits for sharp)
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends \
     ca-certificates \
+    curl \
     dumb-init \
     git \
     python3 \
-    make \
-    g++ \
-    pkgconf \
+    build-essential \
+    pkg-config \
     chromium \
-    vips-dev
+    libvips42 \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnss3 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g node-gyp@^11.5.0
 
+# Environment variables for Puppeteer
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-RUN addgroup -g 1001 -S nodejs \
-  && adduser -S -u 1001 -G nodejs nodejs
+# Create app user for security
+RUN groupadd --gid 1001 nodejs \
+  && useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nodejs
 
+# Create npm global directory for user
 RUN mkdir -p /home/nodejs/.npm-global && \
     chown -R nodejs:nodejs /home/nodejs/.npm-global
 
+# Copy global package from builder stage (both modules and binaries)
 COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy build directory for CLI access (including node_modules)
 COPY --from=builder /build /build
 
+# Verify the dashpub binary is available
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in runtime stage"
 RUN echo "Available binaries:" && ls -la /usr/local/bin/
 
+# Copy entrypoint and config
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY docker/config /usr/local/bin/config
 
+# Set working directory
 WORKDIR /home/nodejs
 
+# Set git config
 RUN git config --global user.email "dashpub@yourdomain.com" && \
     git config --global user.name "Splunk DashPub"
 
+# Switch to non-root user
 USER nodejs
 
+# Expose port
 EXPOSE 3000
 
+# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=300s --retries=3 \
   CMD node -e "require('http').get('http://127.0.0.1:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
+# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
+# Start the server
 CMD ["/usr/local/bin/docker-entrypoint.sh"]
