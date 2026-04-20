@@ -4,6 +4,9 @@ FROM node:24-alpine AS builder
 # Install build dependencies and upgrade packages for security (OpenSSL etc.)
 RUN apk update && apk upgrade -a && apk add --no-cache git vips-dev python3 make g++
 
+# sharp may need to compile from source on some platform/node combos; ensure node-gyp is available.
+RUN npm install -g node-gyp@^11.5.0
+
 
 # Manually patch glob in system npm to fix vulnerabilities
 RUN mkdir -p /tmp/glob-fix && \
@@ -48,6 +51,9 @@ FROM node:24-alpine
 
 # Upgrade packages for security (OpenSSL etc.) and install runtime dependencies
 RUN apk update && apk upgrade -a && apk add --no-cache git vips-dev dumb-init python3 make g++ chromium
+
+# Keep node-gyp available in the runtime image too (some installs/scripts may still invoke it).
+RUN npm install -g node-gyp@^11.5.0
 
 # Environment variables for Puppeteer
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
