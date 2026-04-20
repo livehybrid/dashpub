@@ -136,7 +136,7 @@ jobs:
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
           created=0
-          for attempt in $(seq 1 30); do
+          for attempt in $(seq 1 25); do
             set +e
             out="$(docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
               "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
@@ -151,8 +151,10 @@ jobs:
             fi
 
             if echo "${out}" | grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit'; then
-              sleep_seconds="$(( attempt * 5 ))"
-              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/30). Sleeping ${sleep_seconds}s..." >&2
+              pow=$(( 1 << attempt ))
+              if [[ "${pow}" -gt 120 ]]; then pow=120; fi
+              sleep_seconds="${pow}"
+              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/25). Sleeping ${sleep_seconds}s..." >&2
               sleep "${sleep_seconds}"
               continue
             fi
@@ -176,7 +178,7 @@ jobs:
           # human-readable `imagetools inspect` table (and avoids SIGPIPE/`pipefail` issues when the
           # consumer exits before Docker finishes writing output).
           DIGEST=""
-          for attempt in $(seq 1 12); do
+          for attempt in $(seq 1 25); do
             tmp="$(mktemp)"
             set +e
             docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>stderr.log
@@ -193,8 +195,10 @@ jobs:
             rm -f "${tmp}" stderr.log
 
             if echo "${err}" | grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit'; then
-              sleep_seconds="$(( attempt * 10 ))"
-              echo "Docker Hub rate-limited imagetools inspect (attempt ${attempt}/12). Sleeping ${sleep_seconds}s..." >&2
+              pow=$(( 1 << attempt ))
+              if [[ "${pow}" -gt 120 ]]; then pow=120; fi
+              sleep_seconds="${pow}"
+              echo "Docker Hub rate-limited imagetools inspect (attempt ${attempt}/25). Sleeping ${sleep_seconds}s..." >&2
               sleep "${sleep_seconds}"
               continue
             fi
