@@ -137,10 +137,17 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
+          # `docker buildx imagetools inspect` can exit 255 while still printing the summary;
+          # a plain pipeline under `pipefail` would fail. Disable pipefail for this capture only.
           DIGEST="$(
+            set +o pipefail
             docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" \
-              --format '{{.Manifest.Digest}}'
+              | awk '/^Digest:/ {print $2; exit}'
           )"
+          if [[ -z "${DIGEST}" ]]; then
+            echo "Could not resolve digest for livehybrid/splunk-dashpub:${TAG}" >&2
+            exit 1
+          fi
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
 
       - name: Generate artifact attestation
