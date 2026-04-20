@@ -2,7 +2,7 @@
 FROM node:24-alpine AS builder
 
 # Install build dependencies and upgrade packages for security (OpenSSL etc.)
-RUN apk update && apk upgrade -a && apk add --no-cache git vips-dev python3 make g++
+RUN apk update && apk upgrade -a && apk add --no-cache git vips-dev python3 make g++ pkgconf
 
 # sharp may need to compile from source on some platform/node combos; ensure node-gyp is available.
 RUN npm install -g node-gyp@^11.5.0
@@ -25,6 +25,8 @@ RUN mkdir -p /tmp/glob-fix && \
 COPY . /build
 
 # Install dependencies first, then install global package
+# sharp may need to compile from source on some musl/node combinations; ensure node-gyp is available.
+RUN npm install -g node-gyp
 RUN cd /build && npm install
 RUN npm i -g /build
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in builder stage"
