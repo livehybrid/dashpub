@@ -135,7 +135,8 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
-          for attempt in $(seq 1 12); do
+          created=0
+          for attempt in $(seq 1 30); do
             set +e
             out="$(docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
               "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
@@ -145,12 +146,13 @@ jobs:
 
             if [[ "${rc}" -eq 0 ]]; then
               echo "${out}"
+              created=1
               break
             fi
 
             if echo "${out}" | grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit'; then
-              sleep_seconds="$(( attempt * 10 ))"
-              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/12). Sleeping ${sleep_seconds}s..." >&2
+              sleep_seconds="$(( attempt * 5 ))"
+              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/30). Sleeping ${sleep_seconds}s..." >&2
               sleep "${sleep_seconds}"
               continue
             fi
@@ -158,6 +160,11 @@ jobs:
             echo "${out}" >&2
             exit "${rc}"
           done
+
+          if [[ "${created}" -ne 1 ]]; then
+            echo "Failed to create/push multi-arch manifest for livehybrid/splunk-dashpub:${TAG} after retries" >&2
+            exit 1
+          fi
 
       - name: Resolve merged manifest digest
         id: merged
