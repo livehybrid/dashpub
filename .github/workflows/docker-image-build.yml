@@ -147,9 +147,12 @@ jobs:
           IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
           IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
 
+          LOG_DIR="${RUNNER_TEMP:-/tmp}"
+          echo "Using LOG_DIR=${LOG_DIR}"
+
           created=0
           for attempt in $(seq 1 25); do
-            log="${RUNNER_TEMP}/dashpub-imagetools-create.${attempt}.log"
+            log="${LOG_DIR}/dashpub-imagetools-create.${attempt}.log"
             set +e
             rc=0
             {
@@ -220,13 +223,15 @@ jobs:
           TAG="${{ steps.tag.outputs.image_tag }}"
           IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
           IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
+          LOG_DIR="${RUNNER_TEMP:-/tmp}"
+          echo "Using LOG_DIR=${LOG_DIR}"
           # Compute the index digest from the raw manifest bytes. This avoids fragile parsing of the
           # human-readable `imagetools inspect` table (and avoids SIGPIPE/`pipefail` issues when the
           # consumer exits before Docker finishes writing output).
           DIGEST=""
           for attempt in $(seq 1 25); do
-            tmp="${RUNNER_TEMP}/dashpub-imagetools-inspect.${attempt}.raw"
-            errfile="${RUNNER_TEMP}/dashpub-imagetools-inspect.${attempt}.err"
+            tmp="${LOG_DIR}/dashpub-imagetools-inspect.${attempt}.raw"
+            errfile="${LOG_DIR}/dashpub-imagetools-inspect.${attempt}.err"
             set +e
             timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>"${errfile}"
             rc=$?
