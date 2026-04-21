@@ -42,7 +42,7 @@
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "*",
         "@babel/preset-react": "^7.28.5",
-        "@playwright/test": "^1.58.1",
+        "@playwright/test": "^1.58.2",
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^9.2.0",
         "eslint": "^9.39.2",
