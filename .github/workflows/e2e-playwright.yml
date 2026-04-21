@@ -32,17 +32,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Skip E2E when Splunk secrets are unavailable
+        id: splunk
+        shell: bash
+        env:
+          SPLUNKD_HOST: ${{ secrets.SPLUNKD_HOST }}
+          SPLUNKD_TOKEN: ${{ secrets.SPLUNKD_TOKEN }}
+          SPLUNKD_URL: ${{ secrets.SPLUNKD_URL }}
+        run: |
+          set -euo pipefail
+          # Fork PRs (and some lightweight CI configurations) do not receive repository secrets.
+          # Without Splunk credentials, the DashPub container cannot initialize and the suite will fail
+          # with repeated Splunkd HTTP 401s while "waiting for health".
+          if [[ -z "${SPLUNKD_TOKEN}" && -z "${SPLUNKD_URL}" && -z "${SPLUNKD_HOST}" ]]; then
+            echo "Skipping Playwright E2E: no SPLUNKD_* secrets available for this workflow run."
+            echo "To run E2E in CI, configure SPLUNKD_TOKEN (and SPLUNKD_HOST/SPLUNKD_URL as needed) as repository secrets."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Node.js
+        if: steps.splunk.outputs.skip != 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npm ci
 
       - name: Build Vite application
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npm run build
         env:
@@ -50,10 +73,12 @@ jobs:
           NODE_ENV: production
 
       - name: Build Docker image
+        if: steps.splunk.outputs.skip != 'true'
         run: |
           docker build -t dashpub-e2e -f docker/Dockerfile .
 
       - name: Start Docker container
+        if: steps.splunk.outputs.skip != 'true'
         env:
           SPLUNKD_HOST: ${{ secrets.SPLUNKD_HOST }}
           SPLUNKD_PORT: ${{ vars.SPLUNKD_PORT || '8089' }}
@@ -86,6 +111,7 @@ jobs:
             dashpub-e2e
 
       - name: Wait for container to be healthy
+        if: steps.splunk.outputs.skip != 'true'
         run: |
           echo "Waiting for application to be ready..."
           max_attempts=60
@@ -107,10 +133,12 @@ jobs:
 
 
       - name: Install Playwright browsers
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests against Docker container
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npx playwright test
         env:
@@ -128,7 +156,7 @@ jobs:
 
       # Upload test artifacts (screenshots, videos, HTML report)
       - name: Upload Playwright Report
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
@@ -139,7 +167,7 @@ jobs:
           
       # Upload specific screenshots for easy access
       - name: Upload Dashboard Screenshots
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: dashboard-screenshots
@@ -148,12 +176,12 @@ jobs:
 
       # Cleanup
       - name: Stop and Remove Container
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         run: |
           docker stop dashpub-e2e || true
           docker rm dashpub-e2e || true
 
       - name: Clean up Docker image
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         run: |
           docker rmi dashpub-e2e || true
