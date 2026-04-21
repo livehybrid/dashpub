@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - develop
+      # Validates multi-arch Docker builds on feature branches (Docker tag is sanitised ref name).
+      - 'feat/**'
       - ws-*
       - v*
     tags:
@@ -14,17 +16,28 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  # Keep only the latest run per branch/ref; older runs are superseded once a new commit lands.
   cancel-in-progress: true
 
 jobs:
-  push_to_registry:
-    name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
+  build_platform:
+    name: Build and push (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Build each architecture on a native GitHub-hosted runner to avoid QEMU/binfmt pulls
+          # from Docker Hub (which are easy to rate-limit on busy accounts).
+          - platform: linux/amd64
+            tag_suffix: linux-amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            tag_suffix: linux-arm64
+            runner: ubuntu-24.04-arm
     permissions:
       packages: write
       contents: read
-      attestations: write
-      id-token: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v6
@@ -35,38 +48,260 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Set up QEMU
+        # QEMU should not be needed when `runs-on` matches the target architecture, but keep this
+        # as a safety valve for unexpected hosted runner migrations.
+        if: (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64'))
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute image tag
+        id: tag
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" && "${{ github.event.action }}" == "published" ]]; then
+            echo "image_tag=latest" >> "$GITHUB_OUTPUT"
+          else
+            raw="${GITHUB_REF_NAME//$'\r'/}"
+            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+            safe="${safe:0:120}"
+            if [[ -z "${safe}" ]]; then
+              short_sha="${GITHUB_SHA::12}"
+              safe="git-${short_sha}"
+            fi
+            echo "image_tag=${safe}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract metadata (labels) for Docker
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
         with:
           images: livehybrid/splunk-dashpub
-          tags: ${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || github.ref_name }}
+          tags: |
+            type=raw,value=${{ steps.tag.outputs.image_tag }}-${{ matrix.tag_suffix }}
 
-      - name: Build and push Docker image
+      - name: Build and push per-platform image
         id: push
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
         with:
           context: .
           file: ./docker/Dockerfile
+          platforms: ${{ matrix.platform }}
           push: true
+          # BuildKit provenance/SBOM attachments publish extra "unknown/unknown" platform manifests.
+          # Those complicate downstream `docker manifest` merges; we generate provenance separately
+          # in the `merge_manifest` job when needed.
+          provenance: false
+          sbom: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  merge_manifest:
+    name: Merge multi-arch manifest
+    runs-on: ubuntu-latest
+    needs: [build_platform]
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute image tag
+        id: tag
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" && "${{ github.event.action }}" == "published" ]]; then
+            echo "image_tag=latest" >> "$GITHUB_OUTPUT"
+          else
+            raw="${GITHUB_REF_NAME//$'\r'/}"
+            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+            safe="${safe:0:120}"
+            if [[ -z "${safe}" ]]; then
+              short_sha="${GITHUB_SHA::12}"
+              safe="git-${short_sha}"
+            fi
+            echo "image_tag=${safe}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push multi-arch manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.tag.outputs.image_tag }}"
+          # Merge the per-architecture tags into a single multi-arch tag.
+          #
+          # NOTE: Avoid wrapping `docker buildx imagetools create` in `$(...)`. Buildx can be very chatty;
+          # capturing stdout+stderr into a shell command substitution can deadlock once the pipe buffer fills.
+          IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
+          IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
+
+          LOG_DIR="${RUNNER_TEMP:-/tmp}"
+          echo "Using LOG_DIR=${LOG_DIR}"
+
+          created=0
+          for attempt in $(seq 1 25); do
+            log="${LOG_DIR}/dashpub-imagetools-create.${attempt}.log"
+            set +e
+            rc=0
+            {
+              echo "== docker buildx imagetools create (attempt ${attempt}/25) ==";
+              timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" \
+                docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
+                "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
+                "livehybrid/splunk-dashpub:${TAG}-linux-arm64"
+              create_rc=$?
+
+              if [[ "${create_rc}" -ne 0 ]]; then
+                exit "${create_rc}"
+              fi
+              exit 0
+            } >"${log}" 2>&1 || rc=$?
+            set -e
+
+            if [[ "${rc}" -eq 0 ]]; then
+              cat "${log}"
+              rm -f "${log}"
+              created=1
+              break
+            fi
+
+            if [[ "${rc}" -eq 124 ]]; then
+              echo "Timed out waiting for docker buildx imagetools create (attempt ${attempt}/25, timeout=${IMAGETOOLS_TIMEOUT_SECONDS}s)." >&2
+              echo "--- imagetools create log (tail) ---" >&2
+              tail -n 200 "${log}" >&2 || true
+              rm -f "${log}"
+              pow=$(( 1 << attempt ))
+              if [[ "${pow}" -gt 120 ]]; then pow=120; fi
+              sleep_seconds="${pow}"
+              echo "Sleeping ${sleep_seconds}s before retry..." >&2
+              sleep "${sleep_seconds}"
+              continue
+            fi
+
+            # NOTE: `grep` exits 1 on "no match". With `set -e`, a bare `grep ...` would abort the step
+            # before we can print the captured log — keep it inside an `if`.
+            if grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit' "${log}"; then
+              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/25)." >&2
+              echo "--- imagetools create log (tail) ---" >&2
+              tail -n 200 "${log}" >&2 || true
+              rm -f "${log}"
+              pow=$(( 1 << attempt ))
+              if [[ "${pow}" -gt 120 ]]; then pow=120; fi
+              sleep_seconds="${pow}"
+              echo "Sleeping ${sleep_seconds}s..." >&2
+              sleep "${sleep_seconds}"
+              continue
+            fi
+
+            cat "${log}" >&2
+            rm -f "${log}"
+            exit "${rc}"
+          done
+
+          if [[ "${created}" -ne 1 ]]; then
+            echo "Failed to create/push multi-arch manifest for livehybrid/splunk-dashpub:${TAG} after retries" >&2
+            exit 1
+          fi
+
+      - name: Resolve merged manifest digest
+        id: merged
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.tag.outputs.image_tag }}"
+          IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
+          IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
+          LOG_DIR="${RUNNER_TEMP:-/tmp}"
+          echo "Using LOG_DIR=${LOG_DIR}"
+          # Compute the index digest from the raw manifest bytes. This avoids fragile parsing of the
+          # human-readable `imagetools inspect` table (and avoids SIGPIPE/`pipefail` issues when the
+          # consumer exits before Docker finishes writing output).
+          DIGEST=""
+          for attempt in $(seq 1 25); do
+            tmp="${LOG_DIR}/dashpub-imagetools-inspect.${attempt}.raw"
+            errfile="${LOG_DIR}/dashpub-imagetools-inspect.${attempt}.err"
+            set +e
+            timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>"${errfile}"
+            rc=$?
+            set -e
+
+            if [[ "${rc}" -eq 0 ]]; then
+              DIGEST="$(python3 -c 'import hashlib,sys; data=open(sys.argv[1],"rb").read(); print("sha256:"+hashlib.sha256(data).hexdigest())' "${tmp}")"
+              rm -f "${tmp}" "${errfile}"
+              break
+            fi
+
+            err="$(cat "${errfile}" || true)"
+            rm -f "${tmp}" "${errfile}"
+
+            if [[ "${rc}" -eq 124 ]]; then
+              echo "Timed out waiting for docker buildx imagetools inspect --raw (attempt ${attempt}/25, timeout=${IMAGETOOLS_TIMEOUT_SECONDS}s)." >&2
+              pow=$(( 1 << attempt ))
+              if [[ "${pow}" -gt 120 ]]; then pow=120; fi
+              sleep_seconds="${pow}"
+              echo "Sleeping ${sleep_seconds}s before retry..." >&2
+              sleep "${sleep_seconds}"
+              continue
+            fi
+
+            if echo "${err}" | grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit'; then
+              pow=$(( 1 << attempt ))
+              if [[ "${pow}" -gt 120 ]]; then pow=120; fi
+              sleep_seconds="${pow}"
+              echo "Docker Hub rate-limited imagetools inspect (attempt ${attempt}/25). Sleeping ${sleep_seconds}s..." >&2
+              sleep "${sleep_seconds}"
+              continue
+            fi
+
+            echo "${err}" >&2
+            exit "${rc}"
+          done
+          if [[ -z "${DIGEST}" ]]; then
+            echo "Could not resolve digest for livehybrid/splunk-dashpub:${TAG}" >&2
+            exit 1
+          fi
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: index.docker.io/livehybrid/splunk-dashpub
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-digest: ${{ steps.merged.outputs.digest }}
           push-to-registry: true
 
   scan:
     name: Trivy Scan
     runs-on: ubuntu-latest
-    needs: push_to_registry
+    needs: [merge_manifest]
     steps:
       - name: Set Trivy Image Tag
         id: set-tag
-        run: echo "image_tag=${{ github.event_name == 'release' && github.event.action == 'published' && 'latest' || github.ref_name }}" >> $GITHUB_ENV
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "release" && "${{ github.event.action }}" == "published" ]]; then
+            echo "image_tag=latest" >> "$GITHUB_ENV"
+          else
+            raw="${GITHUB_REF_NAME//$'\r'/}"
+            safe="$(printf '%s' "${raw}" | tr '[:upper:]' '[:lower:]' | tr '/' '-' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+            safe="${safe:0:120}"
+            if [[ -z "${safe}" ]]; then
+              short_sha="${GITHUB_SHA::12}"
+              safe="git-${short_sha}"
+            fi
+            echo "image_tag=${safe}" >> "$GITHUB_ENV"
+          fi
       - name: Check out the repo
         uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner

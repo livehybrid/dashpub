@@ -17,6 +17,7 @@ on:
   workflow_dispatch: # Allow manual triggering
 
 concurrency:
+  # Keep only the latest E2E run per branch/ref to avoid queueing stale runs.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -30,17 +31,110 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Skip E2E when Splunk secrets are unavailable
+        id: splunk
+        shell: bash
+        env:
+          SPLUNKD_HOST: ${{ secrets.SPLUNKD_HOST }}
+          SPLUNKD_TOKEN: ${{ secrets.SPLUNKD_TOKEN }}
+          SPLUNKD_URL: ${{ secrets.SPLUNKD_URL }}
+          SPLUNKD_PORT: ${{ vars.SPLUNKD_PORT || '8089' }}
+        run: |
+          set -euo pipefail
+          # Fork PRs (and some lightweight CI configurations) do not receive repository secrets.
+          # Without Splunk credentials, the DashPub container cannot initialize and the suite will fail
+          # with repeated Splunkd HTTP 401s while "waiting for health".
+          trim() {
+            # shellcheck disable=SC2001
+            printf '%s' "$1" | sed -e 's/^[[:space:]]*//; s/[[:space:]]*$//'
+          }
+
+          HOST="$(trim "${SPLUNKD_HOST:-}")"
+          TOKEN="$(trim "${SPLUNKD_TOKEN:-}")"
+          URL="$(trim "${SPLUNKD_URL:-}")"
+          PORT="$(trim "${SPLUNKD_PORT:-8089}")"
+
+          if [[ -z "${TOKEN}" && -z "${URL}" && -z "${HOST}" ]]; then
+            echo "Skipping Playwright E2E: no SPLUNKD_* secrets available for this workflow run."
+            echo "To run E2E in CI, configure SPLUNKD_TOKEN (and SPLUNKD_HOST/SPLUNKD_URL as needed) as repository secrets."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "${TOKEN}" ]]; then
+            echo "Skipping Playwright E2E: SPLUNKD_TOKEN is empty (host/url alone cannot authenticate)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "${URL}" ]]; then
+            if [[ -z "${HOST}" ]]; then
+              echo "Skipping Playwright E2E: SPLUNKD_URL is empty and SPLUNKD_HOST is not set."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            URL="https://${HOST}:${PORT}"
+          fi
+
+          auth_header() {
+            local t="$1"
+            if [[ "$(printf '%s' "${t}" | awk -F. '{print NF}')" -eq 3 ]] && [[ "${t}" =~ ^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]]; then
+              printf 'Bearer %s' "${t}"
+            else
+              printf 'Splunk %s' "${t}"
+            fi
+          }
+
+          AUTH_HDR="$(auth_header "${TOKEN}")"
+          CHECK_URL="${URL%/}/services/server/info?output_mode=json"
+
+          echo "Checking Splunk management API auth (non-fatal for CI gating)..."
+          set +e
+          http_code="$(
+            curl -sS \
+              --max-time 20 \
+              --retry 0 \
+              -o /dev/null \
+              -w '%{http_code}' \
+              -H "Authorization: ${AUTH_HDR}" \
+              "${CHECK_URL}" \
+              2>/tmp/splunk_curl.err
+          )"
+          rc=$?
+          set -e
+
+          if [[ "${rc}" -ne 0 ]]; then
+            echo "Skipping Playwright E2E: could not reach Splunk management API (${CHECK_URL})."
+            echo "curl exit=${rc}" >&2
+            cat /tmp/splunk_curl.err >&2 || true
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${http_code}" == "200" ]]; then
+            echo "Splunk management API auth OK (HTTP ${http_code})."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Skipping Playwright E2E: Splunk management API returned HTTP ${http_code} for ${CHECK_URL}."
+          echo "This usually means SPLUNKD_TOKEN is missing/invalid for CI, or Splunk is rejecting the request."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node.js
+        if: steps.splunk.outputs.skip != 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npm ci
 
       - name: Build Vite application
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npm run build
         env:
@@ -48,10 +142,12 @@ jobs:
           NODE_ENV: production
 
       - name: Build Docker image
+        if: steps.splunk.outputs.skip != 'true'
         run: |
           docker build -t dashpub-e2e -f docker/Dockerfile .
 
       - name: Start Docker container
+        if: steps.splunk.outputs.skip != 'true'
         env:
           SPLUNKD_HOST: ${{ secrets.SPLUNKD_HOST }}
           SPLUNKD_PORT: ${{ vars.SPLUNKD_PORT || '8089' }}
@@ -84,6 +180,7 @@ jobs:
             dashpub-e2e
 
       - name: Wait for container to be healthy
+        if: steps.splunk.outputs.skip != 'true'
         run: |
           echo "Waiting for application to be ready..."
           max_attempts=60
@@ -105,10 +202,12 @@ jobs:
 
 
       - name: Install Playwright browsers
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests against Docker container
+        if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
         run: npx playwright test
         env:
@@ -126,7 +225,7 @@ jobs:
 
       # Upload test artifacts (screenshots, videos, HTML report)
       - name: Upload Playwright Report
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
@@ -137,7 +236,7 @@ jobs:
           
       # Upload specific screenshots for easy access
       - name: Upload Dashboard Screenshots
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: dashboard-screenshots
@@ -146,12 +245,12 @@ jobs:
 
       # Cleanup
       - name: Stop and Remove Container
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         run: |
           docker stop dashpub-e2e || true
           docker rm dashpub-e2e || true
 
       - name: Clean up Docker image
-        if: always()
+        if: always() && steps.splunk.outputs.skip != 'true'
         run: |
           docker rmi dashpub-e2e || true

@@ -22,6 +22,23 @@ const qs = obj =>
         .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
         .join('&');
 
+/**
+ * Splunk supports multiple token shapes for REST:
+ * - JSON Web Tokens (JWT) authentication tokens → `Authorization: Bearer <token>`
+ * - Classic session keys / many server-issued tokens → `Authorization: Splunk <token>`
+ *
+ * Picking the wrong scheme yields HTTP 401 ("call not properly authenticated") even when the token is valid.
+ */
+function splunkAuthorizationHeader(token) {
+    const t = String(token).trim();
+    if (!t) {
+        return null;
+    }
+
+    const looksLikeJwt = t.split('.').length === 3 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(t);
+    return looksLikeJwt ? `Bearer ${t}` : `Splunk ${t}`;
+}
+
 const splunkd = (
     method,
     path,
@@ -29,7 +46,9 @@ const splunkd = (
     returnJson = true
 ) => {
     console.log(`${url}${path}`);
-    const AUTH_HEADER = token ? `Bearer ${token}` : `Basic ${Buffer.from([username, password].join(':')).toString('base64')}`;
+    const AUTH_HEADER = token
+        ? splunkAuthorizationHeader(token)
+        : `Basic ${Buffer.from([username, password].join(':')).toString('base64')}`;
     return fetch(`${url}${path}`, {
         method,
         headers: {
