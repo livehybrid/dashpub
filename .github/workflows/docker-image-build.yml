@@ -200,6 +200,8 @@ jobs:
               continue
             fi
 
+            # NOTE: `grep` exits 1 on "no match". With `set -e`, a bare `grep ...` would abort the step
+            # before we can print the captured log — use a proper `if` test instead.
             if grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit' "${log}"; then
               echo "Docker Hub rate-limited docker manifest push (attempt ${attempt}/25)." >&2
               echo "--- manifest merge log (tail) ---" >&2
