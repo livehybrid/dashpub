@@ -72,17 +72,6 @@ RUN apk update && apk upgrade -a && apk add --no-cache \
 
 RUN npm install -g npm@11.12.1
 
-RUN mkdir -p /tmp/picomatch-fix && \
-    cd /tmp/picomatch-fix && \
-    npm init -y >/dev/null 2>&1 && \
-    npm install picomatch@^4.0.4 >/dev/null 2>&1 && \
-    target="/usr/local/lib/node_modules/npm/node_modules/tinyglobby/node_modules/picomatch" && \
-    if [ -d "$target" ]; then \
-      rm -rf "$target" && \
-      cp -r node_modules/picomatch "$target"; \
-    fi && \
-    rm -rf /tmp/picomatch-fix
-
 RUN npm install -g node-gyp@^11.5.0
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true \
@@ -97,6 +86,20 @@ RUN mkdir -p /home/nodejs/.npm-global && \
 COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /build /build
+
+# The builder stage may ship its own copy of npm's bundled dependencies under `/usr/local/lib/node_modules`.
+# Re-apply the bundled `picomatch` bump after copying so Trivy doesn't flag the older transitive version
+# that ships with npm's `tinyglobby` dependency chain.
+RUN mkdir -p /tmp/picomatch-fix && \
+    cd /tmp/picomatch-fix && \
+    npm init -y >/dev/null 2>&1 && \
+    npm install picomatch@^4.0.4 >/dev/null 2>&1 && \
+    target="/usr/local/lib/node_modules/npm/node_modules/tinyglobby/node_modules/picomatch" && \
+    if [ -d "$target" ]; then \
+      rm -rf "$target" && \
+      cp -r node_modules/picomatch "$target"; \
+    fi && \
+    rm -rf /tmp/picomatch-fix
 
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in runtime stage"
 RUN echo "Available binaries:" && ls -la /usr/local/bin/
