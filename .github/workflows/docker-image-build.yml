@@ -140,41 +140,28 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
-          # Prefer `docker manifest` over `docker buildx imagetools create` for the final tag merge.
-          # In practice we've seen `imagetools create` wedge on hosted runners; `docker manifest` uses the
-          # classic registry client path and tends to be more predictable for simple index merges.
-          export DOCKER_CLI_EXPERIMENTAL=enabled
-
-          MANIFEST_TIMEOUT_SECONDS="${MANIFEST_TIMEOUT_SECONDS:-600}"
-          MANIFEST_FORCE_KILL_SECONDS="${MANIFEST_FORCE_KILL_SECONDS:-10}"
-
-          TARGET="livehybrid/splunk-dashpub:${TAG}"
-          AMD="livehybrid/splunk-dashpub:${TAG}-linux-amd64"
-          ARM="livehybrid/splunk-dashpub:${TAG}-linux-arm64"
+          # Merge the per-architecture tags into a single multi-arch tag.
+          #
+          # NOTE: Avoid wrapping `docker buildx imagetools create` in `$(...)`. Buildx can be very chatty;
+          # capturing stdout+stderr into a shell command substitution can deadlock once the pipe buffer fills.
+          IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
+          IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
 
           created=0
           for attempt in $(seq 1 25); do
             log="$(mktemp)"
             set +e
-            docker manifest rm "${TARGET}" >/dev/null 2>&1 || true
-
             rc=0
             {
-              echo "== docker manifest create (attempt ${attempt}/25) ==";
-              timeout -k "${MANIFEST_FORCE_KILL_SECONDS}" "${MANIFEST_TIMEOUT_SECONDS}" \
-                docker manifest create "${TARGET}" "${AMD}" "${ARM}"
+              echo "== docker buildx imagetools create (attempt ${attempt}/25) ==";
+              timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" \
+                docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
+                "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
+                "livehybrid/splunk-dashpub:${TAG}-linux-arm64"
               create_rc=$?
-
-              echo "== docker manifest push ==";
-              timeout -k "${MANIFEST_FORCE_KILL_SECONDS}" "${MANIFEST_TIMEOUT_SECONDS}" \
-                docker manifest push "${TARGET}"
-              push_rc=$?
 
               if [[ "${create_rc}" -ne 0 ]]; then
                 exit "${create_rc}"
-              fi
-              if [[ "${push_rc}" -ne 0 ]]; then
-                exit "${push_rc}"
               fi
               exit 0
             } >"${log}" 2>&1 || rc=$?
@@ -188,8 +175,8 @@ jobs:
             fi
 
             if [[ "${rc}" -eq 124 ]]; then
-              echo "Timed out during docker manifest merge/push (attempt ${attempt}/25, timeout=${MANIFEST_TIMEOUT_SECONDS}s)." >&2
-              echo "--- manifest merge log (tail) ---" >&2
+              echo "Timed out waiting for docker buildx imagetools create (attempt ${attempt}/25, timeout=${IMAGETOOLS_TIMEOUT_SECONDS}s)." >&2
+              echo "--- imagetools create log (tail) ---" >&2
               tail -n 200 "${log}" >&2 || true
               rm -f "${log}"
               pow=$(( 1 << attempt ))
@@ -201,10 +188,10 @@ jobs:
             fi
 
             # NOTE: `grep` exits 1 on "no match". With `set -e`, a bare `grep ...` would abort the step
-            # before we can print the captured log — use a proper `if` test instead.
+            # before we can print the captured log — keep it inside an `if`.
             if grep -Eiq '429|Too Many Requests|toomanyrequests|rate limit' "${log}"; then
-              echo "Docker Hub rate-limited docker manifest push (attempt ${attempt}/25)." >&2
-              echo "--- manifest merge log (tail) ---" >&2
+              echo "Docker Hub rate-limited imagetools create (attempt ${attempt}/25)." >&2
+              echo "--- imagetools create log (tail) ---" >&2
               tail -n 200 "${log}" >&2 || true
               rm -f "${log}"
               pow=$(( 1 << attempt ))
