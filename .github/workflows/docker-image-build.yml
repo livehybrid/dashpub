@@ -149,7 +149,7 @@ jobs:
 
           created=0
           for attempt in $(seq 1 25); do
-            log="$(mktemp)"
+            log="${RUNNER_TEMP}/dashpub-imagetools-create.${attempt}.log"
             set +e
             rc=0
             {
@@ -225,20 +225,21 @@ jobs:
           # consumer exits before Docker finishes writing output).
           DIGEST=""
           for attempt in $(seq 1 25); do
-            tmp="$(mktemp)"
+            tmp="${RUNNER_TEMP}/dashpub-imagetools-inspect.${attempt}.raw"
+            errfile="${RUNNER_TEMP}/dashpub-imagetools-inspect.${attempt}.err"
             set +e
-            timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>stderr.log
+            timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>"${errfile}"
             rc=$?
             set -e
 
             if [[ "${rc}" -eq 0 ]]; then
               DIGEST="$(python3 -c 'import hashlib,sys; data=open(sys.argv[1],"rb").read(); print("sha256:"+hashlib.sha256(data).hexdigest())' "${tmp}")"
-              rm -f "${tmp}" stderr.log
+              rm -f "${tmp}" "${errfile}"
               break
             fi
 
-            err="$(cat stderr.log || true)"
-            rm -f "${tmp}" stderr.log
+            err="$(cat "${errfile}" || true)"
+            rm -f "${tmp}" "${errfile}"
 
             if [[ "${rc}" -eq 124 ]]; then
               echo "Timed out waiting for docker buildx imagetools inspect --raw (attempt ${attempt}/25, timeout=${IMAGETOOLS_TIMEOUT_SECONDS}s)." >&2
