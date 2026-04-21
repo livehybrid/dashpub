@@ -17,10 +17,9 @@ on:
   workflow_dispatch: # Allow manual triggering
 
 concurrency:
-  # Include the commit SHA so rapid updates to a PR don't cancel an in-flight E2E run
-  # (GitHub can otherwise treat merge-queue / merge-ref updates as "higher priority" and cancel work).
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  # Keep only the latest E2E run per branch/ref to avoid queueing stale runs.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   e2e-tests:
