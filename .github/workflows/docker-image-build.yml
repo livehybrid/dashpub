@@ -138,10 +138,11 @@ jobs:
           # `docker buildx imagetools` can occasionally wedge on registry/network issues; bound each attempt
           # so the job fails fast instead of sitting "in progress" until the runner times out.
           IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
+          IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
           created=0
           for attempt in $(seq 1 25); do
             set +e
-            out="$(timeout "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
+            out="$(timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools create -t "livehybrid/splunk-dashpub:${TAG}" \
               "livehybrid/splunk-dashpub:${TAG}-linux-amd64" \
               "livehybrid/splunk-dashpub:${TAG}-linux-arm64" 2>&1)"
             rc=$?
@@ -188,6 +189,7 @@ jobs:
           set -euo pipefail
           TAG="${{ steps.tag.outputs.image_tag }}"
           IMAGETOOLS_TIMEOUT_SECONDS="${IMAGETOOLS_TIMEOUT_SECONDS:-600}"
+          IMAGETOOLS_FORCE_KILL_SECONDS="${IMAGETOOLS_FORCE_KILL_SECONDS:-10}"
           # Compute the index digest from the raw manifest bytes. This avoids fragile parsing of the
           # human-readable `imagetools inspect` table (and avoids SIGPIPE/`pipefail` issues when the
           # consumer exits before Docker finishes writing output).
@@ -195,7 +197,7 @@ jobs:
           for attempt in $(seq 1 25); do
             tmp="$(mktemp)"
             set +e
-            timeout "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>stderr.log
+            timeout -k "${IMAGETOOLS_FORCE_KILL_SECONDS}" "${IMAGETOOLS_TIMEOUT_SECONDS}" docker buildx imagetools inspect "livehybrid/splunk-dashpub:${TAG}" --raw >"${tmp}" 2>stderr.log
             rc=$?
             set -e
 
