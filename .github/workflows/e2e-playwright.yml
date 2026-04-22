@@ -226,7 +226,7 @@ jobs:
       # Upload test artifacts (screenshots, videos, HTML report)
       - name: Upload Playwright Report
         if: always() && steps.splunk.outputs.skip != 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |
@@ -237,7 +237,7 @@ jobs:
       # Upload specific screenshots for easy access
       - name: Upload Dashboard Screenshots
         if: always() && steps.splunk.outputs.skip != 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dashboard-screenshots
           path: template/test-results/**/*.png
