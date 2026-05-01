@@ -52,7 +52,7 @@ jobs:
         # QEMU should not be needed when `runs-on` matches the target architecture, but keep this
         # as a safety valve for unexpected hosted runner migrations.
         if: (runner.arch == 'X64' && contains(matrix.platform, 'arm64')) || (runner.arch == 'ARM64' && contains(matrix.platform, 'amd64'))
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
