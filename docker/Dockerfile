@@ -1,7 +1,7 @@
 # Build and runtime use Alpine (musl) — project preference.
 # `sharp` may compile from source under musl/arm64; builder installs vips-dev + a native toolchain.
 # Base images are pulled via AWS Public ECR mirror of Docker Hub `library/*` to reduce Hub rate limits in CI.
-FROM public.ecr.aws/docker/library/node:24-alpine AS builder
+FROM public.ecr.aws/docker/library/node:25-alpine AS builder
 
 RUN apk update && apk upgrade -a && apk add --no-cache \
     ca-certificates \
@@ -51,7 +51,7 @@ RUN if [ ! -f /usr/local/bin/dashpub ]; then \
 RUN echo "Checking if inquirer is available in build directory:"
 RUN cd /build && node -e "try { import('inquirer'); console.log('inquirer found'); } catch(e) { console.log('inquirer not found:', e.message); }"
 
-FROM public.ecr.aws/docker/library/node:24-alpine
+FROM public.ecr.aws/docker/library/node:25-alpine
 
 RUN apk update && apk upgrade -a && apk add --no-cache \
     ca-certificates \
