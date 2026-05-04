@@ -31,7 +31,7 @@
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "18.3.1",
         "react-resize-detector": "^12.3.0",
-        "react-router-dom": "^7.13.0",
+        "react-router-dom": "^7.14.2",
         "styled-components": "5.3.11",
         "tinyglobby": "*",
         "@vitejs/plugin-react": "^6.0.1",
