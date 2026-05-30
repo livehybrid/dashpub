@@ -35,7 +35,7 @@
         "fs-extra": "^11.2.0",
         "inquirer": "^13.0.2",
         "node-addon-api": "^8.0.0",
-        "node-gyp": "11.5.0",
+        "node-gyp": "12.3.0",
         "sharp": "^0.34.3",
         "xmldoc": "^2.0.2"
     },
