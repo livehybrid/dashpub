@@ -64,9 +64,17 @@ async function findCustomVizJsFilesInDirectory() {
 async function updateCustomViz(files, srcFolder, destFolder) {
     const presetFilePath = path.join(destFolder, 'src/preset.js');
     try {
-        let customVizEntries = files.map(file => {
-            const componentName = file.replace('.jsx', '');
-            fs.copy(path.join(srcFolder, file), path.join(destFolder,'src', 'custom_components', file));
+        // Copy all files (including .js helpers) before building
+        await Promise.all(
+            files.map(file =>
+                fs.copy(path.join(srcFolder, file), path.join(destFolder, 'src', 'custom_components', file))
+            )
+        );
+
+        // Only register .jsx files as viz components (not helper .js files or index.jsx)
+        const vizFiles = files.filter(file => file.endsWith('.jsx') && file !== 'index.jsx');
+        const customVizEntries = vizFiles.map(file => {
+            const componentName = file.replace(/\.jsx$/, '');
             return `'custom.${componentName}': commonFlags(lazy(() => import('./custom_components/${componentName}'))),`;
         }).join('\n    ');
 
