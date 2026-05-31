@@ -54,7 +54,7 @@ async function findCustomVizJsFilesInDirectory() {
     }
     try {
         const files = await fs.readdir(dirPath);
-        return files.filter(file => file.endsWith('.jsx'));
+        return files.filter(file => file.endsWith('.jsx') || file.endsWith('.js'));
     } catch (error) {
         console.error("Error reading directory:", error);
         return [];

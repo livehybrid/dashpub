@@ -63,18 +63,11 @@ Different data types have different TTLs:
 
 ## Configuration
 
-### Cache Cleanup
-
-```bash
-# Cleanup interval (seconds)
-CACHE_CLEANUP_INTERVAL=300
-```
-
 ### Rate Limiting
 
 ```bash
-# Rate limit window (minutes)
-RATE_LIMIT_WINDOW=15
+# Rate limit window in milliseconds (default: 900000 = 15 minutes)
+RATE_LIMIT_WINDOW_MS=900000
 
 # Maximum requests per window
 RATE_LIMIT_MAX_REQUESTS=1000

@@ -106,11 +106,8 @@ REACT_APP_TAB_ROTATION_ENABLED=true
 ## Performance & Caching
 
 ```bash
-# Cache cleanup interval (seconds)
-CACHE_CLEANUP_INTERVAL=300
-
-# Rate limiting window (minutes)
-RATE_LIMIT_WINDOW=15
+# Rate limiting window in milliseconds (default: 900000 = 15 minutes)
+RATE_LIMIT_WINDOW_MS=900000
 
 # Maximum requests per window
 RATE_LIMIT_MAX_REQUESTS=1000
