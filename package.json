@@ -33,7 +33,7 @@
         "dotenv": "^17.2.1",
         "execa": "^9.5.2",
         "fs-extra": "^11.2.0",
-        "inquirer": "^13.0.2",
+        "inquirer": "^14.0.2",
         "node-addon-api": "^8.0.0",
         "node-gyp": "12.3.0",
         "sharp": "^0.34.3",
