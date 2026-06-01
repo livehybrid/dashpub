@@ -26,7 +26,7 @@
         "jsonwebtoken": "9.0.3",
         "postcss": "8.5.14",
         "query-string": "9.3.1",
-        "querystring": "0.2.1",
+        "querystring": "npm:querystring-es3@^0.2.1",
         "react": "18.3.1",
         "react-bootstrap-icons": "^1.11.5",
         "react-dom": "18.3.1",
@@ -40,7 +40,7 @@
         "vite-plugin-node-polyfills": "^0.26.0"
     },
     "devDependencies": {
-        "@babel/plugin-proposal-private-property-in-object": "*",
+        "@babel/plugin-transform-private-property-in-object": "^7.29.7",
         "@babel/preset-react": "^7.29.7",
         "@playwright/test": "^1.59.1",
         "babel-plugin-styled-components": "^2.1.4",
@@ -49,13 +49,15 @@
         "puppeteer": "^24.43.0"
     },
     "overrides": {
-        "tar": "^7.5.7"
+        "tar": "^7.5.7",
+        "querystring": "npm:querystring-es3@^0.2.1"
     },
     "resolutions": {
         "tar": "^7.5.7",
         "@splunk/datasource-utils": "29.0.0",
         "@splunk/react-icons": "5.11.0",
         "decode-uri-component": "0.4.1",
+        "querystring": "npm:querystring-es3@^0.2.1",
         "query-string": "9.3.1",
         "regenerator-runtime": "0.14.0",
         "tslib": "2.6.2",
