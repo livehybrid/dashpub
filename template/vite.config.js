@@ -1,12 +1,7 @@
-import { defineConfig } from 'vite';
+import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
-import viteCommonjs from 'vite-plugin-commonjs';
 import path from 'path';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import { transform } from 'esbuild';
-
-// Removed CSS mock plugin - Vite handles CSS imports natively
-
 // Custom plugin to transform .js files with JSX before Rollup parses them
 const jsxInJsPlugin = () => ({
   name: 'jsx-in-js',
@@ -15,10 +10,9 @@ const jsxInJsPlugin = () => ({
     // Only transform .js files in src/components that contain JSX syntax
     if (id.endsWith('.js') && id.includes('src/components') && /<[A-Za-z]/.test(code)) {
       try {
-        const result = await transform(code, {
+        const result = await transformWithEsbuild(code, id, {
           loader: 'jsx',
           jsx: 'automatic',
-          format: 'esm',
           target: 'es2015',
         });
         return {
@@ -43,20 +37,6 @@ export default defineConfig({
       include: /\.jsx$/,
       jsxRuntime: 'automatic',
     }),
-    viteCommonjs({
-      // Handle CommonJS packages that don't work well with Vite
-      include: [
-        '@splunk/**',
-        'jspdf',
-        'fflate',
-        'react-resize-detector',
-        'tinyglobby'
-      ],
-      // Force CommonJS transformation for problematic packages
-      transformMixedEsModules: true,
-      // Handle specific problematic packages
-      requireReturnsDefault: 'auto'
-    }),
     nodePolyfills({
       // Whether to polyfill specific globals
       globals: {
@@ -79,26 +59,13 @@ export default defineConfig({
   // Optimize dependencies for better performance
   optimizeDeps: {
     include: [
-      'react', 'react-dom', 
-      '@splunk/dashboard-core', 
+      'react', 'react-dom',
+      '@splunk/dashboard-core',
       '@splunk/dashboard-context',
-      '@splunk/dashboard-presets', 
+      '@splunk/dashboard-presets',
       '@splunk/dashboard-utils',
       'jspdf', 'fflate', 'react-resize-detector'
     ],
-    exclude: [
-      // No packages to exclude
-    ],
-    esbuildOptions: {
-      // Node.js global to browser global mapping
-      define: {
-        global: 'globalThis'
-      },
-      // Handle JSX in .js files
-      loader: {
-        '.js': 'jsx',
-      },
-    }
   },
 
   // Handle module resolution
@@ -113,27 +80,12 @@ export default defineConfig({
 
   // Build configuration
   build: {
-    target: 'es2015',
-    // Configure esbuild to handle JSX in .js files
-    esbuild: {
-      loader: 'jsx',
-      include: /\.(jsx|js)$/,
-    },
+    target: 'esnext',
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true
     },
-    rollupOptions: {
-      plugins: [
-        // Removed CSS mock plugin - Vite handles CSS imports natively
-      ],
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          splunk: ['@splunk/dashboard-core', '@splunk/dashboard-context']
-        }
-      }
-    },
+    rollupOptions: {},
     // Ensure all dependencies are bundled
     modulePreload: false,
     // Handle dynamic imports properly

@@ -16,7 +16,6 @@ limitations under the License.
 
 import fs from 'fs';
 import path from 'path';
-import qs from 'querystring';
 const fetch = global.fetch;
 import debug from 'debug';
 import { ux } from '@oclif/core';
@@ -42,14 +41,14 @@ async function fetchData(search, { id, app, refresh, splunkdUrl, splunkUser, spl
             Authorization: `Basic ${Buffer.from([splunkUser, splunkPassword].join(':')).toString('base64')}`,
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: qs.stringify({
+        body: new URLSearchParams({
             output_mode: 'json',
             earliest_time: (search.queryParameters || {}).earliest,
             latest_time: (search.queryParameters || {}).latest,
             search: qualifiedSearchString(search.query),
             // reuse_max_seconds_ago: refresh,
             timeout: 120,
-        }),
+        }).toString(),
         agent,
     });
 
@@ -80,12 +79,12 @@ async function fetchData(search, { id, app, refresh, splunkdUrl, splunkUser, spl
 
     log('Search job sid=%s for data fn id=%s is complete', sid, id);
 
-    const resultsQs = qs.stringify({
+    const resultsQs = new URLSearchParams({
         output_mode: 'json_cols',
         count: 10000,
         offset: 0,
         search: search.postprocess,
-    });
+    }).toString();
     const data = await fetch(`${splunkdUrl}/${SERVICE_PREFIX}/search/jobs/${sid}/results?${resultsQs}`, {
         method: 'GET',
         headers: {

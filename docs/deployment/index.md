@@ -86,7 +86,7 @@ JWT_SECRET=generate-secure-random-string
 Configure appropriate limits:
 
 ```bash
-RATE_LIMIT_WINDOW=15
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=1000
 ```
 

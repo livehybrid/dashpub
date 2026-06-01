@@ -22,14 +22,33 @@ const qs = obj =>
         .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
         .join('&');
 
+/**
+ * Splunk supports multiple token shapes for REST:
+ * - JSON Web Tokens (JWT) authentication tokens → `Authorization: Bearer <token>`
+ * - Classic session keys / many server-issued tokens → `Authorization: Splunk <token>`
+ *
+ * Picking the wrong scheme yields HTTP 401 ("call not properly authenticated") even when the token is valid.
+ */
+function splunkAuthorizationHeader(token) {
+    const t = String(token).trim();
+    if (!t) {
+        return null;
+    }
+
+    const looksLikeJwt = t.split('.').length === 3 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(t);
+    return looksLikeJwt ? `Bearer ${t}` : `Splunk ${t}`;
+}
+
 const splunkd = (
     method,
     path,
-    { body, url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token= process.env.SPLUNKD_TOKEN } = {},
+    { body, url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER || process.env.SPLUNKD_USERNAME, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN || process.env.SPLUNK_TOKEN } = {},
     returnJson = true
 ) => {
     console.log(`${url}${path}`);
-    const AUTH_HEADER = token ? `Bearer ${token}` : `Basic ${Buffer.from([username, password].join(':')).toString('base64')}`;
+    const AUTH_HEADER = token
+        ? splunkAuthorizationHeader(token)
+        : `Basic ${Buffer.from([username, password].join(':')).toString('base64')}`;
     return fetch(`${url}${path}`, {
         method,
         headers: {
@@ -68,7 +87,7 @@ const extractDashboardDefinition = xmlSrc => {
 const loadDashboard = (
     name,
     app,
-    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token=process.env.SPLUNKD_TOKEN } = {}
+    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER || process.env.SPLUNKD_USERNAME, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN || process.env.SPLUNK_TOKEN } = {}
 ) => {
     console.log(`/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`);    
     return splunkd('GET', `/servicesNS/nobody/${encodeURIComponent(app)}/data/ui/views/${encodeURIComponent(name)}?output_mode=json`, {
@@ -84,7 +103,7 @@ const loadDashboard = (
 }
 const listDashboards = async (
     app,
-    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN } = {}
+    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER || process.env.SPLUNKD_USERNAME, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN || process.env.SPLUNK_TOKEN } = {}
 ) => {
     const res = await splunkd(
         'GET',
@@ -110,7 +129,7 @@ const listDashboards = async (
 };
 
 const getUsername = async (
-    { url = process.env.SPLUNKD_URL, token = process.env.SPLUNKD_TOKEN } = {}
+    { url = process.env.SPLUNKD_URL, token = process.env.SPLUNKD_TOKEN || process.env.SPLUNK_TOKEN } = {}
 ) => {
     const res = await splunkd(
         'GET',
@@ -128,7 +147,7 @@ const getUsername = async (
 };
 
 const listApps = async (
-    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN } = {}
+    { url = process.env.SPLUNKD_URL, username = process.env.SPLUNKD_USER || process.env.SPLUNKD_USERNAME, password = process.env.SPLUNKD_PASSWORD, token = process.env.SPLUNKD_TOKEN || process.env.SPLUNK_TOKEN } = {}
 ) => {
     const res = await splunkd(
         'GET',
@@ -174,8 +193,8 @@ async function getSplunkdInfo() {
     }
 
     // Get username - either from env or fetch from API using token
-    let username = process.env.SPLUNKD_USER;
-    const token = process.env.SPLUNKD_TOKEN;
+    let username = process.env.SPLUNKD_USER || process.env.SPLUNKD_USERNAME;
+    const token = process.env.SPLUNKD_TOKEN || process.env.SPLUNK_TOKEN;
     
     if (!username && token && url) {
         console.log('SPLUNKD_USER not provided, fetching from Splunk API...');

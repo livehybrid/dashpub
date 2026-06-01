@@ -34,6 +34,16 @@ function normalizeEnvVars() {
 // Apply normalization
 normalizeEnvVars();
 
+function splunkManagementAuthHeader(token) {
+  const t = String(token || '').trim();
+  if (!t) {
+    return null;
+  }
+
+  const looksLikeJwt = t.split('.').length === 3 && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(t);
+  return looksLikeJwt ? `Bearer ${t}` : `Splunk ${t}`;
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -709,7 +719,7 @@ app.get('/health', async (req, res) => {
       const testResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/services/server/info`, {
         headers: {
           Authorization: process.env.SPLUNKD_TOKEN
-            ? `Bearer ${process.env.SPLUNKD_TOKEN}`
+            ? splunkManagementAuthHeader(process.env.SPLUNKD_TOKEN)
             : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`,
         },
         agent: agent,
@@ -792,7 +802,7 @@ let CURRENT_SPLUNK_USER = process.env.SPLUNKD_USER || 'nobody';
 async function fetchSplunkUser() {
   try {
     const AUTH_HEADER = process.env.SPLUNKD_TOKEN
-      ? `Bearer ${process.env.SPLUNKD_TOKEN}`
+      ? splunkManagementAuthHeader(process.env.SPLUNKD_TOKEN)
       : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
 
     const response = await enhancedFetch(`${process.env.SPLUNKD_URL}/services/authentication/current-context?output_mode=json`, {
@@ -832,7 +842,7 @@ async function executeSplunkSearch(datasource) {
   // Build service prefix and auth header
   const SERVICE_PREFIX = `servicesNS/${encodeURIComponent(CURRENT_SPLUNK_USER)}/${encodeURIComponent(app)}`;
   const AUTH_HEADER = process.env.SPLUNKD_TOKEN
-    ? `Bearer ${process.env.SPLUNKD_TOKEN}`
+    ? splunkManagementAuthHeader(process.env.SPLUNKD_TOKEN)
     : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
 
   // Prepare search parameters

@@ -88,19 +88,17 @@ cp .env.example .env
 
 ```bash
 # Splunk Connection
-SPLUNK_HOST=192.168.0.222
-SPLUNK_PORT=8089
-SPLUNK_USERNAME=admin
-SPLUNK_PASSWORD=your_password
-SPLUNK_APP=etyd
+SPLUNKD_URL=https://192.168.0.222:8089
+SPLUNKD_USER=admin
+SPLUNKD_PASSWORD=your_password
+DASHPUB_APP=your-splunk-app
 
 # Server Configuration
 PORT=3000
 NODE_ENV=development
 
 # Caching
-CACHE_CLEANUP_INTERVAL=300
-RATE_LIMIT_WINDOW=15
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=1000  # Increased default for dashboard reloads
 MAX_RETRIES=3
 ```
@@ -770,8 +768,7 @@ SPLUNKD_UI_PORT=8000  # Port for Splunk UI (default: 8000). Used when building d
 SPLUNKD_LOCALE=en-US  # Locale for Splunk UI (default: en-US). Used when constructing URLs for static assets (e.g., /en-US/static/...). Only needed if your Splunk instance uses a different locale.
 
 # Performance & Caching
-CACHE_CLEANUP_INTERVAL=300
-RATE_LIMIT_WINDOW=15
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=1000  # Increased default for dashboard reloads
 MAX_RETRIES=3
 SEARCH_JOB_DELAY_MS=250
@@ -782,7 +779,6 @@ MIN_REFRESH_TIME=60
 ```bash
 # JWT Authentication
 JWT_REQUIRED=false
-JWT_KEY=your-secret-key-here
 JWT_SECRET=your-secret-key-change-in-production
 JWT_EXPIRES_IN=24h
 JWT_USERNAME=admin
@@ -851,7 +847,7 @@ VERCEL_URL=your-app.vercel.app
 The following variables are deprecated and should not be used in new deployments:
 - `SPLUNK_USERNAME` → Use `SPLUNKD_USER` instead
 - `SPLUNK_PASSWORD` → Use `SPLUNKD_PASSWORD` instead
-- `SPLUNK_APP` → Configure via dashboard definitions instead
+- `SPLUNK_APP` → Use `DASHPUB_APP` instead
 
 #### Unused Variables
 The following variables are documented in some examples but are not actually used by the application:
