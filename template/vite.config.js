@@ -1,6 +1,5 @@
 import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
-import viteCommonjs from 'vite-plugin-commonjs';
 import path from 'path';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 // Custom plugin to transform .js files with JSX before Rollup parses them
@@ -37,20 +36,6 @@ export default defineConfig({
       // Include .jsx files (jsxInJsPlugin handles .js files)
       include: /\.jsx$/,
       jsxRuntime: 'automatic',
-    }),
-    viteCommonjs({
-      // Handle CommonJS packages that don't work well with Vite
-      include: [
-        '@splunk/**',
-        'jspdf',
-        'fflate',
-        'react-resize-detector',
-        'tinyglobby'
-      ],
-      // Force CommonJS transformation for problematic packages
-      transformMixedEsModules: true,
-      // Handle specific problematic packages
-      requireReturnsDefault: 'auto'
     }),
     nodePolyfills({
       // Whether to polyfill specific globals
@@ -95,27 +80,12 @@ export default defineConfig({
 
   // Build configuration
   build: {
-    target: 'es2015',
-    // Configure esbuild to handle JSX in .js files
-    esbuild: {
-      loader: 'jsx',
-      include: /\.(jsx|js)$/,
-    },
+    target: 'esnext',
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true
     },
-    rollupOptions: {
-      plugins: [
-        // Removed CSS mock plugin - Vite handles CSS imports natively
-      ],
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'vendor';
-          if (id.includes('@splunk/dashboard-core') || id.includes('@splunk/dashboard-context')) return 'splunk';
-        }
-      }
-    },
+    rollupOptions: {},
     // Ensure all dependencies are bundled
     modulePreload: false,
     // Handle dynamic imports properly
