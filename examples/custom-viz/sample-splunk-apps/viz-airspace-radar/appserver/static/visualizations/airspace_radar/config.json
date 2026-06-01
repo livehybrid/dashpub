@@ -1,0 +1,102 @@
+{
+  "showTitleAndDescription": true,
+  "includeInToolbar": true,
+  "showDrilldown": false,
+  "hasEventHandlers": false,
+  "config": {
+    "name": "Airspace Radar",
+    "description": "Animated phosphor radar scope showing ADS-B aircraft positions around a configurable centre point.",
+    "category": "Custom",
+    "dataContract": {
+      "requiredDataSources": [],
+      "optionalDataSources": ["primary"]
+    },
+    "size": { "initialWidth": 500, "initialHeight": 500 },
+    "optionsSchema": {
+      "centerLat": {
+        "type": "number",
+        "description": "Radar centre latitude (decimal degrees).",
+        "default": 53.8
+      },
+      "centerLon": {
+        "type": "number",
+        "description": "Radar centre longitude (decimal degrees).",
+        "default": -1.55
+      },
+      "rangeNm": {
+        "type": "number",
+        "description": "Radar radius in nautical miles. Aircraft outside this range are not plotted.",
+        "default": 50
+      },
+      "sweepSeconds": {
+        "type": "number",
+        "description": "Seconds per full sweep rotation.",
+        "default": 8
+      },
+      "showLabels": {
+        "type": "boolean",
+        "description": "Show callsign labels next to each blip.",
+        "default": true
+      },
+      "showAltitude": {
+        "type": "boolean",
+        "description": "Show altitude (in flight levels) below each callsign.",
+        "default": true
+      },
+      "showHeadingVector": {
+        "type": "boolean",
+        "description": "Draw a short velocity vector from each blip showing its heading.",
+        "default": true
+      },
+      "colorScheme": {
+        "type": "string",
+        "enum": ["green", "amber", "blue"],
+        "description": "Phosphor colour. green = classic air traffic, amber = warm, blue = naval.",
+        "default": "green"
+      },
+      "homeLabel": {
+        "type": "string",
+        "description": "Label shown at the radar centre dot.",
+        "default": "Leeds"
+      }
+    },
+    "editorConfig": [
+      {
+        "label": "Position",
+        "open": true,
+        "layout": [
+          [{ "editor": "editor.number", "label": "Centre Latitude",  "option": "centerLat" }],
+          [{ "editor": "editor.number", "label": "Centre Longitude", "option": "centerLon" }],
+          [{ "editor": "editor.number", "label": "Range (nm)",       "option": "rangeNm"   }],
+          [{ "editor": "editor.text",   "label": "Centre Label",     "option": "homeLabel" }]
+        ]
+      },
+      {
+        "label": "Sweep",
+        "layout": [
+          [{ "editor": "editor.number", "label": "Sweep (seconds)", "option": "sweepSeconds" }]
+        ]
+      },
+      {
+        "label": "Display",
+        "layout": [
+          [{ "editor": "editor.checkbox", "label": "Show callsign labels",  "option": "showLabels"       }],
+          [{ "editor": "editor.checkbox", "label": "Show altitude (FL)",    "option": "showAltitude"     }],
+          [{ "editor": "editor.checkbox", "label": "Show heading vectors",  "option": "showHeadingVector"}],
+          [{
+            "editor": "editor.select",
+            "label": "Colour scheme",
+            "option": "colorScheme",
+            "editorProps": {
+              "values": [
+                { "label": "Green (phosphor)",  "value": "green" },
+                { "label": "Amber",             "value": "amber" },
+                { "label": "Blue (naval)",      "value": "blue"  }
+              ]
+            }
+          }]
+        ]
+      }
+    ]
+  }
+}
