@@ -693,6 +693,7 @@ SPLUNKD_PASSWORD=your_password
 SPLUNKD_TOKEN=your_api_token
 SPLUNKD_UI_PORT=8000  # Port for Splunk UI (default: 8000). Used when building dashboards to fetch static assets.
 SPLUNKD_LOCALE=en-US  # Locale for Splunk UI (default: en-US). Used when constructing URLs for static assets (e.g., /en-US/static/...). Only needed if your Splunk instance uses a different locale.
+DASHPUB_LOCALE=en-GB  # Display locale: how visualizations format TIME/DATES. Applied to index.html at build/dev time. en-GB => 24h + DD/MM/YYYY (default); en-US => 12h + MM/DD/YYYY. BCP-47 value; distinct from SPLUNKD_LOCALE (asset path).
 
 # Performance & Caching
 CACHE_CLEANUP_INTERVAL=300
@@ -734,6 +735,9 @@ NEXT_PUBLIC_DASHPUBSCREENSHOTEXT=png  # Screenshot file extension (default: png)
 # Breadcrumb Navigation
 NEXT_PUBLIC_DASHPUBBREADCRUMBS=true  # Enable breadcrumb navigation at top of dashboard pages (default: true)
 NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON=true  # Show back button in breadcrumb navigation (default: true)
+
+# View Source
+DASHPUB_VIEW_SOURCE=false  # Show a "View source" button on dashboards that opens a Splunk-UI modal with the definition JSON + copy (default: false). Read at runtime via /api/config.
 
 # Tab Rotation Settings (Runtime Configuration)
 REACT_APP_TAB_ROTATION_INTERVAL=15000  # Rotation interval in milliseconds

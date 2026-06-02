@@ -75,6 +75,16 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Default display locale. en-GB => 24-hour time (HH:mm) + DD/MM/YYYY dates.
+      // Splunk reads it from window.$C.LOCALE via @splunk/splunk-utils/config,
+      // which captures it ONCE at import — so this classic <script> must run
+      // before the module bundle below.
+      // Override at build/dev time without editing this file by setting the
+      // DASHPUB_LOCALE env var (e.g. DASHPUB_LOCALE=en-US) — see vite.config.js.
+      window.$C = window.$C || {};
+      window.$C.LOCALE = 'en-GB';
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

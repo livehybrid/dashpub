@@ -2,6 +2,20 @@ import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { localeFromEnv, applyLocaleToHtml } from './scripts/htmlLocale.mjs';
+
+// Overwrite the dashboard display locale in index.html when DASHPUB_LOCALE is set
+// (e.g. DASHPUB_LOCALE=en-GB for 24h time). Runs at dev + build/CLI time. When
+// unset, the default baked into index.html is kept.
+const dashpubLocalePlugin = () => ({
+  name: 'dashpub-html-locale',
+  transformIndexHtml(html) {
+    const loc = localeFromEnv();
+    if (loc) console.log(`[dashpub] DASHPUB_LOCALE set — index.html locale -> ${loc}`);
+    return applyLocaleToHtml(html, loc);
+  },
+});
+
 // Custom plugin to transform .js files with JSX before Rollup parses them
 const jsxInJsPlugin = () => ({
   name: 'jsx-in-js',
@@ -30,6 +44,8 @@ const jsxInJsPlugin = () => ({
 
 export default defineConfig({
   plugins: [
+    // Overwrite index.html display locale from DASHPUB_LOCALE (if set)
+    dashpubLocalePlugin(),
     // Transform .js files with JSX before React plugin
     jsxInJsPlugin(),
     react({

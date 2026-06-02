@@ -38,3 +38,5 @@ template/dist/
 template/logs/
 test-app-e2e/
 app/
+template/src/dashboards/
+template/src/_dashboards.json

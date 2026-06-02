@@ -989,9 +989,13 @@ app.get('/api/config', (req, res) => {
     // Breadcrumb configuration
     const breadcrumbsEnabled = process.env.NEXT_PUBLIC_DASHPUBBREADCRUMBS !== 'false' && 
                                process.env.DASHPUB_BREADCRUMBS !== 'false'; // Default to true
-    const breadcrumbsShowBackButton = process.env.NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON !== 'false' && 
+    const breadcrumbsShowBackButton = process.env.NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON !== 'false' &&
                                       process.env.DASHPUB_BREADCRUMBS_BACK_BUTTON !== 'false'; // Default to true
-    
+
+    // "View source" button on dashboards (off by default — opt-in per publication)
+    const viewSourceEnabled = process.env.DASHPUB_VIEW_SOURCE === 'true' ||
+                              process.env.NEXT_PUBLIC_DASHPUBVIEWSOURCE === 'true';
+
     const config = {
       title: process.env.NEXT_PUBLIC_DASHPUBTITLE || process.env.DASHPUB_TITLE || 'Dashboards',
       theme: process.env.NEXT_PUBLIC_HOMETHEME || process.env.DASHPUB_THEME || 'light',
@@ -1009,6 +1013,7 @@ app.get('/api/config', (req, res) => {
         enabled: breadcrumbsEnabled,
         showBackButton: breadcrumbsShowBackButton
       },
+      viewSource: viewSourceEnabled,
       baseUrl: baseUrl,
       homeScreenshot: homeScreenshot,
       jwtRequired: process.env.JWT_REQUIRED === 'true',
