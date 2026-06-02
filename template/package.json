@@ -12,6 +12,7 @@
         "@splunk/dashboard-presets": "29.6.0",
         "@splunk/datasource-utils": "29.6.0",
         "@splunk/datasources": "29.6.0",
+        "@splunk/moment": "0.7.0",
         "@splunk/react-icons": "5.11.0",
         "@splunk/react-ui": "5.10.0",
         "@splunk/visualization-context": "28.6.0",

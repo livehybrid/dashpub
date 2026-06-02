@@ -77,9 +77,12 @@
     <div id="root"></div>
     <script>
       // Default display locale. en-GB => 24-hour time (HH:mm) + DD/MM/YYYY dates.
-      // Splunk reads it from window.$C.LOCALE via @splunk/splunk-utils/config,
-      // which captures it ONCE at import — so this classic <script> must run
-      // before the module bundle below.
+      // This sets the locale SOURCE; the actual time/date formatting in Splunk
+      // visualizations is driven by the window.format_time/_date/_datetime
+      // globals seeded from this value in src/i18nBootstrap.js (Splunk charts
+      // read those globals, NOT window.$C.LOCALE directly). $C.LOCALE is also
+      // read once by @splunk/splunk-utils/config, so set it before the module
+      // bundle below.
       // Override at build/dev time without editing this file by setting the
       // DASHPUB_LOCALE env var (e.g. DASHPUB_LOCALE=en-US) — see vite.config.js.
       window.$C = window.$C || {};
