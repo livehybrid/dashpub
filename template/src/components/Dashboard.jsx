@@ -7,18 +7,66 @@ import { registerScreenshotReadinessDep, SayCheese } from '../ready';
 import ClientOnly from './clientOnly';
 import SplunkTabRotatorAdvanced from './SplunkTabRotatorAdvanced';
 import { useConfig } from '../contexts/ConfigContext';
+// Import maplibre-gl CSS directly - Vite handles CSS imports natively
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-// Handle maplibre-gl script property error gracefully
-let testTileConfig = null;
-try {
-  const mapContext = require('@splunk/visualization-context/MapContext');
-  testTileConfig = mapContext.testTileConfig;
-} catch (error) {
-  console.warn('Could not load maplibre-gl related components:', error.message);
-  testTileConfig = {};
+// Import Splunk's default tile configurations
+// testTileConfig is an array of tile configs (light and dark themes)
+// DashboardContextProvider expects defaultTileConfig to be an ARRAY of tile configs
+function getMapTileConfig() {
+  try {
+    // Try to use dynamic import for better ESM compatibility
+    const mapContext = require('@splunk/visualization-context/MapContext');
+    const testTileConfigs = mapContext.testTileConfig;
+    
+    // testTileConfig is already an array - use it directly
+    // The code expects: { defaultTileConfig: [array of configs], customTileConfig: [] }
+    if (testTileConfigs && Array.isArray(testTileConfigs) && testTileConfigs.length > 0) {
+      return { 
+        defaultTileConfig: testTileConfigs,  // Pass the entire array, not just the first element
+        customTileConfig: []  // Empty array for custom configs
+      };
+    }
+  } catch (error) {
+    console.warn('Could not load Splunk map tile configuration, using fallback:', error.message);
+  }
+  
+  // Fallback to OpenStreetMap if Splunk's config is unavailable
+  return {
+    defaultTileConfig: [{
+      name: 'OpenStreetMap',
+      key: 'osm',
+      sources: {
+        'base-tiles': {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256
+        }
+      },
+      layers: [{
+        id: 'base-layer',
+        type: 'raster',
+        source: 'base-tiles',
+        minzoom: 0,
+        maxzoom: 19
+      }]
+    }],
+    customTileConfig: []
+  };
 }
 
-const mapTileConfig = { defaultTileConfig: testTileConfig };
+// Ensure mapTileConfig is always defined
+const mapTileConfig = getMapTileConfig();
+
+// Debug: Log the structure to help diagnose issues
+if (typeof window !== 'undefined') {
+  console.log('Map tile config structure:', {
+    hasMapTileConfig: !!mapTileConfig,
+    hasDefaultTileConfig: !!mapTileConfig?.defaultTileConfig,
+    defaultTileConfigKeys: mapTileConfig?.defaultTileConfig ? Object.keys(mapTileConfig.defaultTileConfig) : [],
+    isArray: Array.isArray(mapTileConfig)
+  });
+}
 
 const PROD_SRC_PREFIXES = [
     // Add URL prefixes here that will be replaced with the page's current origin
@@ -136,7 +184,8 @@ function DashboardComponent({ definition, preset, width = '100vw', height = '100
     return (
         <ClientOnly fallback={<Loading />}>
             <DashboardContextProvider
-                mapTileConfig={mapTileConfig}
+                mapTileConfig={mapTileConfig || { defaultTileConfig: null }}
+                //timezone={{ianaTimezone:"Europe/London"}}
                 geoRegistry={geoRegistry}
                 featureFlags={{ enableSvgHttpDownloader: true, enableShowHide: true, visualizations_enableTrellis: true }}
                 preset={preset}

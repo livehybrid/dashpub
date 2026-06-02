@@ -7,7 +7,7 @@ import Loading from '../components/Loading';
 import NoSSR from '../components/NoSSR';
 import { useConfig } from '../contexts/ConfigContext';
 
-export default function DashboardPage({ baseUrl }) {
+export default function DashboardPage() {
     const [definition, setDefinition] = useState(null);
     const [loading, setLoading] = useState(true);
     const { config } = useConfig();
@@ -79,7 +79,7 @@ export default function DashboardPage({ baseUrl }) {
             })()}
             path={`/${dashboard}`}
             theme={definition?.theme || 'light'}
-            baseUrl={baseUrl}
+            baseUrl={config?.baseUrl || null}
         >
             <NoSSR>
                 <Suspense fallback={<Loading />}>

@@ -1,0 +1,30 @@
+name: npm ci
+
+# Ensures the root package-lock.json stays in sync with package.json before merge.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  root-lockfile:
+    name: Root lockfile (npm ci)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Clean install from package-lock.json
+        run: npm ci --no-audit --no-fund

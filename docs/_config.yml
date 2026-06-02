@@ -1,0 +1,37 @@
+# GitHub Pages Configuration
+title: Dashpub Documentation
+description: Comprehensive documentation for Dashpub - A modern Splunk dashboard publishing system
+theme: jekyll-theme-minimal
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Navigation
+navigation:
+  - title: Getting Started
+    url: /docs/
+  - title: Installation
+    url: /docs/installation/
+  - title: Configuration
+    url: /docs/configuration/
+  - title: Features
+    url: /docs/features/
+  - title: API Reference
+    url: /docs/api/
+  - title: Development
+    url: /docs/development/
+  - title: Deployment
+    url: /docs/deployment/
+  - title: Troubleshooting
+    url: /docs/troubleshooting/
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+

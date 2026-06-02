@@ -1,3 +1,10 @@
+---
+layout: default
+title: Developer Quick Reference
+parent: Development
+nav_order: 2
+---
+
 # Developer Quick Reference Guide
 
 ## 🚀 Quick Start Commands
@@ -222,19 +229,17 @@ useEffect(() => {
 ### Environment Variables
 ```bash
 # Splunk Connection
-SPLUNK_HOST=192.168.0.222
-SPLUNK_PORT=8089
-SPLUNK_USERNAME=admin
-SPLUNK_PASSWORD=your_password
-SPLUNK_APP=etyd
+SPLUNKD_URL=https://192.168.0.222:8089
+SPLUNKD_USER=admin
+SPLUNKD_PASSWORD=your_password
+DASHPUB_APP=your-splunk-app
 
 # Server Configuration
 PORT=3000
 NODE_ENV=development
 
 # Caching
-CACHE_CLEANUP_INTERVAL=300
-RATE_LIMIT_WINDOW=15
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=1000
 MAX_RETRIES=3
 
@@ -344,8 +349,8 @@ npm run build
 curl http://localhost:3000/api/splunk/test
 
 # Check environment variables
-echo $SPLUNK_HOST
-echo $SPLUNK_PORT
+echo $SPLUNKD_URL
+echo $SPLUNKD_TOKEN
 ```
 
 ## 📈 Performance Monitoring

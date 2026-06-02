@@ -1,5 +1,7 @@
 [![GitHub Release](https://img.shields.io/github/release/livehybrid/dashpub.svg?logo=github)](https://github.com/livehybrid/dashpub/releases)
 [![Docker Downloads](https://img.shields.io/docker/pulls/livehybrid/splunk-dashpub?logo=docker&label=docker%20pulls%20%2F%20livehybrid/splunk-dashpub)](https://hub.docker.com/r/livehybrid/splunk-dashpub)
+[![Documentation](https://img.shields.io/badge/docs-github%20pages-blue)](https://livehybrid.github.io/dashpub/)
+
 # Splunk Dashboard System
 
 A modern, high-performance dashboard system built with Node.js, Express, React, and Vite, designed to display Splunk data with real-time updates, caching, and comprehensive visualization support.  
@@ -86,19 +88,17 @@ cp .env.example .env
 
 ```bash
 # Splunk Connection
-SPLUNK_HOST=192.168.0.222
-SPLUNK_PORT=8089
-SPLUNK_USERNAME=admin
-SPLUNK_PASSWORD=your_password
-SPLUNK_APP=etyd
+SPLUNKD_URL=https://192.168.0.222:8089
+SPLUNKD_USER=admin
+SPLUNKD_PASSWORD=your_password
+DASHPUB_APP=your-splunk-app
 
 # Server Configuration
 PORT=3000
 NODE_ENV=development
 
 # Caching
-CACHE_CLEANUP_INTERVAL=300
-RATE_LIMIT_WINDOW=15
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=1000  # Increased default for dashboard reloads
 MAX_RETRIES=3
 ```
@@ -230,6 +230,40 @@ REACT_APP_TAB_ROTATION_INTERVAL=30000
 The feature automatically activates for dashboards with multiple tabs defined in their `layout.tabs.items` array. No additional configuration is required beyond setting the environment variable.
 
 For detailed documentation, see [TAB_ROTATION_FEATURE.md](docs/TAB_ROTATION_FEATURE.md).
+
+## 🎨 User Interface Enhancements
+
+### Loading Experience
+
+The application uses Splunk UI's `WaitSpinner` component for a consistent and professional loading experience across all dashboard pages. The loading spinner:
+
+- **Consistent Design**: Uses Splunk's official UI components for a native look and feel
+- **Size Variants**: Supports small, medium, and large spinner sizes
+- **Contextual Messages**: Displays appropriate loading messages based on the operation type
+- **Performance**: Lazy-loaded for optimal bundle size
+
+### Breadcrumb Navigation
+
+Dashboard pages include breadcrumb navigation to improve user orientation and navigation:
+
+- **Automatic Display**: Breadcrumbs automatically appear on dashboard pages (hidden on homepage)
+- **Navigation Path**: Shows the path from Home → Dashboard Name
+- **Back Button**: Optional back button for quick navigation to the homepage
+- **Configurable**: Can be enabled/disabled via environment variables
+
+#### Configuration
+
+Breadcrumbs are enabled by default. To customize:
+
+```bash
+# Disable breadcrumbs entirely
+NEXT_PUBLIC_DASHPUBBREADCRUMBS=false
+
+# Keep breadcrumbs but hide the back button
+NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON=false
+```
+
+The breadcrumb component uses Splunk UI's `Breadcrumbs` component and integrates seamlessly with the dashboard theme.
 
 ## 🔄 Caching System
 
@@ -663,8 +697,7 @@ SPLUNKD_UI_PORT=8000  # Port for Splunk UI (default: 8000). Used when building d
 SPLUNKD_LOCALE=en-US  # Locale for Splunk UI (default: en-US). Used when constructing URLs for static assets (e.g., /en-US/static/...). Only needed if your Splunk instance uses a different locale.
 
 # Performance & Caching
-CACHE_CLEANUP_INTERVAL=300
-RATE_LIMIT_WINDOW=15
+RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=1000  # Increased default for dashboard reloads
 MAX_RETRIES=3
 SEARCH_JOB_DELAY_MS=250
@@ -675,7 +708,6 @@ MIN_REFRESH_TIME=60
 ```bash
 # JWT Authentication
 JWT_REQUIRED=false
-JWT_KEY=your-secret-key-here
 JWT_SECRET=your-secret-key-change-in-production
 JWT_EXPIRES_IN=24h
 JWT_USERNAME=admin
@@ -692,6 +724,16 @@ NEXT_PUBLIC_DASHPUBFOOTER=Hosted Splunk Dashboards
 NEXT_PUBLIC_DASHPUBHOSTEDBY=Your Company
 NEXT_PUBLIC_DASHPUBHOSTEDURL=https://yourcompany.com
 NEXT_PUBLIC_DASHPUBREPO=https://github.com/yourusername/dashpub
+
+# Screenshot Configuration
+NEXT_PUBLIC_DASHPUBSCREENSHOTS=false  # Enable screenshots to display dashboard thumbnails
+NEXT_PUBLIC_BASE_SCREENSHOT_URL=  # Base URL where screenshots are hosted (optional, uses relative paths if empty)
+NEXT_PUBLIC_DASHPUBSCREENSHOTDIR=screenshots  # Screenshot directory name (default: screenshots)
+NEXT_PUBLIC_DASHPUBSCREENSHOTEXT=png  # Screenshot file extension (default: png)
+
+# Breadcrumb Navigation
+NEXT_PUBLIC_DASHPUBBREADCRUMBS=true  # Enable breadcrumb navigation at top of dashboard pages (default: true)
+NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON=true  # Show back button in breadcrumb navigation (default: true)
 
 # Tab Rotation Settings (Runtime Configuration)
 REACT_APP_TAB_ROTATION_INTERVAL=15000  # Rotation interval in milliseconds
@@ -734,7 +776,7 @@ VERCEL_URL=your-app.vercel.app
 The following variables are deprecated and should not be used in new deployments:
 - `SPLUNK_USERNAME` → Use `SPLUNKD_USER` instead
 - `SPLUNK_PASSWORD` → Use `SPLUNKD_PASSWORD` instead
-- `SPLUNK_APP` → Configure via dashboard definitions instead
+- `SPLUNK_APP` → Use `DASHPUB_APP` instead
 
 #### Unused Variables
 The following variables are documented in some examples but are not actually used by the application:
@@ -774,6 +816,15 @@ const TTL_STRATEGIES = {
   'static': 86400000       // 24 hours for static data
 };
 ```
+
+## 📚 Documentation
+
+Comprehensive documentation is available at:
+- **[Full Documentation](https://livehybrid.github.io/dashpub/)** - Complete guides, API reference, and tutorials
+- [Installation Guide](docs/installation.md)
+- [Configuration Reference](docs/configuration.md)
+- [API Documentation](docs/api/)
+- [Development Guide](docs/development/)
 
 ## 📚 Additional Resources
 
