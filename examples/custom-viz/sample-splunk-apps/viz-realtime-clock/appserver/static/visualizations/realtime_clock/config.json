@@ -1,0 +1,78 @@
+{
+  "showTitleAndDescription": true,
+  "includeInToolbar": true,
+  "showDrilldown": false,
+  "hasEventHandlers": false,
+  "config": {
+    "name": "Realtime Clock",
+    "description": "Animated analog clock face with digital readout. Supports local time, UTC, or any IANA timezone.",
+    "category": "Custom",
+    "dataContract": {
+      "requiredDataSources": [],
+      "optionalDataSources": []
+    },
+    "size": { "initialWidth": 265, "initialHeight": 300 },
+    "optionsSchema": {
+      "handColor": {
+        "type": "string",
+        "description": "Hour and minute hand colour (hex).",
+        "default": "#6aa3f8"
+      },
+      "secondHandColor": {
+        "type": "string",
+        "description": "Second hand and accent colour (hex).",
+        "default": "#00d4aa"
+      },
+      "tickColor": {
+        "type": "string",
+        "description": "Tick marks and bezel ring colour (hex).",
+        "default": "#00d4aa"
+      },
+      "showDigital": {
+        "type": "boolean",
+        "description": "Show HH:MM:SS digital readout below the clock face.",
+        "default": true
+      },
+      "showDate": {
+        "type": "boolean",
+        "description": "Show day/date below the digital readout.",
+        "default": true
+      },
+      "showGlow": {
+        "type": "boolean",
+        "description": "Enable phosphor glow effect on hands and digits.",
+        "default": true
+      },
+      "timezone": {
+        "type": "string",
+        "description": "Timezone for the clock. Use 'local' for browser local time, 'utc' for UTC, or any IANA timezone name such as 'Europe/London', 'America/New_York', 'Asia/Tokyo'.",
+        "default": "local"
+      }
+    },
+    "editorConfig": [
+      {
+        "label": "Time",
+        "open": true,
+        "layout": [
+          [{ "editor": "editor.text", "label": "Timezone", "option": "timezone", "editorProps": { "placeholder": "local, utc, Europe/London …" } }]
+        ]
+      },
+      {
+        "label": "Colours",
+        "layout": [
+          [{ "editor": "editor.text", "label": "Hand colour",        "option": "handColor"       }],
+          [{ "editor": "editor.text", "label": "Second hand colour", "option": "secondHandColor" }],
+          [{ "editor": "editor.text", "label": "Tick colour",        "option": "tickColor"       }]
+        ]
+      },
+      {
+        "label": "Display",
+        "layout": [
+          [{ "editor": "editor.checkbox", "label": "Show digital time", "option": "showDigital" }],
+          [{ "editor": "editor.checkbox", "label": "Show date",         "option": "showDate"    }],
+          [{ "editor": "editor.checkbox", "label": "Glow effect",       "option": "showGlow"    }]
+        ]
+      }
+    ]
+  }
+}

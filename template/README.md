@@ -735,6 +735,9 @@ NEXT_PUBLIC_DASHPUBSCREENSHOTEXT=png  # Screenshot file extension (default: png)
 NEXT_PUBLIC_DASHPUBBREADCRUMBS=true  # Enable breadcrumb navigation at top of dashboard pages (default: true)
 NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON=true  # Show back button in breadcrumb navigation (default: true)
 
+# View Source
+DASHPUB_VIEW_SOURCE=false  # Show a "View source" button on dashboards that opens a Splunk-UI modal with the definition JSON + copy (default: false). Read at runtime via /api/config.
+
 # Tab Rotation Settings (Runtime Configuration)
 REACT_APP_TAB_ROTATION_INTERVAL=15000  # Rotation interval in milliseconds
 REACT_APP_TAB_ROTATION_ENABLED=true    # Enable/disable tab rotation

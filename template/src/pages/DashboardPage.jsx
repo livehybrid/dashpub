@@ -5,6 +5,7 @@ import DashboardComponent from '../components/Dashboard';
 import customPreset from '../preset';
 import Loading from '../components/Loading';
 import NoSSR from '../components/NoSSR';
+import ViewSourceModal from '../components/ViewSourceModal';
 import { useConfig } from '../contexts/ConfigContext';
 
 export default function DashboardPage() {
@@ -82,6 +83,9 @@ export default function DashboardPage() {
             baseUrl={config?.baseUrl || null}
         >
             <NoSSR>
+                {config?.viewSource && (
+                    <ViewSourceModal definition={definition} title={definition?.title} />
+                )}
                 <Suspense fallback={<Loading />}>
                     <DashboardComponent preset={customPreset} definition={definition} />
                 </Suspense>

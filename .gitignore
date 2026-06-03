@@ -28,6 +28,8 @@ yarn-error.log*
 
 /tmp
 custom_components
+# Sideloaded custom viz assets copied out of mounted Splunk apps by `dashpub init`
+template/public/custom_viz/
 TODO.md
 template/node_modules
 template/.env.test
@@ -36,3 +38,5 @@ template/dist/
 template/logs/
 test-app-e2e/
 app/
+template/src/dashboards/
+template/src/_dashboards.json

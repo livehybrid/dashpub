@@ -65,7 +65,43 @@ const PRESET = {
     ...VisualizationPresets,
 };
 
-const CUSTOM_VIZ = {};
+// ---------------------------------------------------------------------------
+// Custom visualizations — auto-registered from src/custom_components/
+//
+// Sideload a Dashboard Studio custom viz by dropping a folder into
+// src/custom_components/, named exactly after the viz "type" used in the
+// dashboard definition JSON (<app-id>.<viz-name>):
+//
+//   src/custom_components/viz-airspace-radar.airspace_radar/index.jsx
+//
+// The folder name IS the registration key, so it must match the `"type"` in
+// the dashboard JSON. index.jsx must default-export EITHER the React component
+// OR a Studio viz `definition` object (any object exposing `.visualization`).
+//
+// There is no codegen and nothing to edit here: Vite's import.meta.glob
+// discovers every viz at build time and code-splits each into its own lazy
+// chunk. custom_components/ is gitignored, so sideloaded viz are never
+// distributed with dashpub itself — each deployment brings its own.
+// ---------------------------------------------------------------------------
+const customVizLoaders = import.meta.glob('./custom_components/*/index.{js,jsx}');
+
+const CUSTOM_VIZ = Object.fromEntries(
+    Object.entries(customVizLoaders).map(([filePath, load]) => {
+        // .../custom_components/<type>/index.jsx  ->  <type>
+        const type = filePath.split('/').slice(-2, -1)[0];
+        const Component = lazy(async () => {
+            const mod = await load();
+            const def = mod.default;
+            // Accept a bare React component or a Studio `definition` wrapper.
+            return { default: def && def.visualization ? def.visualization : def };
+        });
+        return [type, commonFlags(Component)];
+    })
+);
+
+if (typeof window !== 'undefined' && Object.keys(CUSTOM_VIZ).length > 0) {
+    console.log('[dashpub] custom visualizations registered:', Object.keys(CUSTOM_VIZ));
+}
 
 const CUSTOM_PRESET = {
     visualizations: CUSTOM_VIZ,
