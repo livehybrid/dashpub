@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const cookieParser = require('cookie-parser');
+const tokenSecurity = require('./src/lib/tokenSecurity.cjs'); // inputs/tokens spike
 
 // Load environment variables from .env file
 require('dotenv').config();
@@ -1630,6 +1631,106 @@ app.get('/api/data/:dsid', rateLimit, async (req, res) => {
       ],
       timestamp: new Date().toISOString()
     });
+  }
+});
+
+// ===========================================================================
+// inputs/tokens SPIKE (docs/proposals/inputs-tokens.md) — proves that validated
+// token VALUES drive server-held query TEMPLATES against live Splunk, with SPL
+// injection failing closed. Self-contained synthetic data (| makeresults) so it
+// needs no indexes. Remove before productionising.
+// ===========================================================================
+const SPIKE_DATASOURCES = {
+  // Main parameterised search: cluster (static single) + hosts (dynamic multi).
+  // Deterministic synthetic data: 12 events, cluster prod for n<=7 else dev.
+  spike_main: {
+    app: process.env.DASHPUB_APP || 'search',
+    template: {
+      query:
+        '| makeresults count=12 | streamstats count as n ' +
+        '| eval cluster=if(n<=7,"prod","dev"), host="web".((n%3)+1) ' +
+        '| search cluster=$cluster$ $hosts$ ' +
+        '| stats count by host',
+    },
+    registry: {
+      cluster: { splKind: 'string', source: 'static', allowedValues: ['prod', 'dev'], default: 'prod' },
+      hosts: { splKind: 'multi', source: 'dynamic', field: 'host', expansion: 'in', optionsSourceId: 'spike_hosts', valueField: 'host', default: [] },
+    },
+  },
+  // Populating search for the dynamic "hosts" allow-list / dropdown options.
+  spike_hosts: {
+    app: process.env.DASHPUB_APP || 'search',
+    template: { query: '| makeresults count=3 | streamstats count as n | eval host="web".n | fields host' },
+    registry: {},
+    valueField: 'host',
+  },
+};
+
+// Run a SPIKE datasource's (already-safe) query and return Splunk json_cols data.
+async function runSpikeSearch(dsKey, safe) {
+  const ds = SPIKE_DATASOURCES[dsKey];
+  return executeSplunkSearch({
+    id: `spike_${dsKey}`,
+    app: ds.app,
+    search: {
+      query: safe.query,
+      queryParameters: { earliest: safe.earliest || '', latest: safe.latest || '' },
+      postprocess: safe.postprocess || '',
+      refresh: 30,
+    },
+  });
+}
+
+// Compute a dynamic allow-list by running its populating search and extracting valueField.
+async function spikeDynamicSet(optionsSourceId) {
+  const src = SPIKE_DATASOURCES[optionsSourceId];
+  if (!src) throw new Error(`unknown options source ${optionsSourceId}`);
+  const data = await runSpikeSearch(optionsSourceId, { query: src.template.query });
+  const idx = (data.fields || []).indexOf(src.valueField);
+  return idx >= 0 && data.columns[idx] ? data.columns[idx].map(String) : [];
+}
+
+app.get('/api/spike/data/:dsid', rateLimit, async (req, res) => {
+  const ds = SPIKE_DATASOURCES[req.params.dsid];
+  if (!ds) {
+    return res.status(404).json({ error: 'unknown spike datasource' });
+  }
+  try {
+    // Parse raw token inputs from ?t.<name>=<value> (repeated key => array).
+    const rawInputs = {};
+    for (const [k, v] of Object.entries(req.query)) {
+      if (k.startsWith('t.')) rawInputs[k.slice(2)] = v; // express gives array for repeated keys
+    }
+    // Resolve dynamic allow-lists for any dynamic tokens.
+    const dynamicSets = {};
+    for (const [name, spec] of Object.entries(ds.registry)) {
+      if (spec.source === 'dynamic' && spec.optionsSourceId) {
+        dynamicSets[name] = await spikeDynamicSet(spec.optionsSourceId);
+      }
+    }
+    // Validate + substitute (throws TokenError => fail closed).
+    const safe = tokenSecurity.buildSafeSearch(ds.template, ds.registry, rawInputs, dynamicSets);
+    logger.info('[spike] safe search built', { dsid: req.params.dsid, query: safe.query, cacheKey: safe.cacheKey });
+    const data = await runSpikeSearch(req.params.dsid, safe);
+    data.meta = { ...(data.meta || {}), spike: { query: safe.query, cacheKey: safe.cacheKey } };
+    res.json(data);
+  } catch (e) {
+    if (e instanceof tokenSecurity.TokenError) {
+      logger.warn('[spike] token validation failed (fail-closed)', { dsid: req.params.dsid, code: e.code, details: e.details });
+      return res.status(400).json({ error: 'token_validation_failed', code: e.code, details: e.details });
+    }
+    logger.error('[spike] search error', { dsid: req.params.dsid, error: e.message });
+    res.status(500).json({ error: 'search_failed', message: e.message });
+  }
+});
+
+// Dropdown options for a dynamic input (value list from a populating search).
+app.get('/api/spike/options/:id', rateLimit, async (req, res) => {
+  try {
+    const values = await spikeDynamicSet(req.params.id);
+    res.json({ values });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

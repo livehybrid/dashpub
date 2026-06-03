@@ -17,6 +17,7 @@ limitations under the License.
 import { lazy } from 'react';
 import CdnDataSource from './datasource';
 import TestDataSource from '@splunk/datasources/TestDataSource';
+import SpikeDataSource from './spikeDatasource'; // Phase 0 inputs/tokens spike
 import DrilldownHandler from './drilldown';
 
 import LayoutPresets from "@splunk/dashboard-presets/LayoutPresets";
@@ -59,6 +60,7 @@ const PRESET = {
         'cdn': CdnDataSource,
         'ds.cdn': CdnDataSource, // Handle both formats
         'ds.test': TestDataSource,
+        'ds.spike': SpikeDataSource, // Phase 0 inputs/tokens spike
         // Add a catch-all for any other data source types
         '*': CdnDataSource, // Fallback for unknown types
     },

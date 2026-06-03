@@ -83,7 +83,8 @@
         "test:e2e": "npx playwright test",
         "test:e2e:ui": "npx playwright test --ui",
         "test:e2e:debug": "npx playwright test --debug",
-        "test:custom-viz": "node tests/custom-viz/render.mjs"
+        "test:custom-viz": "node tests/custom-viz/render.mjs",
+        "test:tokens": "node --test tests/inputs-tokens/"
     },
     "eslintConfig": {
         "env": {

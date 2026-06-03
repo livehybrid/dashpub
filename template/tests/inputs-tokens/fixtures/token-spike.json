@@ -1,0 +1,44 @@
+{
+  "title": "Token Spike",
+  "description": "Phase 0 spike: a static dropdown drives a server-validated, token-parameterised live Splunk search. Selecting a cluster changes the data; the SPL template lives server-side and only validated values are forwarded.",
+  "inputs": {
+    "input_cluster": {
+      "type": "input.dropdown",
+      "title": "Cluster",
+      "options": {
+        "items": [
+          { "label": "Prod", "value": "prod" },
+          { "label": "Dev", "value": "dev" }
+        ],
+        "defaultValue": "prod",
+        "token": "cluster"
+      }
+    }
+  },
+  "dataSources": {
+    "ds_spike": {
+      "type": "ds.spike",
+      "name": "Spike DS",
+      "options": {
+        "spikeDsId": "spike_main",
+        "tokenBindings": { "cluster": "$cluster$" }
+      }
+    }
+  },
+  "visualizations": {
+    "viz_table": {
+      "type": "splunk.table",
+      "title": "Per-host event count (filtered by selected cluster)",
+      "dataSources": { "primary": "ds_spike" }
+    }
+  },
+  "layout": {
+    "type": "absolute",
+    "options": { "width": 1200, "height": 500, "display": "auto" },
+    "globalInputs": ["input_cluster"],
+    "structure": [
+      { "item": "viz_table", "type": "block", "position": { "x": 20, "y": 20, "w": 1160, "h": 440 } }
+    ]
+  },
+  "defaults": {}
+}
