@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2.0.0",
+  "info": {
+    "title":       "Airspace Radar Visualization",
+    "id": {
+      "group":   null,
+      "name":    "viz-airspace-radar",
+      "version": "1.0.0"
+    },
+    "author": [{ "name": "Will Searle", "email": "will@livehybrid.com", "company": "LiveHybrid" }],
+    "releaseDate": null,
+    "description": "Animated phosphor radar scope custom visualization for Splunk Dashboard Studio. Plots ADS-B aircraft positions from a Splunk search with a rotating sweep arm, range rings, callsign labels, and heading velocity vectors.",
+    "classification": {
+      "intendedAudience": "individual",
+      "categories": ["Visualization"],
+      "developmentStatus": "production"
+    },
+    "commonInformationModels": null,
+    "license": { "name": "Apache-2.0" },
+    "privacyPolicy": { "externalLink": "" },
+    "releaseNotes": { "externalLink": "" }
+  },
+  "dependencies": {},
+  "tasks": []
+}

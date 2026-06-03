@@ -3,6 +3,7 @@ import { DashboardContextProvider } from '@splunk/dashboard-context';
 import Loading from './Loading';
 import DashboardCore from '@splunk/dashboard-core';
 import { GeoRegistry, GeoJsonProvider } from '@splunk/dashboard-context';
+import { SplunkThemeProvider } from '@splunk/themes';
 import { registerScreenshotReadinessDep, SayCheese } from '../ready';
 import ClientOnly from './clientOnly';
 import SplunkTabRotatorAdvanced from './SplunkTabRotatorAdvanced';
@@ -181,7 +182,15 @@ function DashboardComponent({ definition, preset, width = '100vw', height = '100
         };
     }, []);
     
+    // Honor the dashboard's own theme (definition.theme), falling back to the
+    // global publication theme (config.theme). Without this, every dashboard
+    // rendered in the global light theme regardless of its `theme` field, so a
+    // dark dashboard showed light viz on its dark canvas. Nest a per-dashboard
+    // SplunkThemeProvider so each dashboard themes itself.
+    const colorScheme = (definition && definition.theme) || (config && config.theme) || 'light';
+
     return (
+        <SplunkThemeProvider family="enterprise" colorScheme={colorScheme} density="comfortable">
         <ClientOnly fallback={<Loading />}>
             <DashboardContextProvider
                 mapTileConfig={mapTileConfig || { defaultTileConfig: null }}
@@ -195,14 +204,14 @@ function DashboardComponent({ definition, preset, width = '100vw', height = '100
             >
                 <Suspense fallback={<Loading />}>
                     <SayCheese />
-                    <DashboardCore 
-                        width={width} 
+                    <DashboardCore
+                        width={width}
                         height={height}
                         definition={processedDef}
                         preset={preset}
                     />
                     {/* Advanced Tab Rotator for dashboards with multiple tabs */}
-                    <SplunkTabRotatorAdvanced 
+                    <SplunkTabRotatorAdvanced
                         definition={processedDef || definition}
                         enabled={true}
                         showControls={true}
@@ -210,6 +219,7 @@ function DashboardComponent({ definition, preset, width = '100vw', height = '100
                 </Suspense>
             </DashboardContextProvider>
         </ClientOnly>
+        </SplunkThemeProvider>
     );
 }
 

@@ -1,0 +1,76 @@
+{
+  "title": "Custom Viz Demo",
+  "description": "Two sideloaded Splunk Dashboard Studio custom visualizations rendered by dashpub: an iframe-hosted radar (DashboardExtensionAPI) and an inline AMD clock. Data is a static ds.test, so it renders with no Splunk backend.",
+  "visualizations": {
+    "md_title": {
+      "type": "splunk.markdown",
+      "options": {
+        "markdown": "# Custom Visualizations — Live Demo\nLeft: **viz-airspace-radar.airspace_radar** (iframe + DashboardExtensionAPI). Right: **viz-realtime-clock.realtime_clock** (AMD module rendered inline). Both sideloaded from packaged Splunk apps — no source, no per-viz code."
+      }
+    },
+    "viz_radar": {
+      "type": "viz-airspace-radar.airspace_radar",
+      "title": "Airspace Radar (iframe host)",
+      "dataSources": { "primary": "ds_aircraft" },
+      "options": {
+        "centerLat": 53.8,
+        "centerLon": -1.55,
+        "rangeNm": 50,
+        "sweepSeconds": 6,
+        "colorScheme": "green",
+        "homeLabel": "Leeds",
+        "showLabels": true,
+        "showAltitude": true,
+        "showHeadingVector": true
+      }
+    },
+    "viz_clock": {
+      "type": "viz-realtime-clock.realtime_clock",
+      "title": "Realtime Clock (AMD host)",
+      "options": {
+        "timezone": "utc",
+        "showDigital": true,
+        "showDate": true,
+        "showGlow": true
+      }
+    }
+  },
+  "dataSources": {
+    "ds_aircraft": {
+      "type": "ds.test",
+      "name": "Sample aircraft",
+      "options": {
+        "data": {
+          "fields": [
+            { "name": "hex" },
+            { "name": "callsign" },
+            { "name": "lat" },
+            { "name": "lon" },
+            { "name": "altitude_ft" },
+            { "name": "heading" },
+            { "name": "speed_kts" }
+          ],
+          "columns": [
+            ["4ca1f1", "40621d", "407e3b", "3c6dd2", "4951ce"],
+            ["BAW123", "EZY8412", "RYR45GT", "DLH9LK", "TOM2C"],
+            [53.95, 53.62, 54.05, 53.71, 53.40],
+            [-1.20, -1.92, -1.40, -1.10, -1.78],
+            [37000, 12500, 28000, 9000, 41000],
+            [110, 250, 70, 300, 180],
+            [450, 280, 390, 210, 470]
+          ]
+        }
+      }
+    }
+  },
+  "inputs": {},
+  "layout": {
+    "type": "absolute",
+    "options": { "width": 1200, "height": 660, "display": "auto" },
+    "structure": [
+      { "item": "md_title", "type": "block", "position": { "x": 20, "y": 20, "w": 1160, "h": 110 } },
+      { "item": "viz_radar", "type": "block", "position": { "x": 20, "y": 150, "w": 560, "h": 480 } },
+      { "item": "viz_clock", "type": "block", "position": { "x": 600, "y": 150, "w": 360, "h": 420 } }
+    ]
+  }
+}

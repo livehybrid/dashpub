@@ -46,45 +46,142 @@ Next steps:
 {gray Open a browser at http://localhost:3000}
 `;
 
-async function findCustomVizJsFilesInDirectory() {
+// Resolve the directory of mounted Splunk app folders to sideload custom
+// visualizations from, or null. DASHPUB_CUSTOM_VIZ_PATH points at a directory
+// containing one or more *extracted Splunk app folders* (not archives), each
+// of which may ship one or more Dashboard Studio (10.x) custom visualizations.
+async function customVizSourceDir() {
     const dirPath = process.env.DASHPUB_CUSTOM_VIZ_PATH;
     if (!dirPath) {
-        console.debug("Environment variable DASHPUB_CUSTOM_VIZ_PATH is not set.");
-        return [];
+        console.debug("DASHPUB_CUSTOM_VIZ_PATH is not set — no custom viz to sideload.");
+        return null;
     }
-    try {
-        const files = await fs.readdir(dirPath);
-        return files.filter(file => file.endsWith('.jsx') || file.endsWith('.js'));
-    } catch (error) {
-        console.error("Error reading directory:", error);
-        return [];
+    if (!(await fs.pathExists(dirPath))) {
+        console.warn(`DASHPUB_CUSTOM_VIZ_PATH is set but does not exist: ${dirPath}`);
+        return null;
     }
+    return dirPath;
 }
 
-async function updateCustomViz(files, srcFolder, destFolder) {
-    const presetFilePath = path.join(destFolder, 'src/preset.js');
-    try {
-        // Copy all files (including .js helpers) before building
-        await Promise.all(
-            files.map(file =>
-                fs.copy(path.join(srcFolder, file), path.join(destFolder, 'src', 'custom_components', file))
-            )
-        );
-
-        // Only register .jsx files as viz components (not helper .js files or index.jsx)
-        const vizFiles = files.filter(file => file.endsWith('.jsx') && file !== 'index.jsx');
-        const customVizEntries = vizFiles.map(file => {
-            const componentName = file.replace(/\.jsx$/, '');
-            return `'custom.${componentName}': commonFlags(lazy(() => import('./custom_components/${componentName}'))),`;
-        }).join('\n    ');
-
-        let data = await fs.readFile(presetFilePath, 'utf8');
-        data = data.replace(/const CUSTOM_VIZ = \{\};/, `const CUSTOM_VIZ = {\n    ${customVizEntries}\n};`);
-        await fs.writeFile(presetFilePath, data, 'utf8');
-        console.log('preset.js updated with custom viz files successfully');
-    } catch (error) {
-        console.error("Error updating preset.js:", error);
+// Parse a Splunk app's app id from app.manifest (info.id.name), falling back to
+// the app folder name. This is the "<app-id>" half of the Studio viz type.
+async function readAppId(appDir) {
+    const manifestPath = path.join(appDir, 'app.manifest');
+    if (await fs.pathExists(manifestPath)) {
+        try {
+            const manifest = await fs.readJson(manifestPath);
+            const name = manifest && manifest.info && manifest.info.id && manifest.info.id.name;
+            if (name) return name;
+        } catch (e) {
+            console.warn(`Could not parse ${manifestPath}: ${e.message}`);
+        }
     }
+    return path.basename(appDir);
+}
+
+// Find the viz names in an app that are registered as Dashboard Studio custom
+// visualizations (framework_type = studio_visualization) in visualizations.conf.
+async function studioVizNames(appDir) {
+    const confPath = path.join(appDir, 'default', 'visualizations.conf');
+    if (!(await fs.pathExists(confPath))) return [];
+    const conf = await fs.readFile(confPath, 'utf8');
+    const names = [];
+    let current = null;
+    let isStudio = false;
+    const flush = () => { if (current && isStudio) names.push(current); };
+    for (const raw of conf.split(/\r?\n/)) {
+        const line = raw.trim();
+        if (line.startsWith('[') && line.endsWith(']')) {
+            flush();
+            current = line.slice(1, -1).split('.')[0]; // stanza head, ignore [viz.option] sub-stanzas
+            isStudio = false;
+        } else if (/^framework_type\s*=\s*studio_visualization\s*$/.test(line)) {
+            isStudio = true;
+        }
+    }
+    flush();
+    return [...new Set(names)];
+}
+
+// Ingest every Dashboard Studio custom viz from the mounted Splunk app folders:
+//   - copy its static bundle (visualization.js/.css + config.json) into
+//     public/custom_viz/<type>/  (served by the dashpub server at /custom_viz/…)
+//   - emit a one-line shim into src/custom_components/<type>/index.jsx that
+//     points the generic StudioExtensionHost at that type.
+// The shim is auto-registered at build time by preset.js (import.meta.glob).
+// Nothing here requires the user to write or edit any code.
+async function ingestCustomVizApps(srcFolder, destFolder) {
+    const publicDest = path.join(destFolder, 'public', 'custom_viz');
+    const compDest = path.join(destFolder, 'src', 'custom_components');
+    await fs.ensureDir(publicDest);
+    await fs.ensureDir(compDest);
+
+    const entries = await fs.readdir(srcFolder, { withFileTypes: true });
+    const appDirs = entries.filter(e => e.isDirectory()).map(e => path.join(srcFolder, e.name));
+
+    let count = 0;
+    for (const appDir of appDirs) {
+        const appId = await readAppId(appDir);
+        const vizNames = await studioVizNames(appDir);
+        if (vizNames.length === 0) continue;
+
+        for (const vizName of vizNames) {
+            const vizSrc = path.join(appDir, 'appserver', 'static', 'visualizations', vizName);
+            const bundle = path.join(vizSrc, 'visualization.js');
+            if (!(await fs.pathExists(bundle))) {
+                console.warn(`  ! ${appId}.${vizName}: no visualization.js at ${vizSrc} — skipping`);
+                continue;
+            }
+            const type = `${appId}.${vizName}`;
+
+            // 1. Static assets -> public/custom_viz/<type>/
+            const assetDest = path.join(publicDest, type);
+            await fs.ensureDir(assetDest);
+            for (const file of ['visualization.js', 'visualization.css', 'config.json']) {
+                const from = path.join(vizSrc, file);
+                if (await fs.pathExists(from)) await fs.copy(from, path.join(assetDest, file));
+            }
+
+            // 2. Detect the bundle flavour and pick the matching host:
+            //    - AMD module (define([...], factory) exporting a React
+            //      definition)  -> StudioAmdHost (renders inline, shared React)
+            //    - IIFE talking to globalThis.DashboardExtensionAPI
+            //                     -> StudioExtensionHost (sandboxed iframe)
+            const bundleSrc = await fs.readFile(bundle, 'utf8');
+            const isAmd = /(^|[^\w.])define\s*\(/.test(bundleSrc) && /\.amd\b/.test(bundleSrc)
+                || /(^|[^\w.])define\s*\(\s*\[/.test(bundleSrc);
+            const host = isAmd ? 'StudioAmdHost' : 'StudioExtensionHost';
+            const hostNote = isAmd
+                ? 'AMD module rendered inline (official Studio framework, shared React)'
+                : 'iframe + DashboardExtensionAPI';
+
+            // 3. Host shim -> src/custom_components/<type>/index.jsx
+            const shimDir = path.join(compDest, type);
+            await fs.ensureDir(shimDir);
+            const shim =
+                `// Auto-generated by 'dashpub init' from the mounted Splunk app '${appId}'.\n` +
+                `// Hosts the packaged Dashboard Studio custom viz '${type}'\n` +
+                `// via ${host} (${hostNote}). Do not edit.\n` +
+                `import makeHost from '../../components/${host}';\n\n` +
+                `export default makeHost('${type}');\n`;
+            await fs.writeFile(path.join(shimDir, 'index.jsx'), shim, 'utf8');
+
+            console.log(`  + custom viz: ${type}  [${isAmd ? 'amd' : 'iframe'}]  (from ${path.basename(appDir)})`);
+            count++;
+        }
+    }
+
+    if (count === 0) {
+        console.warn(
+            `No Dashboard Studio custom viz found under ${srcFolder}. ` +
+            `Expected extracted Splunk app folders containing ` +
+            `default/visualizations.conf (framework_type = studio_visualization) ` +
+            `and appserver/static/visualizations/<viz>/visualization.js.`
+        );
+    } else {
+        console.log(`${count} custom viz sideloaded from mounted Splunk apps (auto-registered at build time)`);
+    }
+    return count;
 }
 
 async function generateDashboards(selectedDashboards, app, splunkdInfo, destFolder) {
@@ -203,9 +300,9 @@ async function initNewProject() {
         const templatePath = path.join(path.dirname(new URL(import.meta.url).pathname), '../template');
         await fs.copy(templatePath, destFolder);
 
-        const jsFiles = await findCustomVizJsFilesInDirectory();
-        if (jsFiles.length > 0) {
-            await updateCustomViz(jsFiles, process.env.DASHPUB_CUSTOM_VIZ_PATH, destFolder);
+        const customVizSrc = await customVizSourceDir();
+        if (customVizSrc) {
+            await ingestCustomVizApps(customVizSrc, destFolder);
         }
 
         await generateDashboards(selectedDashboards, app, splunkdInfo, destFolder);
@@ -250,4 +347,4 @@ async function initNewProject() {
     }
 }
 
-export { initNewProject, generateDashboards };
+export { initNewProject, generateDashboards, customVizSourceDir, ingestCustomVizApps };
