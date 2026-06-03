@@ -40,9 +40,8 @@ SPLUNKD_TOKEN=your_api_token
 # Splunk UI Port (for fetching static assets)
 SPLUNKD_UI_PORT=8000  # Default: 8000
 
-# Splunk UI Locale (for static asset URLs only — NOT time/date format)
+# Splunk UI Locale (for static asset URLs only)
 # Leave this at en-US: Splunk may not ship static assets for every locale.
-# To change how times/dates are displayed, use DASHPUB_LOCALE (see Display Settings).
 SPLUNKD_LOCALE=en-US  # Default: en-US
 ```
 
@@ -60,15 +59,6 @@ NEXT_PUBLIC_DASHPUBTITLE=My Dashboards
 # dashboard in its own theme and falls back to this value when a dashboard
 # doesn't set one.
 NEXT_PUBLIC_HOMETHEME=light
-
-# Display locale — controls how visualizations format TIME and DATES.
-# Applied to index.html at build/dev time (vite.config.js). When unset, the
-# default baked into index.html (en-GB) is used.
-#   en-GB -> 24-hour time (17:30) + DD/MM/YYYY      (default)
-#   en-US -> 12-hour time (5:30 PM) + MM/DD/YYYY
-# Accepts BCP-47 locales (en-GB, en-US, fr-FR, ...); invalid values are ignored.
-# NB: distinct from SPLUNKD_LOCALE (asset path) — this only affects formatting.
-DASHPUB_LOCALE=en-GB  # Default: en-GB
 
 # Footer text
 NEXT_PUBLIC_DASHPUBFOOTER=Hosted Splunk Dashboards

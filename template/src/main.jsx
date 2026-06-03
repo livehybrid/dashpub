@@ -1,8 +1,4 @@
 import './polyfills.js';
-// Seed locale-aware time/date globals (window.format_time/_date/_datetime) BEFORE
-// any Splunk visualization/charting module loads. Splunk charts format timestamps
-// via these globals, not window.$C.LOCALE — see i18nBootstrap.js for the full why.
-import './i18nBootstrap.js';
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { SplunkThemeProvider, variables } from '@splunk/themes';
