@@ -1,0 +1,9 @@
+[]
+access = read : [ * ], write : [ admin, sc_admin, power ]
+export = system
+
+[visualizations]
+export = system
+
+[visualizations/airspace_radar]
+export = system

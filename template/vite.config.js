@@ -2,6 +2,7 @@ import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+
 // Custom plugin to transform .js files with JSX before Rollup parses them
 const jsxInJsPlugin = () => ({
   name: 'jsx-in-js',

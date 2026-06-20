@@ -191,6 +191,77 @@ src/
 }
 ```
 
+## 🎛️ Custom Visualizations
+
+dashpub renders Dashboard Studio dashboards with `@splunk/dashboard-core`. If a
+dashboard uses a **custom visualization** built with the Splunk 10.x Dashboard
+Studio framework (`framework_type = studio_visualization`), dashpub can
+**sideload it straight from the packaged Splunk app** — no code to write, and
+the viz is never bundled into dashpub itself.
+
+### How it works
+
+Mount a directory of **extracted Splunk app folders** and point
+`DASHPUB_CUSTOM_VIZ_PATH` at it. At container start, `dashpub init` scans each
+app for `studio_visualization` viz and, for each one, **automatically**:
+
+1. derives the type `<app-id>.<viz-name>` (the exact `"type"` the dashboard JSON
+   references) from `app.manifest` + `visualizations.conf`;
+2. copies the packaged `visualization.js` / `.css` / `config.json` into
+   `public/custom_viz/<type>/` (served at `/custom_viz/<type>/…`);
+3. emits a one-line host shim into `src/custom_components/<type>/`, which
+   `src/preset.js` auto-registers at build time via `import.meta.glob`.
+
+```jsonc
+// a dashboard referencing the packaged viz
+"visualizations": { "viz_radar": { "type": "viz-airspace-radar.airspace_radar", ... } }
+```
+
+You write and edit nothing — just mount the app folders.
+
+### The hosts
+
+`@splunk/dashboard-core` does not host packaged Studio viz (that lives in
+Splunk's Dashboard Studio app shell), so dashpub provides the equivalent. There
+are two packaging flavours and `dashpub init` auto-detects which each bundle is:
+
+- **`StudioExtensionHost`** — for IIFE bundles that talk to
+  `globalThis.DashboardExtensionAPI`. Renders a sandboxed `<iframe>`, loads the
+  packaged `visualization.js` **unmodified**, implements the API
+  (`addOptionsListener`, `addDataSourcesListener`, `getOptions`,
+  `getDataSources`; anything else stubbed-and-logged) and bridges
+  `options` / `dataSources`.
+- **`StudioAmdHost`** — for AMD modules (`define([...], factory)` exporting a
+  React `definition`, the official 10.x shape). Loads the bundle through an AMD
+  shim with React wired to dashpub's own, then renders the exported component
+  **inline** (shared React, no iframe) — exactly as Splunk does.
+
+One generic host per flavour serves every packaged viz — there is no per-viz
+code. Shared logic lives in `template/src/lib/` and is covered by
+`npm run test:custom-viz` (real headless-Chrome render checks for both flavours,
+no Splunk/container needed).
+
+### Try it
+
+```bash
+export DASHPUB_CUSTOM_VIZ_PATH="$PWD/examples/custom-viz/sample-splunk-apps"
+# …then run dashpub init / start the container as usual
+```
+
+Or run the **one-command live demo** — builds and serves a dashboard using both
+sample viz (an iframe radar + an AMD clock) through the real server, no Splunk:
+
+```bash
+./examples/custom-viz/run-demo.sh    # open http://localhost:3001/custom-viz-demo
+```
+
+Two real packaged examples and full details live in
+[`examples/custom-viz/`](examples/custom-viz/).
+
+> This **supersedes** the previous approach of hand-writing a React component
+> per viz; `DASHPUB_CUSTOM_DEPS` is also unnecessary for these viz, since the
+> packaged bundle is self-contained in its iframe.
+
 ## 🔄 Tab Rotation System
 
 ### Overview
@@ -734,6 +805,9 @@ NEXT_PUBLIC_DASHPUBSCREENSHOTEXT=png  # Screenshot file extension (default: png)
 # Breadcrumb Navigation
 NEXT_PUBLIC_DASHPUBBREADCRUMBS=true  # Enable breadcrumb navigation at top of dashboard pages (default: true)
 NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON=true  # Show back button in breadcrumb navigation (default: true)
+
+# View Source
+DASHPUB_VIEW_SOURCE=false  # Show a "View source" button on dashboards that opens a Splunk-UI modal with the definition JSON + copy (default: false). Read at runtime via /api/config.
 
 # Tab Rotation Settings (Runtime Configuration)
 REACT_APP_TAB_ROTATION_INTERVAL=15000  # Rotation interval in milliseconds

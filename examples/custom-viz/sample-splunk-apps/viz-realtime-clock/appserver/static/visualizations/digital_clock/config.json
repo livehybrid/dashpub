@@ -1,0 +1,90 @@
+{
+  "showTitleAndDescription": true,
+  "includeInToolbar": true,
+  "showDrilldown": false,
+  "hasEventHandlers": false,
+  "config": {
+    "name": "Digital Clock",
+    "description": "Seven-segment LCD-style digital clock with blinking colon, 12/24-hour modes, timezone support and phosphor glow. Companion to the Realtime Clock (analog) viz.",
+    "category": "Custom",
+    "dataContract": {
+      "requiredDataSources": [],
+      "optionalDataSources": []
+    },
+    "size": { "initialWidth": 360, "initialHeight": 180 },
+    "optionsSchema": {
+      "color": {
+        "type": "string",
+        "description": "Lit segment / digit colour (hex).",
+        "default": "#00d4aa"
+      },
+      "background": {
+        "type": "string",
+        "description": "Panel background colour (hex).",
+        "default": "#050810"
+      },
+      "timezone": {
+        "type": "string",
+        "description": "Timezone. Use 'local' for browser local time, 'utc' for UTC, or any IANA timezone name such as 'Europe/London', 'America/New_York', 'Asia/Tokyo'.",
+        "default": "local"
+      },
+      "hour24": {
+        "type": "boolean",
+        "description": "Use 24-hour time. When off, shows 12-hour time with an AM/PM indicator.",
+        "default": true
+      },
+      "showSeconds": {
+        "type": "boolean",
+        "description": "Show the seconds digit pair.",
+        "default": true
+      },
+      "showDate": {
+        "type": "boolean",
+        "description": "Show the day/date line below the clock.",
+        "default": true
+      },
+      "showGlow": {
+        "type": "boolean",
+        "description": "Phosphor glow on lit segments.",
+        "default": true
+      },
+      "blinkColon": {
+        "type": "boolean",
+        "description": "Blink the colons once per second.",
+        "default": true
+      },
+      "ghostSegments": {
+        "type": "boolean",
+        "description": "Show faint unlit segments behind the digits for the classic LCD look.",
+        "default": true
+      }
+    },
+    "editorConfig": [
+      {
+        "label": "Time",
+        "open": true,
+        "layout": [
+          [{ "editor": "editor.text", "label": "Timezone", "option": "timezone", "editorProps": { "placeholder": "local, utc, Europe/London …" } }],
+          [{ "editor": "editor.checkbox", "label": "24-hour time", "option": "hour24" }],
+          [{ "editor": "editor.checkbox", "label": "Show seconds", "option": "showSeconds" }]
+        ]
+      },
+      {
+        "label": "Colours",
+        "layout": [
+          [{ "editor": "editor.text", "label": "Digit colour", "option": "color" }],
+          [{ "editor": "editor.text", "label": "Background",   "option": "background" }]
+        ]
+      },
+      {
+        "label": "Display",
+        "layout": [
+          [{ "editor": "editor.checkbox", "label": "Show date",       "option": "showDate" }],
+          [{ "editor": "editor.checkbox", "label": "Glow effect",     "option": "showGlow" }],
+          [{ "editor": "editor.checkbox", "label": "Blink colon",     "option": "blinkColon" }],
+          [{ "editor": "editor.checkbox", "label": "Ghost segments",  "option": "ghostSegments" }]
+        ]
+      }
+    ]
+  }
+}

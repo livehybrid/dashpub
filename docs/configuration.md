@@ -40,7 +40,8 @@ SPLUNKD_TOKEN=your_api_token
 # Splunk UI Port (for fetching static assets)
 SPLUNKD_UI_PORT=8000  # Default: 8000
 
-# Splunk UI Locale (for static asset URLs)
+# Splunk UI Locale (for static asset URLs only)
+# Leave this at en-US: Splunk may not ship static assets for every locale.
 SPLUNKD_LOCALE=en-US  # Default: en-US
 ```
 
@@ -52,7 +53,11 @@ SPLUNKD_LOCALE=en-US  # Default: en-US
 # Dashboard title (shown on homepage)
 NEXT_PUBLIC_DASHPUBTITLE=My Dashboards
 
-# Theme (light or dark)
+# Theme (light or dark) — the default/global publication theme.
+# Individual dashboards override this with their own "theme" field in the
+# dashboard definition JSON (e.g. "theme": "dark"); dashpub renders each
+# dashboard in its own theme and falls back to this value when a dashboard
+# doesn't set one.
 NEXT_PUBLIC_HOMETHEME=light
 
 # Footer text
@@ -91,6 +96,17 @@ NEXT_PUBLIC_DASHPUBBREADCRUMBS=true
 
 # Show back button in breadcrumbs (default: true)
 NEXT_PUBLIC_DASHPUBBREADCRUMBSBACKBUTTON=true
+```
+
+### View Source
+
+```bash
+# Show a "View source" button on each dashboard (default: false).
+# When enabled, a Splunk-UI pill button (top-right) opens a modal with the
+# dashboard's Dashboard Studio definition JSON + copy-to-clipboard. Useful for
+# demos/contests where viewers want to copy the source into their own Splunk.
+# Read at runtime by /api/config — no rebuild needed to toggle.
+DASHPUB_VIEW_SOURCE=false
 ```
 
 ### Tab Rotation
