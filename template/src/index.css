@@ -22,3 +22,11 @@ code {
   height: 100vh;
   /* overflow: hidden; */
 }
+
+/* Fullscreen / kiosk mode (toggled via ?fullscreen=true).
+   Hide the Splunk Dashboard Studio tab bar (rendered inside DashboardCore)
+   and the floating tab-rotator overlay so the dashboard fills the screen. */
+body.dashpub-fullscreen [role="tablist"],
+body.dashpub-fullscreen .splunk-tab-rotator-advanced {
+  display: none !important;
+}

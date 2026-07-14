@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import Page from '../components/Page';
 import DashboardComponent from '../components/Dashboard';
 import customPreset from '../preset';
@@ -15,8 +15,23 @@ export default function DashboardPage() {
 
     // Use React Router's useParams instead of Next.js useRouter
     const { dashboard } = useParams();
-    
+    const [searchParams] = useSearchParams();
+
+    // Fullscreen / kiosk mode: hides breadcrumbs, dashboard tabs and the
+    // tab-rotator overlay so the dashboard fills the screen.
+    // Enable via ?fullscreen=true (also accepts ?fullscreen=1 or ?kiosk=true).
+    const isTruthy = (v) => v === '' || v === 'true' || v === '1' || v === 'yes';
+    const fullscreen = isTruthy(searchParams.get('fullscreen')) || isTruthy(searchParams.get('kiosk'));
+
     console.log('Dashboard ID:', dashboard);
+
+    // Toggle a body class so global CSS can hide the Splunk-rendered tab bar
+    // (which lives inside DashboardCore's own DOM, out of React's reach here).
+    useEffect(() => {
+        const cls = 'dashpub-fullscreen';
+        document.body.classList.toggle(cls, fullscreen);
+        return () => document.body.classList.remove(cls);
+    }, [fullscreen]);
 
     useEffect(() => {
         // Fetch the dashboard definition from the API if dashboard is present
@@ -81,6 +96,7 @@ export default function DashboardPage() {
             path={`/${dashboard}`}
             theme={definition?.theme || 'light'}
             baseUrl={config?.baseUrl || null}
+            showBreadcrumbs={!fullscreen}
         >
             <NoSSR>
                 {config?.viewSource && (

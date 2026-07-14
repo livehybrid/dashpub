@@ -210,7 +210,10 @@ function DashboardComponent({ definition, preset, width = '100vw', height = '100
                         definition={processedDef}
                         preset={preset}
                     />
-                    {/* Advanced Tab Rotator for dashboards with multiple tabs */}
+                    {/* Advanced Tab Rotator for dashboards with multiple tabs.
+                        Keeps running in fullscreen/kiosk mode — its floating
+                        widget and the native tab bar are hidden via CSS, but it
+                        still rotates by clicking the (hidden) tab elements. */}
                     <SplunkTabRotatorAdvanced
                         definition={processedDef || definition}
                         enabled={true}
