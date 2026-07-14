@@ -14,7 +14,7 @@ RUN apk update && apk upgrade -a && apk add --no-cache \
     vips-dev \
   && rm -rf /var/cache/apk/*
 
-RUN npm install -g npm@11.12.1
+RUN npm install -g npm@11.18.0
 
 # Manually patch glob in system npm to fix vulnerabilities
 RUN mkdir -p /tmp/glob-fix && \
@@ -70,7 +70,7 @@ RUN apk update && apk upgrade -a && apk add --no-cache \
     vips \
   && rm -rf /var/cache/apk/*
 
-RUN npm install -g npm@11.12.1
+RUN npm install -g npm@11.18.0
 
 RUN npm install -g node-gyp@^11.5.0
 
