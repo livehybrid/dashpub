@@ -30,3 +30,17 @@ body.dashpub-fullscreen [role="tablist"],
 body.dashpub-fullscreen .splunk-tab-rotator-advanced {
   display: none !important;
 }
+
+/* Hide the scrollbar in fullscreen/kiosk mode while keeping the content
+   scrollable (some dashboards overflow slightly and show a stray scrollbar).
+   Covers the body and any scroll container inside it since the stray bar can
+   appear on #root or a nested element. */
+body.dashpub-fullscreen,
+body.dashpub-fullscreen * {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;    /* Firefox */
+}
+body.dashpub-fullscreen::-webkit-scrollbar,
+body.dashpub-fullscreen *::-webkit-scrollbar {
+  display: none;            /* Chrome/Safari/WebKit */
+}
