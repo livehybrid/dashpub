@@ -1,2 +1,13 @@
 # No authorization in middleware based on pathname performed
 CVE-2024-51479
+# DoS CVEs inside npm's OWN bundled dependencies (brace-expansion, ip-address,
+# node-tar) under /usr/local/lib/node_modules/npm. No npm release ships the
+# fixed versions yet (verified against npm 12.0.2, 2026-08-19); npm is a
+# build/start tool here, not exposed to untrusted input at runtime. Remove
+# these once an npm release bundles the fixes.
+CVE-2026-13149
+CVE-2026-14257
+CVE-2026-69152
+CVE-2026-69192
+CVE-2026-59873
+CVE-2026-59874
