@@ -36,7 +36,7 @@
         "inquirer": "^14.0.2",
         "node-addon-api": "^8.0.0",
         "node-gyp": "13.0.0",
-        "sharp": "^0.34.3",
+        "sharp": "^0.35.0",
         "xmldoc": "^3.0.0"
     },
     "devDependencies": {
