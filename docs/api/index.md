@@ -158,6 +158,10 @@ Fetches data for a specific data source.
 **Query Parameters:**
 - `refresh` (optional) - Force refresh cache
 
+Data source ids are generated at build time from the search, its time range and any
+post-process. See [Data Sources](../features/data-sources/) for the supported types and
+how reports and chained searches are resolved.
+
 **Response:**
 ```json
 {
@@ -328,6 +332,7 @@ curl http://localhost:3000/api/splunk/test
 ## Related Documentation
 
 - [Configuration Guide](../configuration/)
+- [Data Sources](../features/data-sources/)
 - [Developer Guide](../development/)
 - [Dashboard System](../features/dashboards/)
 

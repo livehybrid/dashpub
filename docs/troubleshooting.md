@@ -95,6 +95,33 @@ npm run build
 3. Verify file permissions
 4. Check screenshot URLs in browser network tab
 
+### Panels Empty in Dashpub but Populated in Splunk Web
+
+**Symptom:** Some panels render blank, with no error, while the same dashboard shows
+data when opened as a Splunk user.
+
+**Cause:** the data source was skipped at build time, so the panel is bound to an id
+that no longer exists. Unsupported data source types, and data sources carrying neither
+a query nor a saved search reference, are skipped.
+
+**Solutions:**
+1. Search the `dashpub init` output for the skip warning:
+   ```
+   WARN: Skipping data source ds_abc123 (type ds.unknown) - no query or saved search ref.
+   ```
+2. Confirm the type is supported - see [Data Sources](features/data-sources/).
+3. For a report (`ds.savedSearch`), confirm the publishing user can read the report
+   object itself, not just the underlying indexes:
+   ```bash
+   curl -s -k -H "Authorization: Bearer ${TOKEN}" \
+     "https://splunk:8089/servicesNS/nobody/<app>/saved/searches/<report>?output_mode=json"
+   ```
+4. Where the report lives in a different app to the dashboard, set `app` in the data
+   source options.
+
+Note that `Saved searches: Active (0 searches stored)` in older startup logs was
+unrelated to `ds.savedSearch` and has been removed.
+
 ### Cache Issues
 
 **Error:** Stale data or cache not working
@@ -205,6 +232,7 @@ When reporting issues, include:
 ## Related Documentation
 
 - [Configuration Guide](configuration/)
+- [Data Sources](features/data-sources/)
 - [API Reference](api/)
 - [Development Guide](development/)
 

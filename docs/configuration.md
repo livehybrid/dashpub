@@ -144,17 +144,17 @@ MIN_REFRESH_TIME=60
 DASHPUB_SAVED_SEARCH_MAX_AGE=
 ```
 
-## Saved search (report) data sources
+## Data sources
 
-Dashboards that bind a panel to a report via `ds.savedSearch` are supported.
-Dashpub resolves the report's name against its job history and serves the newest
-completed run, so scheduled reports cost nothing extra to display. If the report
-has no usable artifact, dashpub dispatches it and waits for the result.
+`ds.search`, `ds.savedSearch`, `ds.chain` and `ds.test` data sources are supported.
+Anything else is skipped with a warning at build time, leaving its panels empty.
 
-The publishing user needs read access to the report itself (`saved/searches`) in
-the app that owns it, not just to the underlying indexes. Where a report lives in
-a different app to the dashboard, set `app` on the data source options and dashpub
-will look it up there.
+Reports bound via `ds.savedSearch` are served from the report's newest completed run,
+and dispatched on demand only when no artifact exists. The publishing user needs read
+access to the report object itself, not just to the underlying indexes.
+
+See [Data Sources](features/data-sources/) for the full behaviour, including chained
+searches and cross-app reports.
 
 ## Authentication & Security
 

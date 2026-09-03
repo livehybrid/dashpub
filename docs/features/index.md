@@ -27,6 +27,9 @@ Dashpub provides a comprehensive set of features for publishing and managing Spl
 - [Tab Rotation](tab-rotation/) - Automatic tab rotation for kiosk displays
 - [Responsive Design](dashboards/#responsive-design) - Works on all devices
 
+### 🔎 Data
+- [Data Sources](data-sources/) - Supported data source types, reports and chained searches
+
 ### 🎛️ Extensibility
 - [Custom Visualizations](custom-visualizations/) - Sideload packaged Splunk Dashboard Studio custom viz (10.x)
 
@@ -67,4 +70,5 @@ Dashpub uses Splunk's official UI components for:
 - [Breadcrumbs](breadcrumbs/)
 - [Loading States](loading/)
 - [Custom Visualizations](custom-visualizations/)
+- [Data Sources](data-sources/)
 
