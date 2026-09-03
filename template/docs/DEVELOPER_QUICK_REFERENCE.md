@@ -53,46 +53,29 @@ The system currently uses Node.js in-memory caching with the following character
 
 ### Cache Keys
 ```javascript
-// Format: type:identifier:parameters
-`datasource:${dsid}:${JSON.stringify(params)}`
-`dashboard:${dashboardId}:${version}`
-`search:${query}:${timeHash}:${app}`
+// Format: <dsid>_<JSON of the search's queryParameters>
+`${dsid}_${JSON.stringify(datasource.search.queryParameters || {})}`
 ```
 
-### TTL Strategies
+### TTL
 ```javascript
-const TTL_STRATEGIES = {
-  'datasource': 300000,      // 5 minutes
-  'dashboard': 3600000,      // 1 hour
-  'saved_search': 1800000    // 30 minutes
-};
+// The data source's own refresh interval, in seconds
+const refresh = datasource.search.refresh || parseInt(process.env.DASHPUB_DEFAULT_TTL) || 60;
 ```
 
-### Cache Configuration
+Expired entries are swept every 5 minutes (not configurable by environment variable).
 
-```javascript
-// Environment variables for cache tuning
-CACHE_TTL_MS=300000           // 5 minutes default TTL
-CACHE_CHECK_INTERVAL_MS=60000 // 1 minute cleanup interval
-```
-
-### Cache Statistics
+### Cache Inspection
 ```bash
-# Get cache stats (read-only, no authentication required)
-curl http://localhost:3000/api/cache/stats
+# Number of entries currently held
+curl http://localhost:3000/health | jq .cache
 
-# Delete specific cache entry (requires CACHE_MANAGEMENT_KEY)
-curl -X DELETE \
-  -H "x-cache-key: your-secure-cache-key-here" \
-  http://localhost:3000/api/cache/specific-key
-
-# Clear all cache (requires CACHE_MANAGEMENT_KEY)
-curl -X DELETE \
-  -H "x-cache-key: your-secure-cache-key-here" \
-  http://localhost:3000/api/cache/clear
+# Whether a data source response came from cache
+curl http://localhost:3000/api/data/<dsid> | jq .meta
 ```
 
-**Security Note**: Cache management endpoints require a valid `CACHE_MANAGEMENT_KEY` environment variable. Set this to a secure, random value in production.
+There is no cache management endpoint and no manual flush. Entries expire on the data
+source's own `refresh` interval; restart the server to drop the cache.
 
 ## 🔌 API Endpoints
 
@@ -106,25 +89,22 @@ GET    /api/dashboards/list               # Enhanced dashboard list
 ### Data Sources
 ```http
 GET    /api/data/:dsid                    # Get datasource data
-GET    /api/datasources/:dsid             # Get datasource metadata
-# Removed: /api/datasources/search endpoint (security risk - not implemented)
 ```
 
 ### Health & Monitoring
 ```http
-GET    /health                            # Health check
-GET    /api/status                        # Server status
-GET    /api/splunk/test                   # Splunk connection test
+GET    /health                            # Health check, cache size, Splunk config
 ```
 
-### Cache Management
+### Export, Logging and Auth
 ```http
-GET    /api/cache/stats                   # Get cache statistics (public)
-DELETE /api/cache/:key                    # Delete specific cache entry (protected)
-DELETE /api/cache/clear                   # Clear all cache (protected)
+GET    /api/export/:dsid/:format          # csv or json
+GET    /api/logs/hec/status               # HEC client state
+POST   /api/logs/hec/test                 # HEC connectivity check
+POST   /api/logs/hec/flush                # Flush the HEC batch
+POST   /api/login                         # JWT login (JWT_REQUIRED=true)
+GET    /api/auth/verify                   # Verify a JWT
 ```
-
-**Protected endpoints require `x-cache-key` header or `key` query parameter matching `CACHE_MANAGEMENT_KEY` environment variable.**
 
 ## 🎨 Frontend Development
 
@@ -323,11 +303,11 @@ pkill -f "vite"
 
 #### 2. Cache Issues
 ```bash
-# Check cache stats
-curl http://localhost:3000/api/cache/stats
+# Check cache size
+curl http://localhost:3000/health | jq .cache
 
-# Clear cache
-curl -X DELETE http://localhost:3000/api/cache/clear
+# Confirm whether a response was cached
+curl http://localhost:3000/api/data/<dsid> | jq .meta
 ```
 
 #### 3. Build Errors
@@ -340,8 +320,8 @@ npm run build
 
 #### 4. Splunk Connection Issues
 ```bash
-# Test connection
-curl http://localhost:3000/api/splunk/test
+# Check what the server resolved for Splunk
+curl http://localhost:3000/health | jq .services.splunk
 
 # Check environment variables
 echo $SPLUNK_HOST
@@ -352,10 +332,9 @@ echo $SPLUNK_PORT
 
 ### Cache Performance
 ```javascript
-// Monitor cache hit rates
-const cacheStats = await fetch('/api/cache/stats').then(r => r.json());
-console.log('Hit rate:', cacheStats.hitRate);
-console.log('Memory usage:', cacheStats.memoryUsage);
+// Per-response cache state; there is no aggregate hit-rate metric
+const { meta } = await fetch(`/api/data/${dsid}`).then((r) => r.json());
+console.log('From cache:', meta.fromCache, 'age(ms):', meta.cacheAge);
 ```
 
 ### Response Times
@@ -450,8 +429,8 @@ npm run build && npm start
 # Check health
 curl http://localhost:3000/health
 
-# Monitor performance
-curl http://localhost:3000/api/status
+# Uptime, memory, cache size and rate limiting are all in /health
+curl http://localhost:3000/health | jq '{uptime, cache, rateLimit}'
 ```
 
 ### Troubleshooting

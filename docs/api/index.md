@@ -58,8 +58,11 @@ Returns a list of all available dashboards.
 ### Get Dashboard Definition
 
 ```http
-GET /api/dashboards/:id/definition
+GET /api/dashboards/:slug/definition
 ```
+
+Returns the dashboard's generated `definition.json`. `GET /api/dashboards/:id` returns
+the same document.
 
 Returns the complete dashboard definition JSON.
 
@@ -196,79 +199,42 @@ Returns server health status.
 }
 ```
 
-### Server Status
+`/health` also reports server uptime and memory, the Splunk URL and app in use, the
+number of loaded data sources, the current cache size and rate limiting state. There is
+no separate status, Splunk-test or cache-management endpoint; the cache has no manual
+flush and expires entries on its own TTL.
+
+## Export Endpoints
+
+### Export Data Source Results
 
 ```http
-GET /api/status
+GET /api/export/:dsid/:format
 ```
 
-Returns detailed server status and metrics.
+Exports a data source's results. `format` must be `csv` or `json`. Optional
+`parameters` query string is merged into the search's query parameters.
 
-**Response:**
-```json
-{
-  "status": "running",
-  "uptime": 3600,
-  "memory": {
-    "used": "45.2 MB",
-    "total": "512 MB"
-  },
-  "cache": {
-    "entries": 156,
-    "hitRate": 0.87
-  }
-}
-```
+## Logging Endpoints
 
-### Test Splunk Connection
+Available when Splunk HEC logging is enabled (`SPLUNK_HEC_ENABLED=true`).
 
 ```http
-GET /api/splunk/test
+GET  /api/logs/hec/status
+POST /api/logs/hec/test
+POST /api/logs/hec/flush
 ```
 
-Tests connection to Splunk instance.
+`status` returns the HEC client state, `test` checks connectivity, and `flush` sends
+the current batch immediately.
 
-**Response:**
-```json
-{
-  "connected": true,
-  "user": "admin",
-  "url": "https://splunk-instance:8089"
-}
-```
+## Authentication Endpoints
 
-## Cache Management
-
-### Get Cache Statistics
+Available when `JWT_REQUIRED=true`; `/api/login` returns 400 otherwise.
 
 ```http
-GET /api/cache/stats
-```
-
-Returns cache statistics (public endpoint).
-
-**Response:**
-```json
-{
-  "totalEntries": 156,
-  "memoryUsage": "45.2 MB",
-  "hitRate": 0.87,
-  "missRate": 0.13,
-  "evictions": 23
-}
-```
-
-### Clear Cache
-
-```http
-DELETE /api/cache/clear
-```
-
-Clears all cache entries (requires `CACHE_MANAGEMENT_KEY`).
-
-**Headers:**
-```
-x-cache-key: your-cache-management-key
+POST /api/login
+GET  /api/auth/verify
 ```
 
 ## Error Responses
@@ -323,10 +289,10 @@ curl http://localhost:3000/api/dashboards/my-dashboard/definition
 curl http://localhost:3000/api/config | jq .
 ```
 
-### Test Splunk Connection
+### Check Health and Splunk Connectivity
 
 ```bash
-curl http://localhost:3000/api/splunk/test
+curl http://localhost:3000/health | jq .services
 ```
 
 ## Related Documentation
