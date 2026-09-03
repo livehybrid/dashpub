@@ -829,14 +829,137 @@ async function fetchSplunkUser() {
 // Fetch user on startup
 fetchSplunkUser();
 
+// splunkd serialises booleans inconsistently across endpoints ('1', 1, 'true', true)
+const isSplunkTrue = (value) => value === true || value === 1 || value === '1' || value === 'true';
+
+// Best-effort dispatch timestamp (ms) for a search job entry, used to pick the newest artifact
+function jobDispatchTimeMs(entry) {
+  const content = (entry || {}).content || {};
+  const epochSeconds = Number(content.dispatchTime);
+  if (Number.isFinite(epochSeconds) && epochSeconds > 0) {
+    return epochSeconds * 1000;
+  }
+  const published = content.published || entry.published;
+  if (published) {
+    const parsed = Date.parse(published);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+  return 0;
+}
+
+// Find the most recent usable artifact for a saved search (report/alert).
+// Returns the sid of a completed, non-failed job, or null when there is nothing to reuse.
+async function findLatestSavedSearchJob({ ref, servicePrefix, authHeader, datasourceId }) {
+  const historyUrl = `${process.env.SPLUNKD_URL}/${servicePrefix}/saved/searches/${encodeURIComponent(
+    ref
+  )}/history?output_mode=json&count=0`;
+
+  const response = await enhancedFetch(historyUrl, {
+    headers: { Authorization: authHeader },
+    agent: agent,
+  });
+
+  if (response.status === 404) {
+    throw new Error(`Saved search '${ref}' not found or not readable by the dashpub user`);
+  }
+  if (response.status > 299) {
+    throw new Error(`Failed to read history for saved search '${ref}', Splunk returned HTTP status ${response.status}`);
+  }
+
+  const body = await response.json();
+  const entries = body.entry || [];
+  const usable = entries.filter((entry) => {
+    const content = entry.content || {};
+    return (
+      isSplunkTrue(content.isDone) &&
+      !isSplunkTrue(content.isFailed) &&
+      !isSplunkTrue(content.isZombie) &&
+      !isSplunkTrue(content.isRealTimeSearch)
+    );
+  });
+
+  if (usable.length === 0) {
+    logger.info('No reusable artifacts for saved search', { datasourceId, ref, historyCount: entries.length });
+    return null;
+  }
+
+  usable.sort((a, b) => jobDispatchTimeMs(b) - jobDispatchTimeMs(a));
+  const latest = usable[0];
+
+  // Optional guard for reports that are not scheduled often enough (or at all).
+  // Unset by default, which mirrors Splunk Web: always serve the newest artifact.
+  const maxAgeSeconds = parseInt(process.env.DASHPUB_SAVED_SEARCH_MAX_AGE, 10);
+  if (Number.isFinite(maxAgeSeconds) && maxAgeSeconds > 0) {
+    const ageSeconds = (Date.now() - jobDispatchTimeMs(latest)) / 1000;
+    if (ageSeconds > maxAgeSeconds) {
+      logger.info('Newest saved search artifact is stale, will re-dispatch', {
+        datasourceId,
+        ref,
+        ageSeconds: Math.round(ageSeconds),
+        maxAgeSeconds,
+      });
+      return null;
+    }
+  }
+
+  logger.info('Reusing existing saved search artifact', {
+    datasourceId,
+    ref,
+    sid: latest.name,
+    ageSeconds: Math.round((Date.now() - jobDispatchTimeMs(latest)) / 1000),
+  });
+  return latest.name;
+}
+
+// Run a saved search on demand. Only used when the report has no usable artifact,
+// which is what makes ds.savedSearch resilient where `| loadjob` simply errors.
+async function dispatchSavedSearch({ ref, servicePrefix, authHeader, queryParameters, datasourceId }) {
+  const bodyParams = new URLSearchParams({
+    output_mode: 'json',
+    trigger_actions: '0',
+  });
+  if ((queryParameters || {}).earliest) {
+    bodyParams.set('dispatch.earliest_time', queryParameters.earliest);
+  }
+  if ((queryParameters || {}).latest) {
+    bodyParams.set('dispatch.latest_time', queryParameters.latest);
+  }
+
+  const response = await enhancedFetch(
+    `${process.env.SPLUNKD_URL}/${servicePrefix}/saved/searches/${encodeURIComponent(ref)}/dispatch`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: bodyParams,
+      agent: agent,
+    }
+  );
+
+  if (response.status > 299) {
+    const error = `Failed to dispatch saved search '${ref}', Splunk returned HTTP status ${response.status}`;
+    logger.error(error, { datasourceId, ref, status: response.status });
+    throw new Error(error);
+  }
+
+  const { sid } = await response.json();
+  logger.info('Saved search dispatched', { datasourceId, ref, sid });
+  return sid;
+}
+
 // Function to execute Splunk search
 async function executeSplunkSearch(datasource) {
   const { search } = datasource;
   const app = datasource.app || process.env.DASHPUB_APP || 'search';
   let query = search.query;
+  const savedSearchRef = search.ref;
   const refresh = Math.max(parseInt(process.env.MIN_REFRESH_TIME, 10) || 60, search.refresh || 60);
   
-  logger.info('Executing Splunk search', { datasourceId: datasource.id, query, app, refresh });
+  logger.info('Executing Splunk search', { datasourceId: datasource.id, query, savedSearchRef, app, refresh });
   const searchStartTime = Date.now();
   
   // Build service prefix and auth header
@@ -845,39 +968,65 @@ async function executeSplunkSearch(datasource) {
     ? splunkManagementAuthHeader(process.env.SPLUNKD_TOKEN)
     : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
 
-  // Prepare search parameters
-  const bodyParams = new URLSearchParams({
-    output_mode: 'json',
-    earliest_time: (search.queryParameters || {}).earliest || '',
-    latest_time: (search.queryParameters || {}).latest || '',
-    search: qualifiedSearchString(query),
-    reuse_max_seconds_ago: refresh,
-    timeout: refresh * 2,
-  });
-
-  // Dispatch search job
-  logger.info('Dispatching search job to Splunk', { datasourceId: datasource.id });
+  const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
   const dispatchStartTime = Date.now();
-  const searchResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
-    method: 'POST',
-    headers: {
-      Authorization: AUTH_HEADER,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: bodyParams,
-    agent: agent,
-  });
+  let sid;
+  let reusedArtifact = false;
 
-  if (searchResponse.status > 299) {
-    const error = `Failed to dispatch job, Splunk returned HTTP status ${searchResponse.status}`;
-    logger.error(error, { datasourceId: datasource.id, status: searchResponse.status });
-    throw new Error(error);
+  if (savedSearchRef) {
+    // ds.savedSearch: prefer the report's latest scheduled artifact, dispatch only if there is none
+    sid = await findLatestSavedSearchJob({
+      ref: savedSearchRef,
+      servicePrefix: SERVICE_PREFIX,
+      authHeader: AUTH_HEADER,
+      datasourceId: datasource.id,
+    });
+
+    if (sid) {
+      reusedArtifact = true;
+    } else {
+      sid = await dispatchSavedSearch({
+        ref: savedSearchRef,
+        servicePrefix: SERVICE_PREFIX,
+        authHeader: AUTH_HEADER,
+        queryParameters: search.queryParameters,
+        datasourceId: datasource.id,
+      });
+    }
+  } else {
+    // Prepare search parameters
+    const bodyParams = new URLSearchParams({
+      output_mode: 'json',
+      earliest_time: (search.queryParameters || {}).earliest || '',
+      latest_time: (search.queryParameters || {}).latest || '',
+      search: qualifiedSearchString(query),
+      reuse_max_seconds_ago: refresh,
+      timeout: refresh * 2,
+    });
+
+    // Dispatch search job
+    logger.info('Dispatching search job to Splunk', { datasourceId: datasource.id });
+    const searchResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
+      method: 'POST',
+      headers: {
+        Authorization: AUTH_HEADER,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: bodyParams,
+      agent: agent,
+    });
+
+    if (searchResponse.status > 299) {
+      const error = `Failed to dispatch job, Splunk returned HTTP status ${searchResponse.status}`;
+      logger.error(error, { datasourceId: datasource.id, status: searchResponse.status });
+      throw new Error(error);
+    }
+
+    ({ sid } = await searchResponse.json());
   }
 
-  const { sid } = await searchResponse.json();
   const dispatchTime = Date.now() - dispatchStartTime;
-  const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
-  logger.info('Search job dispatched successfully', { 
+  logger.info('Search job ready', { 
     datasourceId: datasource.id, 
     sid, 
     dispatchTime, 
@@ -898,13 +1047,37 @@ async function executeSplunkSearch(datasource) {
       }
     ).then((r) => r.json());
 
+    if (!statusResponse.entry || !statusResponse.entry[0]) {
+      // A reused scheduled artifact can be reaped between reading the history and
+      // reading the job. Fall back to running the saved search rather than failing.
+      if (reusedArtifact) {
+        logger.warn('Saved search artifact no longer available, dispatching a fresh run', {
+          datasourceId: datasource.id,
+          ref: savedSearchRef,
+          sid,
+        });
+        reusedArtifact = false;
+        sid = await dispatchSavedSearch({
+          ref: savedSearchRef,
+          servicePrefix: SERVICE_PREFIX,
+          authHeader: AUTH_HEADER,
+          queryParameters: search.queryParameters,
+          datasourceId: datasource.id,
+        });
+        continue;
+      }
+      const error = `Search job ${sid} is not available`;
+      logger.error(error, { datasourceId: datasource.id, sid });
+      throw new Error(error);
+    }
+
     const jobStatus = statusResponse.entry[0].content;
-    if (jobStatus.isFailed) {
+    if (isSplunkTrue(jobStatus.isFailed)) {
       const error = 'Search job failed';
       logger.error(error, { datasourceId: datasource.id, sid });
       throw new Error(error);
     }
-    complete = jobStatus.isDone;
+    complete = isSplunkTrue(jobStatus.isDone);
     if (!complete) {
       await sleep(checkDelay);
     }
@@ -922,7 +1095,7 @@ async function executeSplunkSearch(datasource) {
     search: search.postprocess || '',
   });
 
-  const resultsResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
+  const resultsResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${encodeURIComponent(sid)}/results`, {
     method: 'POST',
     headers: {
       Authorization: AUTH_HEADER,
@@ -1482,7 +1655,7 @@ app.get('/api/data/:dsid', rateLimit, async (req, res) => {
   }
   
   const datasource = DATASOURCES[dsid];
-  logger.info('Datasource found', { dsid, query: datasource.search.query, app: datasource.app });
+  logger.info('Datasource found', { dsid, query: datasource.search.query, savedSearchRef: datasource.search.ref, app: datasource.app });
   
   // Check cache first
   const cacheKey = `${dsid}_${JSON.stringify(datasource.search.queryParameters || {})}`;

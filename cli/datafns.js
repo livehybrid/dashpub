@@ -21,6 +21,12 @@ const makeId = ds => {
     if (ds.query) {
         h.write(ds.query);
     }
+    if (ds.ref) {
+        h.write(`savedsearch:${ds.ref}`);
+    }
+    if (ds.app) {
+        h.write(`app:${ds.app}`);
+    }
     if (ds.queryParameters) {
         if (ds.queryParameters.earliest) {
             h.write(ds.queryParameters.earliest);
@@ -101,17 +107,25 @@ async function generateCdnDataSource([key, ds], app, allDataSources, defaults) {
         };
     }
 
-    if (!settings.query) {
+    // ds.savedSearch references a report by name rather than carrying SPL. Keep the
+    // reference intact so the server can resolve it against the report's scheduled
+    // artifacts at request time (see resolveSavedSearchJob in template/server.js).
+    if (!settings.query && !settings.ref) {
+        console.log(
+            `WARN: Skipping data source ${key} (type ${ds.type || 'unknown'}) - no query or saved search ref. ` +
+                'Visualizations bound to it will render without data.'
+        );
         return null;
     }
 
-    const id = makeId(settings);
+    const dsApp = settings.app || app;
+    const id = makeId({ ...settings, app: dsApp });
     const refreshVal = parseRefreshTime(ds.options.refresh, defaults['ds.search']);
     const dataSourceManifest = [
         id,
         {
             search: { ...settings, refresh: refreshVal },
-            app: app,
+            app: dsApp,
             id,
         },
     ];
