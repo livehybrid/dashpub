@@ -773,6 +773,7 @@ RATE_LIMIT_MAX_REQUESTS=1000  # Increased default for dashboard reloads
 MAX_RETRIES=3
 SEARCH_JOB_DELAY_MS=250
 MIN_REFRESH_TIME=60
+DASHPUB_SAVED_SEARCH_MAX_AGE=  # Re-run a ds.savedSearch report if its newest artifact is older than N seconds (unset = always reuse)
 ```
 
 #### Authentication & Security

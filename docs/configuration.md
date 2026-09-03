@@ -136,7 +136,25 @@ SEARCH_JOB_DELAY_MS=250
 
 # Minimum refresh time (seconds)
 MIN_REFRESH_TIME=60
+
+# Force a ds.savedSearch data source to re-run its report when the newest
+# artifact is older than this many seconds. Unset by default, which matches
+# Splunk Web: the latest scheduled result is always served, however old.
+# Useful for reports that are published but not scheduled.
+DASHPUB_SAVED_SEARCH_MAX_AGE=
 ```
+
+## Saved search (report) data sources
+
+Dashboards that bind a panel to a report via `ds.savedSearch` are supported.
+Dashpub resolves the report's name against its job history and serves the newest
+completed run, so scheduled reports cost nothing extra to display. If the report
+has no usable artifact, dashpub dispatches it and waits for the result.
+
+The publishing user needs read access to the report itself (`saved/searches`) in
+the app that owns it, not just to the underlying indexes. Where a report lives in
+a different app to the dashboard, set `app` on the data source options and dashpub
+will look it up there.
 
 ## Authentication & Security
 

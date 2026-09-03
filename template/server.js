@@ -440,8 +440,6 @@ const logger = {
 const searchCache = new Map();
 const CACHE_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-// Saved searches storage (in-memory for now, could be persisted to file/database)
-const savedSearches = new Map();
 
 // Rate limiting configuration
 const RATE_LIMIT_CONFIG = {
@@ -697,10 +695,6 @@ app.get('/health', async (req, res) => {
           maxRequests: RATE_LIMIT_CONFIG.maxRequests,
           windowMs: RATE_LIMIT_CONFIG.windowMs / 1000 / 60 + ' minutes'
         }
-      },
-      savedSearches: {
-        count: savedSearches.size,
-        status: 'active'
       },
       logging: {
         status: 'active',
@@ -1857,176 +1851,6 @@ app.post('/api/logs/hec/flush', rateLimit, async (req, res) => {
   }
 });
 
-// Saved searches endpoints
-app.get('/api/saved-searches', rateLimit, (req, res) => {
-  try {
-    const searches = Array.from(savedSearches.values()).map(search => ({
-      id: search.id,
-      name: search.name,
-      description: search.description,
-      query: search.query,
-      parameters: search.parameters,
-      createdAt: search.createdAt,
-      lastUsed: search.lastUsed,
-      useCount: search.useCount
-    }));
-    
-    logger.info('Retrieved saved searches', { count: searches.length });
-    res.json({
-      searches,
-      total: searches.length
-    });
-  } catch (error) {
-    logger.error('Failed to retrieve saved searches', { error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to retrieve saved searches',
-      details: error.message
-    });
-  }
-});
-
-app.post('/api/saved-searches', rateLimit, (req, res) => {
-  try {
-    const { name, description, query, parameters = {} } = req.body;
-    
-    if (!name || !query) {
-      logger.warn('Invalid saved search creation attempt', { name, hasQuery: !!query });
-      return res.status(400).json({
-        error: 'Missing required fields',
-        message: 'Name and query are required'
-      });
-    }
-    
-    const id = `saved_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const savedSearch = {
-      id,
-      name,
-      description: description || '',
-      query,
-      parameters,
-      createdAt: new Date().toISOString(),
-      lastUsed: null,
-      useCount: 0
-    };
-    
-    savedSearches.set(id, savedSearch);
-    logger.info('Saved search created successfully', { id, name, queryLength: query.length });
-    
-    res.status(201).json(savedSearch);
-  } catch (error) {
-    logger.error('Failed to create saved search', { error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to create saved search',
-      details: error.message
-    });
-  }
-});
-
-app.get('/api/saved-searches/:id', rateLimit, (req, res) => {
-  try {
-    const { id } = req.params;
-    const savedSearch = savedSearches.get(id);
-    
-    if (!savedSearch) {
-      logger.warn('Saved search not found', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    logger.info('Retrieved saved search', { id, name: savedSearch.name });
-    res.json(savedSearch);
-  } catch (error) {
-    logger.error('Failed to retrieve saved search', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to retrieve saved search',
-      details: error.message
-    });
-  }
-});
-
-app.delete('/api/saved-searches/:id', rateLimit, (req, res) => {
-  try {
-    const { id } = req.params;
-    const savedSearch = savedSearches.get(id);
-    
-    if (!savedSearch) {
-      logger.warn('Attempted to delete non-existent saved search', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    savedSearches.delete(id);
-    logger.info('Saved search deleted successfully', { id, name: savedSearch.name });
-    
-    res.json({
-      message: 'Saved search deleted successfully',
-      deletedSearch: savedSearch
-    });
-  } catch (error) {
-    logger.error('Failed to delete saved search', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to delete saved search',
-      details: error.message
-    });
-  }
-});
-
-// Execute saved search endpoint
-app.post('/api/saved-searches/:id/execute', rateLimit, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { parameters = {} } = req.body;
-    
-    const savedSearch = savedSearches.get(id);
-    if (!savedSearch) {
-      logger.warn('Attempted to execute non-existent saved search', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    // Update usage statistics
-    savedSearch.lastUsed = new Date().toISOString();
-    savedSearch.useCount = (savedSearch.useCount || 0) + 1;
-    
-    logger.info('Executing saved search', { id, name: savedSearch.name, useCount: savedSearch.useCount });
-    
-    // Create a temporary datasource object to reuse existing search logic
-    const tempDatasource = {
-      id: `saved_${id}`,
-      search: {
-        query: savedSearch.query,
-        queryParameters: { ...savedSearch.parameters, ...parameters },
-        refresh: 60 // Default refresh for saved searches
-      },
-      app: process.env.DASHPUB_APP || 'etyd'
-    };
-    
-    // Execute the search using existing infrastructure
-    const data = await executeSplunkSearch(tempDatasource);
-    
-    logger.info('Saved search executed successfully', { id, name: savedSearch.name, recordCount: data.meta.totalCount });
-    
-    res.json({
-      savedSearchId: id,
-      savedSearchName: savedSearch.name,
-      data: data
-    });
-    
-  } catch (error) {
-    logger.error('Failed to execute saved search', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to execute saved search',
-      details: error.message
-    });
-  }
-});
-
 // Data export endpoints
 app.get('/api/export/:dsid/:format', rateLimit, async (req, res) => {
   try {
@@ -2096,91 +1920,6 @@ app.get('/api/export/:dsid/:format', rateLimit, async (req, res) => {
     logger.error('Data export failed', { dsid: req.params.dsid, format: req.params.format, error: error.message, stack: error.stack });
     res.status(500).json({
       error: 'Failed to export data',
-      details: error.message
-    });
-  }
-});
-
-// Export saved search data
-app.get('/api/export/saved-search/:id/:format', rateLimit, async (req, res) => {
-  try {
-    const { id, format } = req.params;
-    const { parameters = {} } = req.query;
-    
-    if (!['csv', 'json'].includes(format)) {
-      logger.warn('Invalid export format requested for saved search', { id, format });
-      return res.status(400).json({
-        error: 'Invalid export format',
-        message: 'Supported formats: csv, json'
-      });
-    }
-    
-    const savedSearch = savedSearches.get(id);
-    if (!savedSearch) {
-      logger.warn('Export requested for non-existent saved search', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    logger.info('Starting saved search export', { id, name: savedSearch.name, format });
-    
-    // Create temporary datasource to reuse existing search logic
-    const tempDatasource = {
-      id: `saved_${id}`,
-      search: {
-        query: savedSearch.query,
-        queryParameters: { ...savedSearch.parameters, ...parameters },
-        refresh: 60
-      },
-      app: process.env.DASHPUB_APP || 'etyd'
-    };
-    
-    // Execute the search using existing infrastructure
-    const data = await executeSplunkSearch(tempDatasource);
-    
-    // Generate filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `saved_${id}_${format}_${timestamp}`;
-    
-    if (format === 'csv') {
-      // Convert to CSV format
-      const csvContent = convertToCSV(data);
-      
-      res.set({
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="${filename}.csv"`,
-        'Cache-Control': 'no-cache'
-      });
-      
-      logger.info('Saved search CSV export completed successfully', { id, name: savedSearch.name, filename, recordCount: data.meta.totalCount });
-      res.send(csvContent);
-    } else if (format === 'json') {
-      // Export as JSON
-      res.set({
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="${filename}.json"`,
-        'Cache-Control': 'no-cache'
-      });
-      
-      logger.info('Saved search JSON export completed successfully', { id, name: savedSearch.name, filename, recordCount: data.meta.totalCount });
-      res.json({
-        exportInfo: {
-          savedSearchId: id,
-          savedSearchName: savedSearch.name,
-          format: 'json',
-          timestamp: new Date().toISOString(),
-          recordCount: data.meta.totalCount
-        },
-        data: data
-      });
-    }
-    
-  } catch (error) {
-    logger.error('Saved search export failed', { id: req.params.id, format: req.params.format, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to export saved search data',
       details: error.message
     });
   }
@@ -2499,7 +2238,6 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check available at http://localhost:${PORT}/health`);
   console.log(`🔍 API available at http://localhost:${PORT}/api/data/:dsid`);
-  console.log(`💾 Saved searches available at http://localhost:${PORT}/api/saved-searches`);
   console.log(`📋 Dashboard management available at http://localhost:${PORT}/api/dashboards`);
   console.log(`📄 Dashboard definitions available at http://localhost:${PORT}/api/dashboards/:slug/definition`);
   console.log(`📊 Enhanced dashboard list available at http://localhost:${PORT}/api/dashboards/list`);
@@ -2508,7 +2246,6 @@ const server = app.listen(PORT, () => {
   console.log(`💾 Cache system: Active (cleanup every ${CACHE_CLEANUP_INTERVAL/1000}s)`);
   console.log(`🔄 Retry system: Active (max ${RETRY_CONFIG.maxRetries} retries with exponential backoff)`);
   console.log(`🚦 Rate limiting: Active (${RATE_LIMIT_CONFIG.maxRequests} requests per ${RATE_LIMIT_CONFIG.windowMs/1000/60} minutes per IP)`);
-  console.log(`💾 Saved searches: Active (${savedSearches.size} searches stored)`);
   console.log(`📝 Structured logging: Active`);
   console.log(`📊 Dynamic dashboards: Active (API-based loading)`);
   
