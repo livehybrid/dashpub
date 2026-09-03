@@ -87,6 +87,20 @@ sequenceDiagram
 
 ## Caching System Deep Dive
 
+> **Status: proposed design, not the current implementation.**
+>
+> The classes below (`CacheStore`, `CacheKeyGenerator`, `TTLStrategy`, `CacheWarmer`,
+> `CacheAnalytics`, `RequestPipeline`) do not exist in `server.js`. They describe a
+> direction, not the running code, and should not be relied on when debugging.
+>
+> What actually runs today is a single `Map` named `searchCache`, keyed by
+> `<dsid>_<JSON of the search's queryParameters>`. Entries expire after the data
+> source's own `refresh` interval (falling back to `DASHPUB_DEFAULT_TTL`, then 60
+> seconds) and a sweep every 5 minutes deletes expired ones. There is no LRU
+> eviction, no size cap, no hit-rate tracking, no cache warming and no cache
+> management endpoint.
+
+
 ### Cache Architecture
 
 The caching system is built around a multi-tier approach with intelligent eviction strategies and performance optimization.
@@ -681,7 +695,6 @@ class RequestPipeline {
   getDataType(req) {
     if (req.path.includes('/api/data/')) return 'datasource';
     if (req.path.includes('/api/dashboards/')) return 'dashboard';
-    if (req.path.includes('/api/saved-searches/')) return 'saved_search';
     return 'generic';
   }
   

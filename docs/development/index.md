@@ -147,8 +147,8 @@ DEBUG=* npm run dev:full
 # View server logs
 tail -f logs/app.log
 
-# Check cache stats
-curl http://localhost:3000/api/cache/stats
+# Check cache size
+curl http://localhost:3000/health | jq .cache
 ```
 
 ## Contributing

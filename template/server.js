@@ -440,8 +440,6 @@ const logger = {
 const searchCache = new Map();
 const CACHE_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-// Saved searches storage (in-memory for now, could be persisted to file/database)
-const savedSearches = new Map();
 
 // Rate limiting configuration
 const RATE_LIMIT_CONFIG = {
@@ -698,10 +696,6 @@ app.get('/health', async (req, res) => {
           windowMs: RATE_LIMIT_CONFIG.windowMs / 1000 / 60 + ' minutes'
         }
       },
-      savedSearches: {
-        count: savedSearches.size,
-        status: 'active'
-      },
       logging: {
         status: 'active',
         config: {
@@ -829,14 +823,137 @@ async function fetchSplunkUser() {
 // Fetch user on startup
 fetchSplunkUser();
 
+// splunkd serialises booleans inconsistently across endpoints ('1', 1, 'true', true)
+const isSplunkTrue = (value) => value === true || value === 1 || value === '1' || value === 'true';
+
+// Best-effort dispatch timestamp (ms) for a search job entry, used to pick the newest artifact
+function jobDispatchTimeMs(entry) {
+  const content = (entry || {}).content || {};
+  const epochSeconds = Number(content.dispatchTime);
+  if (Number.isFinite(epochSeconds) && epochSeconds > 0) {
+    return epochSeconds * 1000;
+  }
+  const published = content.published || entry.published;
+  if (published) {
+    const parsed = Date.parse(published);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+  return 0;
+}
+
+// Find the most recent usable artifact for a saved search (report/alert).
+// Returns the sid of a completed, non-failed job, or null when there is nothing to reuse.
+async function findLatestSavedSearchJob({ ref, servicePrefix, authHeader, datasourceId }) {
+  const historyUrl = `${process.env.SPLUNKD_URL}/${servicePrefix}/saved/searches/${encodeURIComponent(
+    ref
+  )}/history?output_mode=json&count=0`;
+
+  const response = await enhancedFetch(historyUrl, {
+    headers: { Authorization: authHeader },
+    agent: agent,
+  });
+
+  if (response.status === 404) {
+    throw new Error(`Saved search '${ref}' not found or not readable by the dashpub user`);
+  }
+  if (response.status > 299) {
+    throw new Error(`Failed to read history for saved search '${ref}', Splunk returned HTTP status ${response.status}`);
+  }
+
+  const body = await response.json();
+  const entries = body.entry || [];
+  const usable = entries.filter((entry) => {
+    const content = entry.content || {};
+    return (
+      isSplunkTrue(content.isDone) &&
+      !isSplunkTrue(content.isFailed) &&
+      !isSplunkTrue(content.isZombie) &&
+      !isSplunkTrue(content.isRealTimeSearch)
+    );
+  });
+
+  if (usable.length === 0) {
+    logger.info('No reusable artifacts for saved search', { datasourceId, ref, historyCount: entries.length });
+    return null;
+  }
+
+  usable.sort((a, b) => jobDispatchTimeMs(b) - jobDispatchTimeMs(a));
+  const latest = usable[0];
+
+  // Optional guard for reports that are not scheduled often enough (or at all).
+  // Unset by default, which mirrors Splunk Web: always serve the newest artifact.
+  const maxAgeSeconds = parseInt(process.env.DASHPUB_SAVED_SEARCH_MAX_AGE, 10);
+  if (Number.isFinite(maxAgeSeconds) && maxAgeSeconds > 0) {
+    const ageSeconds = (Date.now() - jobDispatchTimeMs(latest)) / 1000;
+    if (ageSeconds > maxAgeSeconds) {
+      logger.info('Newest saved search artifact is stale, will re-dispatch', {
+        datasourceId,
+        ref,
+        ageSeconds: Math.round(ageSeconds),
+        maxAgeSeconds,
+      });
+      return null;
+    }
+  }
+
+  logger.info('Reusing existing saved search artifact', {
+    datasourceId,
+    ref,
+    sid: latest.name,
+    ageSeconds: Math.round((Date.now() - jobDispatchTimeMs(latest)) / 1000),
+  });
+  return latest.name;
+}
+
+// Run a saved search on demand. Only used when the report has no usable artifact,
+// which is what makes ds.savedSearch resilient where `| loadjob` simply errors.
+async function dispatchSavedSearch({ ref, servicePrefix, authHeader, queryParameters, datasourceId }) {
+  const bodyParams = new URLSearchParams({
+    output_mode: 'json',
+    trigger_actions: '0',
+  });
+  if ((queryParameters || {}).earliest) {
+    bodyParams.set('dispatch.earliest_time', queryParameters.earliest);
+  }
+  if ((queryParameters || {}).latest) {
+    bodyParams.set('dispatch.latest_time', queryParameters.latest);
+  }
+
+  const response = await enhancedFetch(
+    `${process.env.SPLUNKD_URL}/${servicePrefix}/saved/searches/${encodeURIComponent(ref)}/dispatch`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: authHeader,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: bodyParams,
+      agent: agent,
+    }
+  );
+
+  if (response.status > 299) {
+    const error = `Failed to dispatch saved search '${ref}', Splunk returned HTTP status ${response.status}`;
+    logger.error(error, { datasourceId, ref, status: response.status });
+    throw new Error(error);
+  }
+
+  const { sid } = await response.json();
+  logger.info('Saved search dispatched', { datasourceId, ref, sid });
+  return sid;
+}
+
 // Function to execute Splunk search
 async function executeSplunkSearch(datasource) {
   const { search } = datasource;
   const app = datasource.app || process.env.DASHPUB_APP || 'search';
   let query = search.query;
+  const savedSearchRef = search.ref;
   const refresh = Math.max(parseInt(process.env.MIN_REFRESH_TIME, 10) || 60, search.refresh || 60);
   
-  logger.info('Executing Splunk search', { datasourceId: datasource.id, query, app, refresh });
+  logger.info('Executing Splunk search', { datasourceId: datasource.id, query, savedSearchRef, app, refresh });
   const searchStartTime = Date.now();
   
   // Build service prefix and auth header
@@ -845,39 +962,65 @@ async function executeSplunkSearch(datasource) {
     ? splunkManagementAuthHeader(process.env.SPLUNKD_TOKEN)
     : `Basic ${Buffer.from([process.env.SPLUNKD_USER || 'admin', process.env.SPLUNKD_PASSWORD || ''].join(':')).toString('base64')}`;
 
-  // Prepare search parameters
-  const bodyParams = new URLSearchParams({
-    output_mode: 'json',
-    earliest_time: (search.queryParameters || {}).earliest || '',
-    latest_time: (search.queryParameters || {}).latest || '',
-    search: qualifiedSearchString(query),
-    reuse_max_seconds_ago: refresh,
-    timeout: refresh * 2,
-  });
-
-  // Dispatch search job
-  logger.info('Dispatching search job to Splunk', { datasourceId: datasource.id });
+  const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
   const dispatchStartTime = Date.now();
-  const searchResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
-    method: 'POST',
-    headers: {
-      Authorization: AUTH_HEADER,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: bodyParams,
-    agent: agent,
-  });
+  let sid;
+  let reusedArtifact = false;
 
-  if (searchResponse.status > 299) {
-    const error = `Failed to dispatch job, Splunk returned HTTP status ${searchResponse.status}`;
-    logger.error(error, { datasourceId: datasource.id, status: searchResponse.status });
-    throw new Error(error);
+  if (savedSearchRef) {
+    // ds.savedSearch: prefer the report's latest scheduled artifact, dispatch only if there is none
+    sid = await findLatestSavedSearchJob({
+      ref: savedSearchRef,
+      servicePrefix: SERVICE_PREFIX,
+      authHeader: AUTH_HEADER,
+      datasourceId: datasource.id,
+    });
+
+    if (sid) {
+      reusedArtifact = true;
+    } else {
+      sid = await dispatchSavedSearch({
+        ref: savedSearchRef,
+        servicePrefix: SERVICE_PREFIX,
+        authHeader: AUTH_HEADER,
+        queryParameters: search.queryParameters,
+        datasourceId: datasource.id,
+      });
+    }
+  } else {
+    // Prepare search parameters
+    const bodyParams = new URLSearchParams({
+      output_mode: 'json',
+      earliest_time: (search.queryParameters || {}).earliest || '',
+      latest_time: (search.queryParameters || {}).latest || '',
+      search: qualifiedSearchString(query),
+      reuse_max_seconds_ago: refresh,
+      timeout: refresh * 2,
+    });
+
+    // Dispatch search job
+    logger.info('Dispatching search job to Splunk', { datasourceId: datasource.id });
+    const searchResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/jobs`, {
+      method: 'POST',
+      headers: {
+        Authorization: AUTH_HEADER,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: bodyParams,
+      agent: agent,
+    });
+
+    if (searchResponse.status > 299) {
+      const error = `Failed to dispatch job, Splunk returned HTTP status ${searchResponse.status}`;
+      logger.error(error, { datasourceId: datasource.id, status: searchResponse.status });
+      throw new Error(error);
+    }
+
+    ({ sid } = await searchResponse.json());
   }
 
-  const { sid } = await searchResponse.json();
   const dispatchTime = Date.now() - dispatchStartTime;
-  const checkDelay = parseInt(process.env.SEARCH_JOB_DELAY_MS, 10) || 250;
-  logger.info('Search job dispatched successfully', { 
+  logger.info('Search job ready', { 
     datasourceId: datasource.id, 
     sid, 
     dispatchTime, 
@@ -898,13 +1041,37 @@ async function executeSplunkSearch(datasource) {
       }
     ).then((r) => r.json());
 
+    if (!statusResponse.entry || !statusResponse.entry[0]) {
+      // A reused scheduled artifact can be reaped between reading the history and
+      // reading the job. Fall back to running the saved search rather than failing.
+      if (reusedArtifact) {
+        logger.warn('Saved search artifact no longer available, dispatching a fresh run', {
+          datasourceId: datasource.id,
+          ref: savedSearchRef,
+          sid,
+        });
+        reusedArtifact = false;
+        sid = await dispatchSavedSearch({
+          ref: savedSearchRef,
+          servicePrefix: SERVICE_PREFIX,
+          authHeader: AUTH_HEADER,
+          queryParameters: search.queryParameters,
+          datasourceId: datasource.id,
+        });
+        continue;
+      }
+      const error = `Search job ${sid} is not available`;
+      logger.error(error, { datasourceId: datasource.id, sid });
+      throw new Error(error);
+    }
+
     const jobStatus = statusResponse.entry[0].content;
-    if (jobStatus.isFailed) {
+    if (isSplunkTrue(jobStatus.isFailed)) {
       const error = 'Search job failed';
       logger.error(error, { datasourceId: datasource.id, sid });
       throw new Error(error);
     }
-    complete = jobStatus.isDone;
+    complete = isSplunkTrue(jobStatus.isDone);
     if (!complete) {
       await sleep(checkDelay);
     }
@@ -922,7 +1089,7 @@ async function executeSplunkSearch(datasource) {
     search: search.postprocess || '',
   });
 
-  const resultsResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${sid}/results`, {
+  const resultsResponse = await enhancedFetch(`${process.env.SPLUNKD_URL}/${SERVICE_PREFIX}/search/v2/jobs/${encodeURIComponent(sid)}/results`, {
     method: 'POST',
     headers: {
       Authorization: AUTH_HEADER,
@@ -1482,7 +1649,7 @@ app.get('/api/data/:dsid', rateLimit, async (req, res) => {
   }
   
   const datasource = DATASOURCES[dsid];
-  logger.info('Datasource found', { dsid, query: datasource.search.query, app: datasource.app });
+  logger.info('Datasource found', { dsid, query: datasource.search.query, savedSearchRef: datasource.search.ref, app: datasource.app });
   
   // Check cache first
   const cacheKey = `${dsid}_${JSON.stringify(datasource.search.queryParameters || {})}`;
@@ -1684,176 +1851,6 @@ app.post('/api/logs/hec/flush', rateLimit, async (req, res) => {
   }
 });
 
-// Saved searches endpoints
-app.get('/api/saved-searches', rateLimit, (req, res) => {
-  try {
-    const searches = Array.from(savedSearches.values()).map(search => ({
-      id: search.id,
-      name: search.name,
-      description: search.description,
-      query: search.query,
-      parameters: search.parameters,
-      createdAt: search.createdAt,
-      lastUsed: search.lastUsed,
-      useCount: search.useCount
-    }));
-    
-    logger.info('Retrieved saved searches', { count: searches.length });
-    res.json({
-      searches,
-      total: searches.length
-    });
-  } catch (error) {
-    logger.error('Failed to retrieve saved searches', { error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to retrieve saved searches',
-      details: error.message
-    });
-  }
-});
-
-app.post('/api/saved-searches', rateLimit, (req, res) => {
-  try {
-    const { name, description, query, parameters = {} } = req.body;
-    
-    if (!name || !query) {
-      logger.warn('Invalid saved search creation attempt', { name, hasQuery: !!query });
-      return res.status(400).json({
-        error: 'Missing required fields',
-        message: 'Name and query are required'
-      });
-    }
-    
-    const id = `saved_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const savedSearch = {
-      id,
-      name,
-      description: description || '',
-      query,
-      parameters,
-      createdAt: new Date().toISOString(),
-      lastUsed: null,
-      useCount: 0
-    };
-    
-    savedSearches.set(id, savedSearch);
-    logger.info('Saved search created successfully', { id, name, queryLength: query.length });
-    
-    res.status(201).json(savedSearch);
-  } catch (error) {
-    logger.error('Failed to create saved search', { error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to create saved search',
-      details: error.message
-    });
-  }
-});
-
-app.get('/api/saved-searches/:id', rateLimit, (req, res) => {
-  try {
-    const { id } = req.params;
-    const savedSearch = savedSearches.get(id);
-    
-    if (!savedSearch) {
-      logger.warn('Saved search not found', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    logger.info('Retrieved saved search', { id, name: savedSearch.name });
-    res.json(savedSearch);
-  } catch (error) {
-    logger.error('Failed to retrieve saved search', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to retrieve saved search',
-      details: error.message
-    });
-  }
-});
-
-app.delete('/api/saved-searches/:id', rateLimit, (req, res) => {
-  try {
-    const { id } = req.params;
-    const savedSearch = savedSearches.get(id);
-    
-    if (!savedSearch) {
-      logger.warn('Attempted to delete non-existent saved search', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    savedSearches.delete(id);
-    logger.info('Saved search deleted successfully', { id, name: savedSearch.name });
-    
-    res.json({
-      message: 'Saved search deleted successfully',
-      deletedSearch: savedSearch
-    });
-  } catch (error) {
-    logger.error('Failed to delete saved search', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to delete saved search',
-      details: error.message
-    });
-  }
-});
-
-// Execute saved search endpoint
-app.post('/api/saved-searches/:id/execute', rateLimit, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { parameters = {} } = req.body;
-    
-    const savedSearch = savedSearches.get(id);
-    if (!savedSearch) {
-      logger.warn('Attempted to execute non-existent saved search', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    // Update usage statistics
-    savedSearch.lastUsed = new Date().toISOString();
-    savedSearch.useCount = (savedSearch.useCount || 0) + 1;
-    
-    logger.info('Executing saved search', { id, name: savedSearch.name, useCount: savedSearch.useCount });
-    
-    // Create a temporary datasource object to reuse existing search logic
-    const tempDatasource = {
-      id: `saved_${id}`,
-      search: {
-        query: savedSearch.query,
-        queryParameters: { ...savedSearch.parameters, ...parameters },
-        refresh: 60 // Default refresh for saved searches
-      },
-      app: process.env.DASHPUB_APP || 'etyd'
-    };
-    
-    // Execute the search using existing infrastructure
-    const data = await executeSplunkSearch(tempDatasource);
-    
-    logger.info('Saved search executed successfully', { id, name: savedSearch.name, recordCount: data.meta.totalCount });
-    
-    res.json({
-      savedSearchId: id,
-      savedSearchName: savedSearch.name,
-      data: data
-    });
-    
-  } catch (error) {
-    logger.error('Failed to execute saved search', { id: req.params.id, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to execute saved search',
-      details: error.message
-    });
-  }
-});
-
 // Data export endpoints
 app.get('/api/export/:dsid/:format', rateLimit, async (req, res) => {
   try {
@@ -1923,91 +1920,6 @@ app.get('/api/export/:dsid/:format', rateLimit, async (req, res) => {
     logger.error('Data export failed', { dsid: req.params.dsid, format: req.params.format, error: error.message, stack: error.stack });
     res.status(500).json({
       error: 'Failed to export data',
-      details: error.message
-    });
-  }
-});
-
-// Export saved search data
-app.get('/api/export/saved-search/:id/:format', rateLimit, async (req, res) => {
-  try {
-    const { id, format } = req.params;
-    const { parameters = {} } = req.query;
-    
-    if (!['csv', 'json'].includes(format)) {
-      logger.warn('Invalid export format requested for saved search', { id, format });
-      return res.status(400).json({
-        error: 'Invalid export format',
-        message: 'Supported formats: csv, json'
-      });
-    }
-    
-    const savedSearch = savedSearches.get(id);
-    if (!savedSearch) {
-      logger.warn('Export requested for non-existent saved search', { id });
-      return res.status(404).json({
-        error: 'Saved search not found',
-        message: `No saved search with ID '${id}' exists`
-      });
-    }
-    
-    logger.info('Starting saved search export', { id, name: savedSearch.name, format });
-    
-    // Create temporary datasource to reuse existing search logic
-    const tempDatasource = {
-      id: `saved_${id}`,
-      search: {
-        query: savedSearch.query,
-        queryParameters: { ...savedSearch.parameters, ...parameters },
-        refresh: 60
-      },
-      app: process.env.DASHPUB_APP || 'etyd'
-    };
-    
-    // Execute the search using existing infrastructure
-    const data = await executeSplunkSearch(tempDatasource);
-    
-    // Generate filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `saved_${id}_${format}_${timestamp}`;
-    
-    if (format === 'csv') {
-      // Convert to CSV format
-      const csvContent = convertToCSV(data);
-      
-      res.set({
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="${filename}.csv"`,
-        'Cache-Control': 'no-cache'
-      });
-      
-      logger.info('Saved search CSV export completed successfully', { id, name: savedSearch.name, filename, recordCount: data.meta.totalCount });
-      res.send(csvContent);
-    } else if (format === 'json') {
-      // Export as JSON
-      res.set({
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="${filename}.json"`,
-        'Cache-Control': 'no-cache'
-      });
-      
-      logger.info('Saved search JSON export completed successfully', { id, name: savedSearch.name, filename, recordCount: data.meta.totalCount });
-      res.json({
-        exportInfo: {
-          savedSearchId: id,
-          savedSearchName: savedSearch.name,
-          format: 'json',
-          timestamp: new Date().toISOString(),
-          recordCount: data.meta.totalCount
-        },
-        data: data
-      });
-    }
-    
-  } catch (error) {
-    logger.error('Saved search export failed', { id: req.params.id, format: req.params.format, error: error.message, stack: error.stack });
-    res.status(500).json({
-      error: 'Failed to export saved search data',
       details: error.message
     });
   }
@@ -2326,7 +2238,6 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check available at http://localhost:${PORT}/health`);
   console.log(`🔍 API available at http://localhost:${PORT}/api/data/:dsid`);
-  console.log(`💾 Saved searches available at http://localhost:${PORT}/api/saved-searches`);
   console.log(`📋 Dashboard management available at http://localhost:${PORT}/api/dashboards`);
   console.log(`📄 Dashboard definitions available at http://localhost:${PORT}/api/dashboards/:slug/definition`);
   console.log(`📊 Enhanced dashboard list available at http://localhost:${PORT}/api/dashboards/list`);
@@ -2335,7 +2246,6 @@ const server = app.listen(PORT, () => {
   console.log(`💾 Cache system: Active (cleanup every ${CACHE_CLEANUP_INTERVAL/1000}s)`);
   console.log(`🔄 Retry system: Active (max ${RETRY_CONFIG.maxRetries} retries with exponential backoff)`);
   console.log(`🚦 Rate limiting: Active (${RATE_LIMIT_CONFIG.maxRequests} requests per ${RATE_LIMIT_CONFIG.windowMs/1000/60} minutes per IP)`);
-  console.log(`💾 Saved searches: Active (${savedSearches.size} searches stored)`);
   console.log(`📝 Structured logging: Active`);
   console.log(`📊 Dynamic dashboards: Active (API-based loading)`);
   

@@ -142,7 +142,7 @@ Expected response:
 ### 2. Test Splunk Connection
 
 ```bash
-curl http://localhost:3000/api/splunk/test
+curl http://localhost:3000/health | jq .services.splunk
 ```
 
 ### 3. Check Dashboard List

@@ -35,8 +35,8 @@ PORT=3001 npm start
 5. Verify SSL certificate (if using HTTPS)
 
 ```bash
-# Test connection
-curl http://localhost:3000/api/splunk/test
+# Check what the server resolved for Splunk
+curl http://localhost:3000/health | jq .services.splunk
 ```
 
 ### Build Errors
@@ -95,20 +95,53 @@ npm run build
 3. Verify file permissions
 4. Check screenshot URLs in browser network tab
 
-### Cache Issues
+### Panels Empty in Dashpub but Populated in Splunk Web
 
-**Error:** Stale data or cache not working
+**Symptom:** Some panels render blank, with no error, while the same dashboard shows
+data when opened as a Splunk user.
+
+**Cause:** the data source was skipped at build time, so the panel is bound to an id
+that no longer exists. Unsupported data source types, and data sources carrying neither
+a query nor a saved search reference, are skipped.
 
 **Solutions:**
-```bash
-# Check cache stats
-curl http://localhost:3000/api/cache/stats
+1. Search the `dashpub init` output for the skip warning:
+   ```
+   WARN: Skipping data source ds_abc123 (type ds.unknown) - no query or saved search ref.
+   ```
+2. Confirm the type is supported - see [Data Sources](features/data-sources/).
+3. For a report (`ds.savedSearch`), confirm the publishing user can read the report
+   object itself, not just the underlying indexes:
+   ```bash
+   curl -s -k -H "Authorization: Bearer ${TOKEN}" \
+     "https://splunk:8089/servicesNS/nobody/<app>/saved/searches/<report>?output_mode=json"
+   ```
+4. Where the report lives in a different app to the dashboard, set `app` in the data
+   source options.
 
-# Clear cache (requires key)
-curl -X DELETE \
-  -H "x-cache-key: your-key" \
-  http://localhost:3000/api/cache/clear
+Note that `Saved searches: Active (0 searches stored)` in older startup logs was
+unrelated to `ds.savedSearch` and has been removed.
+
+### Cache Issues
+
+**Error:** Stale data
+
+**Solutions:**
+
+Responses are cached per data source for its `refresh` interval (falling back to
+`DASHPUB_DEFAULT_TTL`, then 60 seconds), and expired entries are swept every 5 minutes.
+There is no manual flush endpoint - restart the server to drop the cache.
+
+```bash
+# Current cache size
+curl http://localhost:3000/health | jq .cache
+
+# Whether a response came from cache, and how old it is
+curl http://localhost:3000/api/data/<dsid> | jq .meta
 ```
+
+`meta.fromCache`, `meta.cacheAge` and `meta.nextRefresh` tell you whether the value you
+are looking at was served from cache and when it will next be refreshed.
 
 ### Rate Limiting
 
@@ -205,6 +238,7 @@ When reporting issues, include:
 ## Related Documentation
 
 - [Configuration Guide](configuration/)
+- [Data Sources](features/data-sources/)
 - [API Reference](api/)
 - [Development Guide](development/)
 

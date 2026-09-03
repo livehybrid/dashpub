@@ -305,22 +305,15 @@ const cache = new Map();
 #### 2. Cache Key Generation
 
 ```javascript
-// Cache key format: `type:identifier:parameters`
-const cacheKey = `datasource:${dsid}:${JSON.stringify(params)}`;
-const cacheKey = `dashboard:${dashboardId}:${version}`;
+// One entry per data source and time range; TTL is the data source's own
+// refresh interval, falling back to DASHPUB_DEFAULT_TTL and then 60 seconds
+const cacheKey = `${dsid}_${JSON.stringify(datasource.search.queryParameters || {})}`;
+const refresh = datasource.search.refresh || parseInt(process.env.DASHPUB_DEFAULT_TTL) || 60;
 ```
 
-#### 3. TTL (Time To Live) Strategy
+#### 3. TTL (Time To Live)
 
-```javascript
-// Different TTLs for different data types
-const TTL_STRATEGIES = {
-  'datasource': 300000,      // 5 minutes
-  'dashboard': 3600000,      // 1 hour
-  'saved_search': 1800000,   // 30 minutes
-  'user_preference': 86400000 // 24 hours
-};
-```
+The TTL is the data source's `refresh` value in seconds. There is no per-type TTL table.
 
 #### 4. Cache Cleanup
 
@@ -343,20 +336,23 @@ setInterval(() => {
 - **Scalability**: Handles high concurrent user loads efficiently
 - **User Experience**: Faster dashboard loading and data refresh
 
-### Cache Statistics
+### Cache Inspection
 
 ```javascript
-// Cache metrics available via API
-GET /api/cache/stats
+// Cache size is reported by the health endpoint
+GET /health
 {
-  "totalEntries": 156,
-  "memoryUsage": "45.2 MB",
-  "hitRate": 0.87,
-  "missRate": 0.13,
-  "evictions": 23,
-  "lastCleanup": "2024-01-15T10:30:00Z"
+  "cache": { "size": 156, "status": "active" }
+}
+
+// Per-response cache state
+GET /api/data/:dsid
+{
+  "meta": { "fromCache": true, "cacheAge": 4213, "nextRefresh": 55787 }
 }
 ```
+
+There is no aggregate hit-rate metric and no cache management endpoint.
 
 ## 🔌 API Endpoints
 
@@ -379,37 +375,30 @@ GET /api/dashboards/list
 # Get data from specific datasource
 GET /api/data/:dsid
 
-# Get datasource metadata
-GET /api/datasources/:dsid
-
-# Search datasources
-# Removed: /api/datasources/search endpoint (security risk - not implemented)
 ```
 
-### Caching
+### Export, Logging & Auth
 
 ```http
-# Get cache statistics
-GET /api/cache/stats
+# Export data source results as csv or json
+GET /api/export/:dsid/:format
 
-# Clear specific cache entry
-DELETE /api/cache/:key
+# Splunk HEC logging (when SPLUNK_HEC_ENABLED=true)
+GET  /api/logs/hec/status
+POST /api/logs/hec/test
+POST /api/logs/hec/flush
 
-# Clear all cache
-DELETE /api/cache/clear
+# JWT authentication (when JWT_REQUIRED=true)
+POST /api/login
+GET  /api/auth/verify
 ```
 
 ### Health & Monitoring
 
 ```http
-# Health check
+# Health check: uptime, memory, Splunk config, data source count,
+# cache size and rate limiting state
 GET /health
-
-# Server status
-GET /api/status
-
-# Splunk connection test
-GET /api/splunk/test
 ```
 
 ## 🎨 Frontend Architecture
@@ -804,8 +793,8 @@ DEBUG=* npm run dev:full
 # Check server logs
 tail -f logs/server.log
 
-# Monitor cache performance
-curl http://localhost:3000/api/cache/stats
+# Monitor cache size
+curl http://localhost:3000/health | jq .cache
 ```
 
 ### Performance Tuning

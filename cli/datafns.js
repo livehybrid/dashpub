@@ -21,6 +21,12 @@ const makeId = ds => {
     if (ds.query) {
         h.write(ds.query);
     }
+    if (ds.ref) {
+        h.write(`savedsearch:${ds.ref}`);
+    }
+    if (ds.app) {
+        h.write(`app:${ds.app}`);
+    }
     if (ds.queryParameters) {
         if (ds.queryParameters.earliest) {
             h.write(ds.queryParameters.earliest);
@@ -85,33 +91,70 @@ function parseRefreshTime(refresh, dsDefaults, defaultValue = 400) {
     return defaultValue;
 }
 
+// Join post-process fragments into a single pipeline. The first fragment is kept
+// verbatim so single-level chains produce exactly what they always have.
+function appendPostprocess(existing, query) {
+    const next = (query || '').trim();
+    if (!next) {
+        return existing;
+    }
+    if (!existing) {
+        return next;
+    }
+    return `${existing} ${next.startsWith('|') ? next : `| ${next}`}`;
+}
+
+// Collapse a ds.chain onto the search it ultimately extends. A chain may extend
+// another chain, in which case every hop's SPL becomes part of one post-process
+// pipeline over the root search - resolving only one level would silently drop
+// the root search and run the intermediate post-process as a standalone query.
+function resolveDataSourceSettings(key, ds, allDataSources, seen = new Set()) {
+    if (ds.type !== 'ds.chain') {
+        return ds.options;
+    }
+    if (seen.has(key)) {
+        throw new Error(`Circular ds.chain reference involving data source ${key}`);
+    }
+    seen.add(key);
+
+    const { extend } = ds.options;
+    const base = allDataSources[extend];
+    if (!base) {
+        throw new Error(`Unable to find base search ${extend} for data source ${key}`);
+    }
+
+    const baseSettings = resolveDataSourceSettings(extend, base, allDataSources, seen);
+    return {
+        ...baseSettings,
+        postprocess: appendPostprocess(baseSettings.postprocess, ds.options.query),
+    };
+}
+
 async function generateCdnDataSource([key, ds], app, allDataSources, defaults) {
     if (ds.type === 'ds.test') {
         return [[],[key, ds]];
     }
-    let settings = ds.options;
-    if (ds.type === 'ds.chain') {
-        const base = allDataSources[ds.options.extend];
-        if (!base) {
-            throw new Error(`Unable to find base search ${ds.options.extend} for data source ${key}`);
-        }
-        settings = {
-            ...base.options,
-            postprocess: ds.options.query,
-        };
-    }
+    const settings = resolveDataSourceSettings(key, ds, allDataSources);
 
-    if (!settings.query) {
+    // ds.savedSearch references a report by name rather than carrying SPL. Keep the
+    // reference intact so the server can resolve it against the report's scheduled
+    // artifacts at request time (see resolveSavedSearchJob in template/server.js).
+    if (!settings.query && !settings.ref) {
+        console.log(
+            `WARN: Skipping data source ${key} (type ${ds.type || 'unknown'}) - no query or saved search ref. ` +
+                'Visualizations bound to it will render without data.'
+        );
         return null;
     }
 
-    const id = makeId(settings);
+    const dsApp = settings.app || app;
+    const id = makeId({ ...settings, app: dsApp });
     const refreshVal = parseRefreshTime(ds.options.refresh, defaults['ds.search']);
     const dataSourceManifest = [
         id,
         {
             search: { ...settings, refresh: refreshVal },
-            app: app,
+            app: dsApp,
             id,
         },
     ];

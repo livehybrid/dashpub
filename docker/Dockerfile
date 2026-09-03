@@ -101,6 +101,25 @@ RUN mkdir -p /tmp/picomatch-fix && \
     fi && \
     rm -rf /tmp/picomatch-fix
 
+# npm 12.0.2 bundles tar 7.5.19, which Trivy flags for CVE-2026-73566 (node-tar DoS
+# via a crafted long-path archive). npm declares `tar: ^7.5.19`, so 7.5.22 satisfies
+# its own range. Applied after the COPY above for the same reason as `picomatch`:
+# the builder's copy of npm would otherwise overwrite it. Revisit once an npm release
+# bundles tar >= 7.5.21.
+RUN mkdir -p /tmp/tar-fix && \
+    cd /tmp/tar-fix && \
+    npm init -y >/dev/null && \
+    npm install tar@^7.5.22 --no-audit --no-fund --ignore-scripts && \
+    target="/usr/local/lib/node_modules/npm/node_modules/tar" && \
+    if [ -d "$target" ]; then \
+      rm -rf "$target" && \
+      cp -r node_modules/tar "$target"; \
+    fi && \
+    cd / && \
+    rm -rf /tmp/tar-fix && \
+    echo "bundled tar is now $(node -p "require('$target/package.json').version")" && \
+    npm --version >/dev/null
+
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in runtime stage"
 RUN echo "Available binaries:" && ls -la /usr/local/bin/
 

@@ -37,29 +37,23 @@ The caching system provides:
 
 ### Cache Key Format
 
-Cache keys follow this pattern:
+One entry per data source and time range:
 
 ```
-type:identifier:parameters
+<dsid>_<JSON of the search's queryParameters>
 ```
 
-Examples:
-- `datasource:w7497kgev1n4:{"refresh":30}`
-- `dashboard:highlevel:v1.0`
-- `search:index=main|stats count:abc123:santa_tracker`
+Example: `w7497kgev1n4_{"earliest":"-24h","latest":"now"}`
 
-### TTL Strategies
+### TTL
 
-Different data types have different TTLs:
+An entry lives for its data source's own `refresh` interval, falling back to
+`DASHPUB_DEFAULT_TTL` and then to 60 seconds. The same value is sent to downstream
+caches as `Cache-Control: s-maxage=<refresh>, stale-while-revalidate`.
 
-```javascript
-{
-  'datasource': 300000,      // 5 minutes
-  'dashboard': 3600000,      // 1 hour
-  'saved_search': 1800000,  // 30 minutes
-  'user_preference': 86400000 // 24 hours
-}
-```
+A sweep every 5 minutes deletes entries that have already expired. There is no LRU
+eviction and no size cap, so cache memory scales with the number of distinct data
+sources across all published dashboards.
 
 ## Configuration
 
@@ -75,39 +69,24 @@ RATE_LIMIT_MAX_REQUESTS=1000
 
 ## Cache Statistics
 
-### Get Cache Stats
+### Inspect the Cache
 
 ```bash
-curl http://localhost:3000/api/cache/stats
+# Number of entries currently held
+curl http://localhost:3000/health | jq .cache
 ```
 
-Response:
-```json
-{
-  "totalEntries": 156,
-  "memoryUsage": "45.2 MB",
-  "hitRate": 0.87,
-  "missRate": 0.13,
-  "evictions": 23,
-  "lastCleanup": "2024-01-15T10:30:00Z"
-}
-```
+Each data source response carries its own cache state:
 
-### Cache Management
-
-Clear specific cache entry (requires key):
 ```bash
-curl -X DELETE \
-  -H "x-cache-key: your-key" \
-  http://localhost:3000/api/cache/specific-key
+curl http://localhost:3000/api/data/<dsid> | jq .meta
 ```
 
-Clear all cache:
-```bash
-curl -X DELETE \
-  -H "x-cache-key: your-key" \
-  http://localhost:3000/api/cache/clear
-```
+`meta.fromCache`, `meta.cacheAge` and `meta.nextRefresh` show whether the value came
+from cache and when it will next be refreshed.
+
+There is no cache management endpoint and no manual flush - entries expire on their own
+TTL, and restarting the server drops the cache.
 
 ## Benefits
 
