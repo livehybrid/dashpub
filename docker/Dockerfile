@@ -108,14 +108,16 @@ RUN mkdir -p /tmp/picomatch-fix && \
 # bundles tar >= 7.5.21.
 RUN mkdir -p /tmp/tar-fix && \
     cd /tmp/tar-fix && \
-    npm init -y >/dev/null 2>&1 && \
-    npm install tar@^7.5.22 >/dev/null 2>&1 && \
+    npm init -y >/dev/null && \
+    npm install tar@^7.5.22 --no-audit --no-fund --ignore-scripts && \
     target="/usr/local/lib/node_modules/npm/node_modules/tar" && \
     if [ -d "$target" ]; then \
       rm -rf "$target" && \
       cp -r node_modules/tar "$target"; \
     fi && \
+    cd / && \
     rm -rf /tmp/tar-fix && \
+    echo "bundled tar is now $(node -p "require('$target/package.json').version")" && \
     npm --version >/dev/null
 
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in runtime stage"
