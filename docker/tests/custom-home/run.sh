@@ -22,7 +22,7 @@ for f in $fixtures; do
   marker="$(grep -o 'marker-custom-home-[a-z-]*' "$here/$f" | head -n1)"
   echo "=== $f (expect '$marker' in the bundle)"
   restore
-  rm -rf "$root/template/dist"
+  rm -r "$root/template/dist" 2>/dev/null || true
   if ! "$root/docker/install-custom-home.sh" "$here/$f" "$components"; then
     echo "FAIL $f: install script failed"; failed="$failed $f"; continue
   fi
