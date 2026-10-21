@@ -36,24 +36,26 @@
         "inquirer": "^14.0.2",
         "node-addon-api": "^8.0.0",
         "node-gyp": "13.0.0",
-        "sharp": "^0.35.0",
+        "sharp": "^0.35.5",
         "xmldoc": "^3.0.0"
     },
     "devDependencies": {
         "prettier": "^3.1.1"
     },
     "resolutions": {
+        "brace-expansion": "^2.1.7",
         "cross-spawn": "^7.0.5",
         "glob": "^10.5.0",
         "tar": "^7.5.7",
-        "undici": "^6.27.0"
+        "undici": "^6.29.1"
     },
     "overrides": {
+        "brace-expansion": "^2.1.7",
         "glob": "^10.5.0",
         "minimatch": "^9.0.7",
         "picomatch": "^4.0.4",
         "tar": "^7.5.7",
-        "undici": "^6.27.0"
+        "undici": "^6.29.1"
     },
     "deprecated": false,
     "description": "Generate next.js apps to publish Splunk dashboards",

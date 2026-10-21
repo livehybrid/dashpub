@@ -120,6 +120,37 @@ RUN mkdir -p /tmp/tar-fix && \
     echo "bundled tar is now $(node -p "require('$target/package.json').version")" && \
     npm --version >/dev/null
 
+# npm 12.0.2 also bundles brace-expansion 5.0.7 (CVE-2026-102276, CVE-2026-102278;
+# fixed in 5.0.11) and undici 6.27.0 (CVE-2026-19534; fixed in 6.28.1). npm's own
+# ranges are `brace-expansion: ^5.0.5` (via minimatch) and `undici: ^6.25.0` (via
+# node-gyp), so the fixed releases satisfy them. Same approach as `tar` above; the
+# build fails if a bundled copy is still below the fixed version. Revisit once an
+# npm release bundles brace-expansion >= 5.0.11 and undici >= 6.28.1.
+RUN mkdir -p /tmp/npm-bundled-fix && \
+    cd /tmp/npm-bundled-fix && \
+    npm init -y >/dev/null && \
+    npm install brace-expansion@^5.0.12 undici@^6.29.1 --no-audit --no-fund --ignore-scripts && \
+    for pkg in brace-expansion undici; do \
+      target="/usr/local/lib/node_modules/npm/node_modules/$pkg"; \
+      if [ -d "$target" ]; then \
+        rm -rf "$target" && \
+        cp -r "node_modules/$pkg" "$target"; \
+      fi; \
+    done && \
+    cd / && \
+    rm -rf /tmp/npm-bundled-fix && \
+    node -e ' \
+      const min = { "brace-expansion": [5, 0, 11], undici: [6, 28, 1] }; \
+      for (const [pkg, floor] of Object.entries(min)) { \
+        const p = "/usr/local/lib/node_modules/npm/node_modules/" + pkg + "/package.json"; \
+        let v; try { v = require(p).version; } catch { console.log("npm does not bundle " + pkg); continue; } \
+        const n = v.split(".").map(Number); \
+        const ok = n[0] === floor[0] && (n[1] > floor[1] || (n[1] === floor[1] && n[2] >= floor[2])); \
+        console.log("bundled " + pkg + " is now " + v); \
+        if (!ok) { console.error(pkg + " " + v + " is below " + floor.join(".")); process.exit(1); } \
+      }' && \
+    npm --version >/dev/null
+
 RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in runtime stage"
 RUN echo "Available binaries:" && ls -la /usr/local/bin/
 
