@@ -1,0 +1,45 @@
+name: Custom home header
+
+# DASHPUB_CUSTOM_HOME_PATH headers are installed by docker/install-custom-home.sh.
+# Build the template with a JSX header (.js and .jsx) and a plain-JS one, the way
+# the container does, and check each header's text lands in the bundle.
+
+on:
+  pull_request:
+    paths:
+      - 'docker/install-custom-home.sh'
+      - 'docker/entrypoint.sh'
+      - 'docker/tests/custom-home/**'
+      - 'template/**'
+      - '.github/workflows/custom-home-header.yml'
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-headers:
+    name: Build with custom headers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+          cache: npm
+          cache-dependency-path: template/package-lock.json
+
+      - name: Install template dependencies
+        working-directory: template
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: npm ci --no-audit --no-fund
+
+      - name: Build each fixture header
+        run: docker/tests/custom-home/run.sh

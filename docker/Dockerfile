@@ -124,6 +124,7 @@ RUN ls -la /usr/local/bin/ | grep dashpub || echo "dashpub binary not found in r
 RUN echo "Available binaries:" && ls -la /usr/local/bin/
 
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker/install-custom-home.sh /usr/local/bin/install-custom-home.sh
 COPY docker/config /usr/local/bin/config
 
 WORKDIR /home/nodejs

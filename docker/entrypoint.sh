@@ -116,7 +116,7 @@ then
     cd /home/nodejs/app
     if [ "${DASHPUB_CUSTOM_HOME_PATH}" ];
       then
-      cp $DASHPUB_CUSTOM_HOME_PATH src/components/home_header.js
+      /usr/local/bin/install-custom-home.sh "$DASHPUB_CUSTOM_HOME_PATH" src/components
     fi
     # yarn add typescript
     # yarn add --dev typescript @typescript-eslint/parser @typescript-eslint/eslint-plugin @next/eslint-plugin-next
