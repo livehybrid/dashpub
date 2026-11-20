@@ -1638,8 +1638,10 @@ app.get('/api/data/:dsid', rateLimit, async (req, res) => {
   
   if (!dsid || !(dsid in DATASOURCES)) {
     logger.warn('Datasource not found', { dsid, availableCount: Object.keys(DATASOURCES).length });
-    res.setHeader('cache-control', 's-maxage=3600');
-    res.json({ 
+    // 404, not 200: a 200 with an error body is cached and counted as a success
+    // by everything between here and the browser.
+    res.setHeader('cache-control', 's-maxage=60');
+    res.status(404).json({ 
       error: 'Datasource not found',
       message: `The requested datasource '${dsid}' does not exist in the system.`,
       availableDatasources: Object.keys(DATASOURCES).slice(0, 10), // Show first 10 available
