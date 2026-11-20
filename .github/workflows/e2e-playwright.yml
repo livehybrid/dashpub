@@ -210,7 +210,8 @@ jobs:
       - name: Run Playwright tests against Docker container
         if: steps.splunk.outputs.skip != 'true'
         working-directory: ./template
-        run: npx playwright test
+        # The render suite (project `render`) has its own workflow and its own Splunk.
+        run: npx playwright test --project=chromium
         env:
           CI: true
           # Disable webServer and point to Docker container

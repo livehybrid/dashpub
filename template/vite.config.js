@@ -29,8 +29,37 @@ const jsxInJsPlugin = () => ({
   },
 });
 
+// @splunk/visualizations' Map does `require('maplibre-gl/dist/maplibre-gl.css')`
+// and interpolates the result into a styled-components template, so it needs
+// the stylesheet as a STRING (Splunk's own build uses a raw loader). Left to
+// the bundler, that require yields a module object instead; styled-components
+// then walks the object, calls the first function it finds as a style rule and
+// the map panel dies with "Class constructor ... cannot be invoked without
+// 'new'". Hand Splunk's packages the stylesheet text instead. Our own
+// `import 'maplibre-gl/dist/maplibre-gl.css'` (Dashboard.jsx) is untouched and
+// still loads the stylesheet the normal way.
+const MAPLIBRE_CSS = 'maplibre-gl/dist/maplibre-gl.css';
+const MAPLIBRE_CSS_TEXT_ID = '\0dashpub:maplibre-css-text';
+const maplibreCssAsText = () => ({
+  name: 'dashpub-maplibre-css-as-text',
+  enforce: 'pre',
+  resolveId(source, importer) {
+    if (source === MAPLIBRE_CSS && importer && /node_modules[\\/]@splunk[\\/]/.test(importer)) {
+      return MAPLIBRE_CSS_TEXT_ID;
+    }
+    return null;
+  },
+  load(id) {
+    if (id === MAPLIBRE_CSS_TEXT_ID) {
+      return `import css from '${MAPLIBRE_CSS}?inline';\nexport default css;\n`;
+    }
+    return null;
+  },
+});
+
 export default defineConfig({
   plugins: [
+    maplibreCssAsText(),
     // Transform .js files with JSX before React plugin
     jsxInJsPlugin(),
     react({

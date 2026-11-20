@@ -1,0 +1,187 @@
+name: Render suite
+
+# Builds the dashpub image, points it at a throwaway Splunk seeded with the
+# fixture dashboards (e2e/fixtures.mjs) and checks that every visualization
+# type renders its data in a real browser. See e2e/README.md.
+#
+# No secrets: Splunk runs in a container on the runner. That is deliberate, so
+# pull requests from Dependabot and from forks get exactly the same check as a
+# maintainer's. "Render suite (Splunk latest)" is the required check on develop
+# and is what lets a dependency update merge itself (dependabot-auto-merge.yml).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+  schedule:
+    # Mondays 05:17 UTC: catches a new Splunk release or a moved base image
+    # when nobody has opened a pull request.
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    name: Render suite (Splunk ${{ matrix.splunk }})
+    # Pinned: Playwright has no chromium build for ubuntu-latest (26.04) yet.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pull requests and pushes test the current Splunk release. The weekly
+        # and manual runs add the older supported lines.
+        splunk: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["latest","10.4","10.2"]' || '["latest"]') }}
+    env:
+      SPLUNKD_URL: https://127.0.0.1:8089
+      SPLUNKD_USER: admin
+      NODE_TLS_REJECT_UNAUTHORIZED: '0'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Start Splunk ${{ matrix.splunk }}
+        run: |
+          # A per-run password: nothing outside this runner can reach the
+          # container, but there is no reason for it to be a known string.
+          password="E2e-$(openssl rand -hex 12)"
+          echo "::add-mask::${password}"
+          echo "SPLUNKD_PASSWORD=${password}" >> "$GITHUB_ENV"
+          docker network create e2e
+          docker run -d --name splunk --hostname splunk --network e2e -p 8089:8089 \
+            -e SPLUNK_START_ARGS=--accept-license \
+            -e SPLUNK_GENERAL_TERMS=--accept-sgt-current-at-splunk-com \
+            -e SPLUNK_PASSWORD="${password}" \
+            "splunk/splunk:${{ matrix.splunk }}"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build the dashpub image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          load: true
+          tags: dashpub-e2e:latest
+          provenance: false
+          cache-from: type=gha,scope=dashpub-image
+          # Only develop writes the cache, so a pull request cannot poison it.
+          cache-to: ${{ github.ref == 'refs/heads/develop' && 'type=gha,scope=dashpub-image,mode=max' || '' }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: template/package-lock.json
+
+      - name: Install test dependencies
+        working-directory: template
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Seed the fixture dashboards into Splunk
+        run: |
+          node e2e/seed-splunk.mjs --wait
+          echo "DASHPUB_DASHBOARDS=$(node -e "import('./e2e/fixtures.mjs').then(m => console.log(m.DASHBOARDS.map(d => d.id).join(',')))")" >> "$GITHUB_ENV"
+
+      - name: Start dashpub against that Splunk
+        run: |
+          docker run -d --name dashpub --network e2e -p 3000:3000 \
+            -e SPLUNKD_URL=https://splunk:8089 \
+            -e SPLUNKD_USER=admin \
+            -e SPLUNKD_PASSWORD \
+            -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+            -e DASHPUB_APP=dashpub_e2e \
+            -e DASHPUB_DASHBOARDS \
+            -e DASHPUB_PROJECTNAME=app \
+            -e DASHPUB_FOLDERNAME=app \
+            -e DASHPUB_VERCEL=n \
+            dashpub-e2e:latest
+
+      - name: Wait for dashpub to build and serve
+        run: |
+          for attempt in $(seq 1 120); do
+            if curl -fsS -o /dev/null http://127.0.0.1:3000/health; then
+              echo "dashpub is serving after ${attempt} checks"
+              exit 0
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' dashpub)" != "true" ]; then
+              echo "::error::the dashpub container exited before it served anything"
+              docker logs --tail 200 dashpub
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "::error::dashpub did not answer /health within 10 minutes"
+          docker logs --tail 200 dashpub
+          exit 1
+
+      - name: Run the render suite
+        working-directory: template
+        env:
+          CI: 'true'
+          PLAYWRIGHT_SKIP_WEBSERVER: 'true'
+          BASE_URL: http://127.0.0.1:3000
+        run: npx playwright test --project=render
+
+      - name: Container logs
+        if: failure()
+        run: |
+          echo "::group::dashpub"
+          docker logs --tail 400 dashpub || true
+          echo "::endgroup::"
+          echo "::group::splunk"
+          docker logs --tail 100 splunk || true
+          echo "::endgroup::"
+
+      - name: Upload report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: render-suite-splunk-${{ matrix.splunk }}
+          path: |
+            template/playwright-report/
+            template/test-results/
+          retention-days: 14
+
+  image-scan:
+    name: Image scan (Trivy)
+    # Reports on the image this commit would publish. Not a required check: a
+    # CVE published overnight in the base image is not caused by the pull
+    # request it happens to land on, and must not block unrelated updates.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build the dashpub image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          load: true
+          tags: dashpub-e2e:latest
+          provenance: false
+          cache-from: type=gha,scope=dashpub-image
+
+      - name: Scan for fixable CRITICAL and HIGH vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: dashpub-e2e:latest
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          trivyignores: .trivyignore

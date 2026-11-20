@@ -37,17 +37,36 @@ export default defineConfig({
 
   // Configure projects for different environments
   projects: [
+    // Live suite: whichever dashboard the instance under test publishes
+    // (TEST_DASHBOARD_ID), from a real Splunk configured through secrets.
     {
       name: 'chromium',
+      testIgnore: /render\.spec\.mjs/,
       use: { 
         ...devices['Desktop Chrome'],
         headless: true,
+      },
+    },
+
+    // Render suite: every visualization type, from the fixture dashboards in
+    // e2e/fixtures.mjs. Needs an instance generated from those fixtures; see
+    // e2e/README.md. Fixed locale and viewport so screenshots are comparable.
+    {
+      name: 'render',
+      testMatch: /render\.spec\.mjs/,
+      use: {
+        ...devices['Desktop Chrome'],
+        headless: true,
+        locale: 'en-GB',
+        timezoneId: 'UTC',
+        viewport: { width: 1300, height: 1100 },
       },
     },
     
     // Local development project (non-headless, useful for debugging)
     ...(process.env.CI ? [] : [{
       name: 'chromium-local',
+      testIgnore: /render\.spec\.mjs/,
       use: { 
         ...devices['Desktop Chrome'],
         headless: false,
