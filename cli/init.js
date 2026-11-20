@@ -31,19 +31,20 @@ dotenv.config();
 
 const toFolderName = (projectName) => projectName.toLowerCase().replace(/[\W_]+/g, '-');
 
-const postInitInstructions = ({ folderName }) => chalk`
+// chalk 5 dropped tagged-template support, so build the message from calls.
+const postInitInstructions = ({ folderName }) => `
 
-{green Project successfully generated in {bold ./${folderName}}}
+${chalk.green(`Project successfully generated in ${chalk.bold(`./${folderName}`)}`)}
 
 Next steps:
 
-{yellow $} cd ./${folderName}
+${chalk.yellow('$')} cd ./${folderName}
 
-{gray # Start developing}
+${chalk.gray('# Start developing')}
 
-{yellow $} npm run dev:full
+${chalk.yellow('$')} npm run dev:full
 
-{gray Open a browser at http://localhost:3000}
+${chalk.gray('Open a browser at http://localhost:3000')}
 `;
 
 // Resolve the directory of mounted Splunk app folders to sideload custom

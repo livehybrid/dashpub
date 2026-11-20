@@ -107,6 +107,12 @@ export const DASHBOARDS = [
                 options: { markdown: '## E2E markdown heading\n\nBody text with **e2e-bold** in it.' },
                 expectText: ['E2E markdown heading', 'e2e-bold'],
             },
+            {
+                id: 'viz_richtext',
+                type: 'splunk.richtext',
+                options: { richTextContent: '<h2>E2E rich text heading</h2><p>Body with <strong>e2e-rich-bold</strong>.</p>' },
+                expectText: ['E2E rich text heading', 'e2e-rich-bold'],
+            },
         ],
         extraDataSources: {
             ds_chain_base: {
@@ -240,6 +246,19 @@ export const DASHBOARDS = [
                 type: 'splunk.networkGraph',
                 query: `${rows(3)} | eval from="e2e-node-".n, to="e2e-node-".(n+1) | table from to`,
                 expectText: ['e2e-node-1', 'e2e-node-3'],
+            },
+            {
+                id: 'viz_treemap',
+                type: 'splunk.treemap',
+                query:
+                    `${rows(4)} | eval node_id="e2e-tm-".n, label="e2e-tree-".n, size=n*15 ` +
+                    '| table node_id label size',
+                options: {
+                    value: "> primary | seriesByName('size')",
+                    nodeIds: "> primary | seriesByName('node_id')",
+                    nodeLabels: "> primary | seriesByName('label')",
+                },
+                expectText: ['e2e-tree-1', 'e2e-tree-4'],
             },
         ],
     },
