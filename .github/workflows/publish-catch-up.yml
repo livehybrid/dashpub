@@ -1,0 +1,49 @@
+name: Publish catch-up
+
+# A merge made by GitHub auto-merge on behalf of a workflow does not trigger
+# other workflows (events caused by GITHUB_TOKEN never do). So when a
+# Dependabot pull request merges itself, "Publish Docker image" does not run
+# and the :develop image silently falls behind the branch.
+#
+# Every hour this checks whether the head of develop has a publish run. If it
+# has none, it starts one. A head whose publish run FAILED is left alone: that
+# needs a person, not a retry every hour.
+
+on:
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: publish-catch-up
+  cancel-in-progress: false
+
+jobs:
+  catch-up:
+    name: Publish develop if it moved
+    runs-on: ubuntu-latest
+    if: github.repository == 'livehybrid/dashpub'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      BRANCH: develop
+      WORKFLOW: docker-image-build.yml
+    steps:
+      - name: Start a publish run if the branch head has none
+        run: |
+          set -euo pipefail
+          head="$(gh api "repos/${REPO}/commits/${BRANCH}" -q .sha)"
+          runs="$(gh run list -R "$REPO" --workflow "$WORKFLOW" --branch "$BRANCH" --limit 30 \
+            --json headSha,status,conclusion \
+            -q "[.[] | select(.headSha == \"${head}\")] | map(\"\(.status)/\(.conclusion)\") | join(\", \")")"
+          if [ -n "$runs" ]; then
+            echo "${BRANCH} is at ${head:0:7}, which already has a publish run (${runs}). Nothing to do."
+            exit 0
+          fi
+          echo "${BRANCH} is at ${head:0:7} and has no publish run. Starting one."
+          gh workflow run "$WORKFLOW" -R "$REPO" --ref "$BRANCH"
+          echo "::notice title=Publish catch-up::Started ${WORKFLOW} for ${BRANCH} at ${head:0:7}"

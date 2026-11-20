@@ -45,6 +45,14 @@ Dependabot groups patch and minor updates (`.github/dependabot.yml`), so a
 normal week is a handful of pull requests. The Splunk packages are one group
 because they peer-depend on each other at exact versions.
 
+## Publishing after an automatic merge
+
+A merge made by auto-merge on behalf of a workflow does not trigger other
+workflows, so "Publish Docker image" does not run for it. `publish-catch-up.yml`
+checks every hour whether the head of `develop` has a publish run and starts
+one if not. The `:develop` image can therefore be up to an hour behind a
+Dependabot merge. A head whose publish run failed is not retried.
+
 ## When an update goes red
 
 - **"visualization types ... that no fixture panel renders"**: the Splunk
