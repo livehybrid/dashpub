@@ -52,11 +52,13 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
     for (const viz of Object.values(newDash.visualizations || {})) {
         console.log("Processing visualization: " + (viz.id || viz.type));
         try {
-            if (viz.type === 'viz.singlevalueicon') {
-                viz.options.icon = await downloadImage(viz.options.icon, 'icons', splunkdInfo, projectFolder);
-            }
-            if (viz.type === 'splunk.singlevalueicon') {
-                viz.options.icon = await downloadImage(viz.options.icon, 'icons', splunkdInfo, projectFolder);
+            // The icon is optional (Splunk falls back to its default) and may be
+            // inlined as a data: URI; only a referenced icon needs downloading.
+            if (viz.type === 'viz.singlevalueicon' || viz.type === 'splunk.singlevalueicon') {
+                const icon = viz.options && viz.options.icon;
+                if (icon && !icon.startsWith('data:')) {
+                    viz.options.icon = await downloadImage(icon, 'icons', splunkdInfo, projectFolder);
+                }
             }
             if (viz.type === 'viz.img') {
                 if (viz.options.src.match(/\$.*\$/g) )
@@ -85,7 +87,7 @@ async function generateDashboard({ name, targetName = name, app, projectFolder, 
                }
            }
         } catch (e) {
-            console.error(`Failed to download image ${viz.options.icon || viz.options.src}`, e);
+            console.error(`Failed to download image ${(viz.options || {}).icon || (viz.options || {}).src}`, e);
         }
     }
 

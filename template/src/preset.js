@@ -111,4 +111,11 @@ const CUSTOM_PRESET = {
 };
 
 const MERGED_PRESET = deepMerge(PRESET, CUSTOM_PRESET);
+
+// The registered visualization types, for the render suite: it fails when a
+// type has no fixture panel, so a Splunk package update that adds a
+// visualization cannot go out unchecked (see e2e/fixtures.mjs).
+if (typeof window !== 'undefined') {
+    window.__DASHPUB_VIZ_TYPES__ = Object.keys(MERGED_PRESET.visualizations).sort();
+}
 export default MERGED_PRESET;
