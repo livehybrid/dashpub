@@ -26,7 +26,7 @@
         "url": "https://github.com/livehybrid/dashpub/issues"
     },
     "dependencies": {
-        "@oclif/core": "^4.0.37",
+        "@oclif/core": "^5.1.12",
         "@react-google-maps/api": "^2.19.2",
         "chalk": "^6.0.1",
         "debug": "^4.3.4",
