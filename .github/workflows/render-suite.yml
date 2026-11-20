@@ -70,6 +70,9 @@ jobs:
           load: true
           tags: dashpub-e2e:latest
           provenance: false
+          # The weekly run builds from nothing, so it tests (and scans) the image
+          # a publish would produce today, not layers cached weeks ago.
+          no-cache: ${{ github.event_name == 'schedule' }}
           cache-from: type=gha,scope=dashpub-image
           # Only develop writes the cache, so a pull request cannot poison it.
           cache-to: ${{ github.ref == 'refs/heads/develop' && 'type=gha,scope=dashpub-image,mode=max' || '' }}
@@ -173,6 +176,9 @@ jobs:
           load: true
           tags: dashpub-e2e:latest
           provenance: false
+          # The weekly run builds from nothing, so it tests (and scans) the image
+          # a publish would produce today, not layers cached weeks ago.
+          no-cache: ${{ github.event_name == 'schedule' }}
           cache-from: type=gha,scope=dashpub-image
 
       - name: Scan for fixable CRITICAL and HIGH vulnerabilities

@@ -182,6 +182,13 @@ test.describe('fixture dashboards', () => {
             }
             expect(problems, 'panels that did not render correctly').toEqual([]);
 
+            // dashpub-plus' screenshotter waits for this element before it takes
+            // a dashboard's thumbnail; without it every screenshot times out.
+            await expect(
+                page.locator('.url2png-cheese'),
+                'the "ready for screenshot" marker the screenshotter waits for'
+            ).toBeAttached({ timeout: PANEL_TIMEOUT });
+
             // The same facts by a second route: what the server sent, not what the page drew.
             // Polled: a panel can be on the page before its request has been answered.
             const searches = allPanels(dash).filter((p) => p.query || p.dataSource).length;

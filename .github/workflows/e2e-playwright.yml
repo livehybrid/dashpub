@@ -56,21 +56,21 @@ jobs:
           PORT="$(trim "${SPLUNKD_PORT:-8089}")"
 
           if [[ -z "${TOKEN}" && -z "${URL}" && -z "${HOST}" ]]; then
-            echo "Skipping Playwright E2E: no SPLUNKD_* secrets available for this workflow run."
+            echo "::warning title=Live E2E skipped::Skipping Playwright E2E: no SPLUNKD_* secrets available for this workflow run."
             echo "To run E2E in CI, configure SPLUNKD_TOKEN (and SPLUNKD_HOST/SPLUNKD_URL as needed) as repository secrets."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           if [[ -z "${TOKEN}" ]]; then
-            echo "Skipping Playwright E2E: SPLUNKD_TOKEN is empty (host/url alone cannot authenticate)."
+            echo "::warning title=Live E2E skipped::Skipping Playwright E2E: SPLUNKD_TOKEN is empty (host/url alone cannot authenticate)."
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           if [[ -z "${URL}" ]]; then
             if [[ -z "${HOST}" ]]; then
-              echo "Skipping Playwright E2E: SPLUNKD_URL is empty and SPLUNKD_HOST is not set."
+              echo "::warning title=Live E2E skipped::Skipping Playwright E2E: SPLUNKD_URL is empty and SPLUNKD_HOST is not set."
               echo "skip=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -105,7 +105,7 @@ jobs:
           set -e
 
           if [[ "${rc}" -ne 0 ]]; then
-            echo "Skipping Playwright E2E: could not reach Splunk management API (${CHECK_URL})."
+            echo "::warning title=Live E2E skipped::Skipping Playwright E2E: could not reach Splunk management API (${CHECK_URL})."
             echo "curl exit=${rc}" >&2
             cat /tmp/splunk_curl.err >&2 || true
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -118,7 +118,7 @@ jobs:
             exit 0
           fi
 
-          echo "Skipping Playwright E2E: Splunk management API returned HTTP ${http_code} for ${CHECK_URL}."
+          echo "::warning title=Live E2E skipped::Skipping Playwright E2E: Splunk management API returned HTTP ${http_code} for ${CHECK_URL}."
           echo "This usually means SPLUNKD_TOKEN is missing/invalid for CI, or Splunk is rejecting the request."
           echo "skip=true" >> "$GITHUB_OUTPUT"
 

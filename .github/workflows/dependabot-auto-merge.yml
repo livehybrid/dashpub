@@ -1,0 +1,45 @@
+name: Dependabot auto-merge
+
+# Turns on GitHub auto-merge for Dependabot pull requests that are not a major
+# version bump. Auto-merge only completes once the required checks on develop
+# pass (see docs/development/dependency-updates.md), so this workflow decides
+# nothing about quality: it only removes the click.
+#
+# Major versions are left for a person, with a comment saying so.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Enable auto-merge
+    runs-on: ubuntu-latest
+    # The author check keeps this off everyone else's pull requests. The
+    # repository check keeps it off forks, where the token cannot merge anyway.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'livehybrid/dashpub'
+    steps:
+      - name: Read what the update changes
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch and minor updates
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
+
+      - name: Leave major updates for a person
+        if: steps.meta.outputs.update-type == 'version-update:semver-major' && github.event.action == 'opened'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr comment "$PR_URL" --body "Major version update: not merged automatically. The render suite still runs on this pull request; read the changelog, then merge by hand if it is green."

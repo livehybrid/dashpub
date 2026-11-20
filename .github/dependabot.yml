@@ -1,27 +1,62 @@
 version: 2
+
+# Patch and minor updates are grouped so a week's worth arrives as a handful of
+# pull requests, each of which merges itself once the required checks pass
+# (.github/workflows/dependabot-auto-merge.yml). Major updates stay one per
+# package and wait for a person. See docs/development/dependency-updates.md.
+
 updates:
+  # The generated site: Vite, Express and the Splunk dashboard packages.
   - package-ecosystem: "npm"
-    directories: 
-      - "/"
-      - "/template"  
-    # ignore:
-    #   - dependency-name: "next"
+    directory: "/template"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
     target-branch: "develop"
     groups:
-      angular:
-        applies-to: version-updates
+      # Splunk's packages are released together and peer-depend on each other
+      # at exact versions: updating one alone does not resolve.
+      splunk:
         patterns:
-        - "@splunk*"
-        
-  - package-ecosystem: "github-actions"
-    target-branch: "develop"
+          - "@splunk*"
+      template-minor-and-patch:
+        exclude-patterns:
+          - "@splunk*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # The Splunk UI packages require React 18 and styled-components 5.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "styled-components"
+        update-types: ["version-update:semver-major"]
+
+  # The dashpub CLI.
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-      
+    open-pull-requests-limit: 10
+    target-branch: "develop"
+    groups:
+      cli-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "develop"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
   - package-ecosystem: "docker"
     directory: "/docker"
     schedule:

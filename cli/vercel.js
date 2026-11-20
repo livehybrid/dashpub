@@ -21,33 +21,34 @@ import path from 'path';
 import chalk from 'chalk';
 import { ux } from '@oclif/core';
 
-const postInitInstructions = ({ folderName }) => chalk`
+// chalk 5 dropped tagged-template support, so build the message from calls.
+const postInitInstructions = ({ folderName }) => `
 
-{green Project successfully generated in {bold ./${folderName}}}
+${chalk.green(`Project successfully generated in ${chalk.bold(`./${folderName}`)}`)}
 
-{gray Next steps:}
+${chalk.gray('Next steps:')}
 
-{yellow $} cd ./${folderName}
+${chalk.yellow('$')} cd ./${folderName}
 
-{gray {bold.blue 1)} Setup the project with Vercel}
+${chalk.bold.blue('1)')} ${chalk.gray('Setup the project with Vercel')}
 
-{yellow $} vercel
+${chalk.yellow('$')} vercel
 
-{gray Follow the steps to set up the project}
+${chalk.gray('Follow the steps to set up the project')}
 
-{gray {bold.blue 2)} Run locally}
+${chalk.bold.blue('2)')} ${chalk.gray('Run locally')}
 
-{yellow $} vercel dev --listen 3333
+${chalk.yellow('$')} vercel dev --listen 3333
 
-{gray Open a browser at http://localhost:3333}
+${chalk.gray('Open a browser at http://localhost:3333')}
 
-{gray {bold.blue 3)} Deploy to Vercel:}
+${chalk.bold.blue('3)')} ${chalk.gray('Deploy to Vercel:')}
 
-{yellow $} vercel --prod
+${chalk.yellow('$')} vercel --prod
 
-{gray {bold.blue 4)} [optional] Push to a Github repository and set up the Vercel Github Integration
+${chalk.bold.blue('4)')} ${chalk.gray('[optional] Push to a Github repository and set up the Vercel Github Integration')}
 
-    https://vercel.com/docs/git-integrations/vercel-for-github}
+    ${chalk.gray('https://vercel.com/docs/git-integrations/vercel-for-github')}
 `;
 
 async function initVercelProject({ folderName, destFolder, splunkdUrl, splunkdUser, splunkdPassword = process.env.SPLUNKD_PASSWORD }) {
