@@ -41,7 +41,7 @@
     },
     "devDependencies": {
         "@babel/plugin-transform-private-property-in-object": "^7.29.7",
-        "@babel/preset-react": "^7.29.7",
+        "@babel/preset-react": "^8.0.1",
         "@playwright/test": "^1.59.1",
         "babel-plugin-styled-components": "^2.1.4",
         "concurrently": "^10.0.5",
